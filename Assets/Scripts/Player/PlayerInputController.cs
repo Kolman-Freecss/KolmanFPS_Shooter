@@ -23,6 +23,8 @@ namespace Player
         [HideInInspector] public Vector2 move;
         [HideInInspector] public bool jump;
         [HideInInspector] public bool sprint;
+        [HideInInspector] public bool leftClick;
+        [HideInInspector] public bool rightClick;
 
         #endregion
 
@@ -66,6 +68,14 @@ namespace Player
             _playerInputs.Desktop.Sprint.performed += OnSprint;
             _playerInputs.Desktop.Sprint.canceled += OnSprint;
             
+            _playerInputs.Desktop.Shoot.started += OnLeftClick;
+            _playerInputs.Desktop.Shoot.performed += OnLeftClick;
+            _playerInputs.Desktop.Shoot.canceled += OnLeftClick;
+            
+            _playerInputs.Desktop.Aim.started += OnRightClick;
+            _playerInputs.Desktop.Aim.performed += OnRightClick;
+            _playerInputs.Desktop.Aim.canceled += OnRightClick;
+            
         }
 
         #endregion
@@ -88,6 +98,16 @@ namespace Player
         {
             sprint = value.ReadValueAsButton();
         }
+        
+        public void OnLeftClick(InputAction.CallbackContext value)
+        {
+            leftClick = value.ReadValueAsButton();
+        }
+        
+        public void OnRightClick(InputAction.CallbackContext value)
+        {
+            rightClick = value.ReadValueAsButton();
+        }
 
         private void MoveInput(Vector2 newMoveDirection)
         {
@@ -109,6 +129,16 @@ namespace Player
         private void SprintInput(bool newSprintState)
         {
             sprint = newSprintState;
+        }
+        
+        private void LeftClickInput(bool newLeftClickState)
+        {
+            leftClick = newLeftClickState;
+        }
+        
+        private void RightClickInput(bool newRightClickState)
+        {
+            rightClick = newRightClickState;
         }
 
         #endregion
@@ -137,6 +167,12 @@ namespace Player
 
             _playerInputs.Desktop.Sprint.started -= OnSprint;
             _playerInputs.Desktop.Sprint.performed -= OnSprint;
+            
+            _playerInputs.Desktop.Shoot.started -= OnLeftClick;
+            _playerInputs.Desktop.Shoot.performed -= OnLeftClick;
+            
+            _playerInputs.Desktop.Aim.started -= OnRightClick;
+            _playerInputs.Desktop.Aim.performed -= OnRightClick;
         }
 
         #endregion
