@@ -53,6 +53,15 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Look"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""7c75653c-98f2-4dba-8ac4-1c8ddb90491c"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -132,6 +141,17 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                     ""action"": ""Sprint"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""39e941c6-8a1d-4396-9b66-8a3c9df2f51b"",
+                    ""path"": ""<Mouse>/delta"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Look"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -143,6 +163,7 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         m_Desktop_Jump = m_Desktop.FindAction("Jump", throwIfNotFound: true);
         m_Desktop_Move = m_Desktop.FindAction("Move", throwIfNotFound: true);
         m_Desktop_Sprint = m_Desktop.FindAction("Sprint", throwIfNotFound: true);
+        m_Desktop_Look = m_Desktop.FindAction("Look", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -207,6 +228,7 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
     private readonly InputAction m_Desktop_Jump;
     private readonly InputAction m_Desktop_Move;
     private readonly InputAction m_Desktop_Sprint;
+    private readonly InputAction m_Desktop_Look;
     public struct DesktopActions
     {
         private @PlayerInputs m_Wrapper;
@@ -214,6 +236,7 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         public InputAction @Jump => m_Wrapper.m_Desktop_Jump;
         public InputAction @Move => m_Wrapper.m_Desktop_Move;
         public InputAction @Sprint => m_Wrapper.m_Desktop_Sprint;
+        public InputAction @Look => m_Wrapper.m_Desktop_Look;
         public InputActionMap Get() { return m_Wrapper.m_Desktop; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -232,6 +255,9 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
             @Sprint.started += instance.OnSprint;
             @Sprint.performed += instance.OnSprint;
             @Sprint.canceled += instance.OnSprint;
+            @Look.started += instance.OnLook;
+            @Look.performed += instance.OnLook;
+            @Look.canceled += instance.OnLook;
         }
 
         private void UnregisterCallbacks(IDesktopActions instance)
@@ -245,6 +271,9 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
             @Sprint.started -= instance.OnSprint;
             @Sprint.performed -= instance.OnSprint;
             @Sprint.canceled -= instance.OnSprint;
+            @Look.started -= instance.OnLook;
+            @Look.performed -= instance.OnLook;
+            @Look.canceled -= instance.OnLook;
         }
 
         public void RemoveCallbacks(IDesktopActions instance)
@@ -267,5 +296,6 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         void OnJump(InputAction.CallbackContext context);
         void OnMove(InputAction.CallbackContext context);
         void OnSprint(InputAction.CallbackContext context);
+        void OnLook(InputAction.CallbackContext context);
     }
 }

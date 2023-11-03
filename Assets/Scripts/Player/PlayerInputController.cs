@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UnityEditorInternal;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Player
@@ -15,6 +16,9 @@ namespace Player
         #region Auxiliar Variables
 
         private PlayerInputs _playerInputs;
+        private static PlayerInputController _instance;
+        [HideInInspector]
+        public static PlayerInputController Instance => _instance;
 
         [HideInInspector] public Vector2 move;
         [HideInInspector] public bool jump;
@@ -25,6 +29,20 @@ namespace Player
         #region InitData
 
         private void Awake()
+        {
+            if (_instance != null && _instance != this)
+            {
+                Destroy(gameObject);
+            }
+            else
+            {
+                _instance = this;
+            }
+            Cursor.visible = false;
+            GetReferences();
+        }
+        
+        private void GetReferences()
         {
             _playerInputs = new PlayerInputs();
         }
@@ -119,6 +137,15 @@ namespace Player
 
             _playerInputs.Desktop.Sprint.started -= OnSprint;
             _playerInputs.Desktop.Sprint.performed -= OnSprint;
+        }
+
+        #endregion
+
+        #region Getters
+
+        public Vector2 GetMouseDelta()
+        {
+            return _playerInputs.Desktop.Look.ReadValue<Vector2>();
         }
 
         #endregion

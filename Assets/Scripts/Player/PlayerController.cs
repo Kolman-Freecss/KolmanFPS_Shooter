@@ -75,7 +75,7 @@ namespace Player
                 _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
             }
 
-            _playerInputController = GetComponent<PlayerInputController>();
+            _playerInputController = PlayerInputController.Instance;
             _controller = GetComponent<CharacterController>();
         }
 
