@@ -1,4 +1,7 @@
 
-csharpsquid:S1186:"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(È“±8ñú›“¹1
-csharpsquid:S1186V"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(Ÿşˆ8ñú›“¹1
-bcsharpsquid:S3459">Remove unassigned field '_verticalVelocity', or set its value.(«ßĞ8ñú›“¹1
+csharpsquid:S1186W"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(È“±8ñú›“¹1
+Mcsharpsquid:S2933;"$Make '_terminalVelocity' 'readonly'.(ÂÜÈœøÿÿÿÿ8ãó´¼¹1
+Bcsharpsquid:S125s"Remove this commented out code.(Ú°à¬8ãó´¼¹1
+Ccsharpsquid:S125‚"Remove this commented out code.(Ú°à¬8ãó´¼¹1
+Ccsharpsquid:S125£"Remove this commented out code.(Ú°à¬8äó´¼¹1
+Ccsharpsquid:S125²"Remove this commented out code.(Ú°à¬8äó´¼¹1

@@ -1,4 +1,5 @@
-﻿using Player;
+﻿using Model;
+using Player;
 using UnityEngine;
 
 namespace Weapons
@@ -6,7 +7,8 @@ namespace Weapons
     public class Weapon : MonoBehaviour
     {
         #region Inspector Variables
-        
+
+        public WeaponType weaponType;
         [SerializeField] private float _damage = 40f;
         [SerializeField] private float _range = 100f;
         [SerializeField] private float _fireRate = 15f;
@@ -17,15 +19,15 @@ namespace Weapons
         [SerializeField] private GameObject _hitEffect;
 
         #endregion
-        
+
         #region Auxiliary Variables
-        
+
         PlayerBehaviour _playerBehaviour;
-        
+
         bool _canShoot = true;
-        
+
         #endregion
-        
+
         #region InitData
 
         private void OnEnable()
@@ -34,21 +36,25 @@ namespace Weapons
             _canShoot = true;
         }
 
+        #endregion
+
+        #region Logic
+
         private void Update()
         {
             if (_isReloading) return;
             if (_currentAmmo <= 0)
             {
-                StartCoroutine(Reload());
+                // StartCoroutine(Reload());
                 return;
             }
+
             if (Input.GetButtonDown("Fire1") && _canShoot)
             {
-                StartCoroutine(Shoot());
+                // StartCoroutine(Shoot());
             }
         }
 
         #endregion
-        
     }
 }
