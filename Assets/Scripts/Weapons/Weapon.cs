@@ -32,7 +32,19 @@ namespace Weapons
         #endregion
 
         #region InitData
-
+        
+        private void Start()
+        {
+            GetReferences();
+            
+        }
+        
+        void GetReferences()
+        {
+            if (_currentAmmo == null) _currentAmmo = new Ammo();
+            _playerBehaviour = GetComponentInParent<PlayerBehaviour>();
+        }
+        
         private void OnEnable()
         {
             _isReloading = false;
@@ -104,6 +116,11 @@ namespace Weapons
                 PlayMuzzleFlash();
                 ProcessRaycast();
                 _currentAmmo.ReduceCurrentAmmo();
+            }
+            else
+            {
+                //TODO: reload and play sound
+                Debug.LogWarning("No ammo");
             }
             yield return new WaitForSeconds(_fireRate);
             _canShoot = true;

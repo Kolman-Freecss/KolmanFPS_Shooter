@@ -57,6 +57,7 @@ namespace Player
             {
                 EquipWeapon(WeaponType.Ak47);
             }
+            SetWeaponActive();
         }
 
         private void Start()
@@ -124,9 +125,19 @@ namespace Player
             // }
         }
         
+        void SetWeaponActive()
+        {
+            if (_currentWeapon != null)
+            {
+                _currentWeapon.gameObject.SetActive(false);
+            }
+            _currentWeapon = _weapons[_currentWeaponIndex];
+            _currentWeapon.gameObject.SetActive(true);
+        }
+
         void EquipWeapon(WeaponType weaponType)
         {
-            String path = "Prefabs/Weapons/" + weaponType.ToString();
+            String path = "Weapon/" + weaponType.ToString();
             GameObject weaponPrefab = Resources.Load<GameObject>(path);
             
             if (weaponPrefab != null)
