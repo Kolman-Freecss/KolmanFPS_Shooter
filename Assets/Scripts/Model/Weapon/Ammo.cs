@@ -1,4 +1,5 @@
 ﻿using Model.Weapon.SO;
+using UnityEngine;
 
 namespace Model.Weapon
 {
@@ -6,9 +7,9 @@ namespace Model.Weapon
     {
         AmmoType ammoType;
         int ammoCount;
-        int ammoCapacity;
         int ammoInClipCapacity;
         int ammoClips;
+        GameObject ammoPrefab;
 
         #region Public properties
 
@@ -20,11 +21,6 @@ namespace Model.Weapon
         public int AmmoCountValue
         {
             get => ammoCount;
-        }
-        
-        public int AmmoCapacityValue
-        {
-            get => ammoCapacity;
         }
         
         public int AmmoInClipCapacityValue
@@ -39,12 +35,17 @@ namespace Model.Weapon
 
         #endregion
 
-        public Ammo(AmmoSO ammoSO)
+        public Ammo()
+        {
+            ammoCount = 0;
+        }
+        
+        public Ammo(AmmoSO ammoSO) : this()
         {
             ammoType = ammoSO.AmmoTypeValue;
-            ammoCapacity = ammoSO.AmmoCapacityValue;
             ammoInClipCapacity = ammoSO.AmmoInClipCapacityValue;
             ammoClips = ammoSO.AmmoClipsValue;
+            ammoPrefab = ammoSO.AmmoPrefabValue;
         }
         
         public void ReduceCurrentAmmo()
@@ -84,7 +85,12 @@ namespace Model.Weapon
         
         public bool IsAmmoClipsFull()
         {
-            return ammoClips == ammoCapacity;
+            return ammoClips == ammoInClipCapacity;
+        }
+        
+        public GameObject GetAmmoPrefab()
+        {
+            return ammoPrefab;
         }
         
         public void Reload()

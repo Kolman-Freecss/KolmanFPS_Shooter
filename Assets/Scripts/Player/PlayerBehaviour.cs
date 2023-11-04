@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Model;
 using UnityEngine;
 using Weapons;
 
@@ -16,6 +17,10 @@ namespace Player
         [Header("Player")]
         [Tooltip("Max health of the player")]
         [SerializeField] private float _maxHealth = 100f;
+        
+        [Header("Weapons")]
+        [Tooltip("Default weapon of the player")]
+        [SerializeField] private Weapon _defaultWeapon;
 
         #endregion
 
@@ -44,6 +49,14 @@ namespace Player
         {
             _playerInputController = PlayerInputController.Instance;
             _playerController = GetComponent<PlayerController>();
+            if (_defaultWeapon != null)
+            {
+                EquipWeapon(_defaultWeapon.weaponType);
+            }
+            else
+            {
+                EquipWeapon(WeaponType.Ak47);
+            }
         }
 
         private void Start()
@@ -111,9 +124,9 @@ namespace Player
             // }
         }
         
-        void EquipWeapon(Weapon weapon)
+        void EquipWeapon(WeaponType weaponType)
         {
-            String path = "Prefabs/Weapons/" + weapon.weaponType.ToString();
+            String path = "Prefabs/Weapons/" + weaponType.ToString();
             GameObject weaponPrefab = Resources.Load<GameObject>(path);
             
             if (weaponPrefab != null)

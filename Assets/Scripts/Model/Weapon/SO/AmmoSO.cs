@@ -17,15 +17,6 @@ namespace Model.Weapon.SO
             get => _ammoType;
         }
         
-        [Description("Ammo capacity in clip")]
-        [FormerlySerializedAs("ammoCapacity")] [SerializeField]
-        int _ammoCapacity;
-        
-        public int AmmoCapacityValue
-        {
-            get => _ammoCapacity;
-        }
-        
         [Description("Ammo in clip capacity")]
         [FormerlySerializedAs("ammoInClipCapacity")] [SerializeField]
         int _ammoInClipCapacity;
@@ -42,6 +33,15 @@ namespace Model.Weapon.SO
         public int AmmoClipsValue
         {
             get => _ammoClips;
+        }
+        
+        [Description("Ammo prefab")]
+        [FormerlySerializedAs("ammoPrefab")] [SerializeField]
+        GameObject _ammoPrefab;
+        
+        public GameObject AmmoPrefabValue
+        {
+            get => _ammoPrefab;
         }
         
     }
