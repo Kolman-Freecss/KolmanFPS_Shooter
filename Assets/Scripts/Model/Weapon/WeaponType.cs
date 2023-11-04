@@ -2,7 +2,7 @@
 {
     public enum WeaponType
     {
-        AK47,
+        Ak47,
         M4A1
     }
 }

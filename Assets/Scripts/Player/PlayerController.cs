@@ -46,6 +46,8 @@ namespace Player
         PlayerInputController _playerInputController;
         CharacterController _controller;
         GameObject _mainCamera;
+        [HideInInspector]
+        public GameObject MainCamera => _mainCamera;
 
         private float _targetRotation = 0.0f;
         private float _rotationVelocity;

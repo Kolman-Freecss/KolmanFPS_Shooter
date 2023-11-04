@@ -22,6 +22,9 @@ namespace Player
         #region Auxiliary Variables
 
         PlayerInputController _playerInputController;
+        PlayerController _playerController;
+        [HideInInspector]
+        public PlayerController PlayerController => _playerController;
         List<Weapon> _weapons = new List<Weapon>();
         Weapon _currentWeapon;
         int _currentWeaponIndex = 0;
@@ -40,6 +43,7 @@ namespace Player
         void GetReferences()
         {
             _playerInputController = PlayerInputController.Instance;
+            _playerController = GetComponent<PlayerController>();
         }
 
         private void Start()
@@ -78,7 +82,12 @@ namespace Player
         {
             if (_playerInputController.leftClick)
             {
-                Debug.Log("Shoot");
+                if (_currentWeapon == null)
+                {
+                    //TODO: Make some kind of melee attack
+                    return;
+                }
+                _currentWeapon.Shoot();
             }
         }
         

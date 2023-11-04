@@ -1,3 +1,5 @@
 
 =csharpsquid:S2933"Make '_weapons' 'readonly'.(ëÉ›àûÿÿÿÿ
-<csharpsquid:S2933"Make '_health' 'readonly'.(â”äÊüÿÿÿÿ
+†csharpsquid:S1450"bRemove the field '_currentWeaponIndex' and declare it as a local variable in the relevant methods.(ÙÃ‰ö8òĞÛ¹1
+Bcsharpsquid:S125]"Remove this commented out code.(Ú°à¬8öÄ¿Û¹1
+]csharpsquid:S1135S"4Complete the task associated to this 'TODO' comment.(ƒõ‚šıÿÿÿÿ8•ÒÁÛ¹1

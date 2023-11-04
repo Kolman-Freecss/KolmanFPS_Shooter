@@ -40,6 +40,8 @@ namespace Camera
                 if (stage == CinemachineCore.Stage.Aim)
                 {
                     if (_startingRotation == null) _startingRotation = transform.localRotation.eulerAngles;
+                    if (_playerInputs == null) _playerInputs = PlayerInputController.Instance;
+                    if (_playerInputs == null) return;
                     Vector2 delta = _playerInputs.GetMouseDelta();
                     _startingRotation.x += delta.x * Time.deltaTime * _verticalSpeed;
                     _startingRotation.y += delta.y * Time.deltaTime * _horizontalSpeed;
