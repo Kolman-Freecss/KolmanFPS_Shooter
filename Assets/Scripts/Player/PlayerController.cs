@@ -1,10 +1,11 @@
+using Unity.Netcode;
 using UnityEngine;
 
 namespace Player
 {
     [RequireComponent(typeof(CharacterController))]
     [RequireComponent(typeof(PlayerInputController))]
-    public class PlayerController : MonoBehaviour
+    public class PlayerController : NetworkBehaviour
     {
         #region Inspector Variables
 
@@ -62,7 +63,6 @@ namespace Player
 
         #endregion
 
-
         #region InitData
 
         private void Awake()
@@ -79,6 +79,15 @@ namespace Player
 
             _playerInputController = PlayerInputController.Instance;
             _controller = GetComponent<CharacterController>();
+        }
+        
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+            if (IsLocalPlayer)
+            {
+                _mainCamera.SetActive(true);
+            }
         }
 
         void Start()

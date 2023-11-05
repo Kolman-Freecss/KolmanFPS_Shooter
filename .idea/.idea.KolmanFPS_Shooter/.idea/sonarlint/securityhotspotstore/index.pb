@@ -11,7 +11,5 @@ hAssets/AssetPacks/UnityTechnologies/StarterAssets/ThirdPersonController/Scripts
 0Assets/Scripts/Camera/CinemachinePOVExtension.cs,b\3\b31e60f7dc9949d1ab46ae7cca61d4dbcbd2253a
 X
 (Assets/Scripts/Player/PlayerBehaviour.cs,0\7\079362aa6b192b83b7b366271a301262064b1c23
-R
-"Assets/Scripts/Model/WeaponType.cs,7\d\7d537f627419e986f62bb7d9087990dc5d02a0b5
 P
  Assets/Scripts/Weapons/Weapon.cs,8\d\8d98ef09cb88e26fee805c1e1484ab8b047d30a8
