@@ -6,6 +6,7 @@ namespace Model.Weapon
     public class Ammo
     {
         AmmoType ammoType;
+        int ammoDamage;
         int ammoCount;
         int ammoInClipCapacity;
         int ammoClips;
@@ -46,6 +47,9 @@ namespace Model.Weapon
             ammoInClipCapacity = ammoSO.AmmoInClipCapacityValue;
             ammoClips = ammoSO.AmmoClipsValue;
             ammoPrefab = ammoSO.AmmoPrefabValue;
+            ammoDamage = ammoSO.AmmoDamageValue;
+            // Default ammo count
+            ammoCount = ammoInClipCapacity;
         }
         
         public void ReduceCurrentAmmo()

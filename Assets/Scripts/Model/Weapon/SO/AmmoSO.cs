@@ -44,5 +44,14 @@ namespace Model.Weapon.SO
             get => _ammoPrefab;
         }
         
+        [Description("Ammo damage")]
+        [FormerlySerializedAs("ammoDamage")] [SerializeField]
+        int _ammoDamage;
+        
+        public int AmmoDamageValue
+        {
+            get => _ammoDamage;
+        }
+        
     }
 }

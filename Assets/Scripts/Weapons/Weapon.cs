@@ -1,6 +1,8 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using Model;
 using Model.Weapon;
+using Model.Weapon.SO;
 using Player;
 using UnityEngine;
 
@@ -15,9 +17,9 @@ namespace Weapons
         [SerializeField] private float _range = 100f;
         [SerializeField] private float _fireRate = 1f;
         [SerializeField] private float _reloadTime = 1f;
-        [SerializeField] private int _maxAmmo = 10;
-        [SerializeField] private Ammo _currentAmmo;
+        [SerializeField] private List<AmmoType> _ammoType;
         [SerializeField] private ParticleSystem muzzleFlash;
+        [SerializeField] private AudioSource _audioSource;
         [SerializeField] private bool _isReloading = false;
         [SerializeField] private GameObject _hitEffect;
 
@@ -27,6 +29,7 @@ namespace Weapons
 
         PlayerBehaviour _playerBehaviour;
 
+        private Ammo _currentAmmo;
         bool _canShoot = true;
 
         #endregion
@@ -41,7 +44,31 @@ namespace Weapons
         
         void GetReferences()
         {
-            if (_currentAmmo == null) _currentAmmo = new Ammo();
+            if (_ammoType == null)
+            {
+                _ammoType = new List<AmmoType>();
+                Debug.LogWarning("No ammo type found for " + weaponType + " weapon");
+            }
+            else if (_currentAmmo == null)
+            {
+                AmmoSO ammoSO = Resources.Load<AmmoSO>("Weapon/Ammo/" + _ammoType[0].ToString());
+                if (ammoSO != null)
+                {
+                    _currentAmmo = new Ammo(ammoSO);
+                }
+                else
+                {
+                    Debug.LogWarning("No AmmoSO found for " + _ammoType[0].ToString() + " ammo type");
+                }
+            }
+            if (_audioSource == null)
+            {
+                _audioSource = GetComponent<AudioSource>();
+                if (_audioSource == null)
+                {
+                    Debug.LogWarning("No audio source found for " + weaponType + " weapon");
+                }
+            }
             _playerBehaviour = GetComponentInParent<PlayerBehaviour>();
         }
         
@@ -63,10 +90,16 @@ namespace Weapons
             }
         }
 
-        private void PlayMuzzleFlash()
+        private void PlayMuzzleFlashAndAudio()
         {
+            if (_audioSource != null)
+            {
+                if (_audioSource.isPlaying) _audioSource.Stop();
+                _audioSource.Play();
+            }
             if (muzzleFlash != null)
             {
+                if (muzzleFlash.isPlaying) muzzleFlash.Stop();
                 muzzleFlash.Play();
             }
             else
@@ -83,7 +116,7 @@ namespace Weapons
                 CreateHitImpact(hit);
                 // EnemyHealth target = hit.transform.GetComponent<EnemyHealth>();
                 // if (target == null) return;
-                // target.TakeDamage(_damage);
+                // target.TakeDamage(_damage); + ammoDamage
             }
             else
             {
@@ -111,9 +144,9 @@ namespace Weapons
         IEnumerator Shooting()
         {
             _canShoot = false;
-            if (_currentAmmo.IsAmmoInClip())
+            if (_currentAmmo != null && _currentAmmo.IsAmmoInClip())
             {
-                PlayMuzzleFlash();
+                PlayMuzzleFlashAndAudio();
                 ProcessRaycast();
                 _currentAmmo.ReduceCurrentAmmo();
             }

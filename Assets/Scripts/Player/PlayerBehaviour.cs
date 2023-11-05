@@ -143,9 +143,9 @@ namespace Player
             if (weaponPrefab != null)
             {
                 GameObject weaponInstance = Instantiate(weaponPrefab, transform);
-                weaponInstance.transform.localPosition = Vector3.zero;
+                weaponInstance.transform.localPosition = weaponPrefab.transform.position;
                 weaponInstance.transform.localRotation = Quaternion.identity;
-                weaponInstance.transform.localScale = Vector3.one;
+                weaponInstance.transform.localScale = weaponPrefab.transform.localScale;
                 weaponInstance.SetActive(false);
                 _weapons.Add(weaponInstance.GetComponent<Weapon>());
             }

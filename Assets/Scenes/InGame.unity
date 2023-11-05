@@ -472,6 +472,7 @@ GameObject:
   - component: {fileID: 377005639}
   - component: {fileID: 377005640}
   - component: {fileID: 377005641}
+  - component: {fileID: 377005642}
   m_Layer: 0
   m_Name: PlayerFollowCamera
   m_TagString: Untagged
@@ -549,6 +550,14 @@ MonoBehaviour:
   _horizontalSpeed: 10
   _verticalSpeed: 10
   _clampAngle: 80
+--- !u!81 &377005642
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 377005638}
+  m_Enabled: 1
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
