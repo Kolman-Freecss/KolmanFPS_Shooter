@@ -1,3 +1,4 @@
+using Config;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -84,10 +85,17 @@ namespace Player
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
-            if (IsLocalPlayer)
+            if (IsServer)
             {
-                _mainCamera.SetActive(true);
+                Debug.Log("Server");
+                transform.position = RoundManager.Instance.GetRandomCheckpoint().transform.position;
             }
+            else
+            {
+                Debug.Log("Client");    
+            }
+            
+            SceneTransitionHandler.Instance.SetSceneState(SceneTransitionHandler.SceneStates.InGame);
         }
 
         void Start()
