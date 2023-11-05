@@ -8,8 +8,10 @@ namespace Camera
     {
         #region Auxiliary Variables
 
+        // Sensitivity X
         [SerializeField] private float _horizontalSpeed = 1.0f;
 
+        // Sensitivity Y
         [SerializeField] private float _verticalSpeed = 1.0f;
 
         [SerializeField] private float _clampAngle = 80.0f;

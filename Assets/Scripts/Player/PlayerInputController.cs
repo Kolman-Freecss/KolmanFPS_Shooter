@@ -1,5 +1,4 @@
-﻿using UnityEditorInternal;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Player
@@ -47,11 +46,6 @@ namespace Player
         private void GetReferences()
         {
             _playerInputs = new PlayerInputs();
-        }
-
-        private void Start()
-        {
-            SubscribeToDelegatesAndUpdateValues();
         }
 
         private void SubscribeToDelegatesAndUpdateValues()
@@ -148,6 +142,7 @@ namespace Player
         private void OnEnable()
         {
             _playerInputs.Enable();
+            SubscribeToDelegatesAndUpdateValues();
         }
 
         private void OnDisable()
