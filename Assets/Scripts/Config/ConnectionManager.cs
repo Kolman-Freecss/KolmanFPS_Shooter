@@ -55,6 +55,16 @@ namespace Config
         
         #region Logic
         
+        public void StartHost()
+        {
+            NetworkManager.Singleton.StartHost();
+        }
+        
+        public void StartClient()
+        {
+            NetworkManager.Singleton.StartClient();
+        }
+        
         public void AddClient(NetworkClient client)
         {
             if (!clients.Contains(client))
@@ -75,9 +85,6 @@ namespace Config
         {
             clients.Clear();
         }
-        
-        
-        
         
         #endregion
         
