@@ -57,12 +57,40 @@ namespace Config
         
         public void StartHost()
         {
-            NetworkManager.Singleton.StartHost();
+            try
+            {
+                if (NetworkManager.Singleton.StartHost())
+                {
+                    SceneTransitionHandler.Instance.SetSceneState(SceneTransitionHandler.SceneStates.InGame);
+                    Debug.Log("Host started");
+                }
+                else
+                {
+                    Debug.LogError("Host failed to start");
+                }
+            } catch (Exception e)
+            {
+                Debug.LogError(e);
+            }
         }
         
         public void StartClient()
         {
-            NetworkManager.Singleton.StartClient();
+            try
+            {
+                if (NetworkManager.Singleton.StartClient())
+                {
+                    Debug.Log("Client started");
+                }
+                else
+                {
+                    Debug.Log("Client failed to start");
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+            }
         }
         
         public void AddClient(NetworkClient client)

@@ -276,6 +276,11 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 1960441022
       objectReference: {fileID: 0}
+    - target: {fileID: 8268156485363325441, guid: d0c4ad78eba50354fb4e5505890a67f1,
+        type: 3}
+      propertyPath: DefaultScene
+      value: MultiplayerLobby
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

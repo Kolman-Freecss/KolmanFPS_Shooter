@@ -1,9 +1,10 @@
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace Config
 {
-    public class RoundManager : MonoBehaviour
+    public class RoundManager : NetworkBehaviour
     {
         //TODO: Build checkpoint entity
         
@@ -21,8 +22,20 @@ namespace Config
 
         #region InitData
 
+        public override void OnNetworkSpawn()
+        {
+            Debug.Log("RoundManager spawned");
+            base.OnNetworkSpawn();
+            if (IsServer)
+            {
+                Debug.Log("RoundManager is server");
+                GetReferences();
+            }
+        }
+
         private void Awake()
         {
+            Debug.Log("RoundManager awake");
             ManageSingleton();
         }
         

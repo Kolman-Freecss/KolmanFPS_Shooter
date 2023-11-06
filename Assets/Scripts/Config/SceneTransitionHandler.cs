@@ -10,7 +10,7 @@ namespace Config
         #region Inspector Variables
 
         [SerializeField]
-        public string DefaultScene = "InGame";
+        public string DefaultScene = "MultiplayerLobby";
 
         #endregion
         
@@ -35,6 +35,7 @@ namespace Config
         public enum SceneStates
         {
             Init,
+            MultiplayerLobby,
             InGame,
         }
 
@@ -64,7 +65,7 @@ namespace Config
         {
             if (m_SceneState == SceneStates.Init)
             {
-                SceneManager.LoadScene(DefaultScene);
+                LoadScene(SceneStates.MultiplayerLobby);
             }
         }
 
@@ -79,6 +80,19 @@ namespace Config
             {
                 OnSceneStateChanged.Invoke(m_SceneState);
             }
+        }
+        
+        public void LoadScene(SceneStates sceneState)
+        {
+            if (NetworkManager.Singleton.IsListening)
+            {
+                NetworkManager.Singleton.SceneManager.LoadScene(sceneState.ToString(), LoadSceneMode.Single);
+            }
+            else
+            {
+                SceneManager.LoadSceneAsync(sceneState.ToString());
+            }
+            SetSceneState(sceneState);
         }
         
         #endregion
