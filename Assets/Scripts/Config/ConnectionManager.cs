@@ -61,7 +61,8 @@ namespace Config
             {
                 if (NetworkManager.Singleton.StartHost())
                 {
-                    SceneTransitionHandler.Instance.SetSceneState(SceneTransitionHandler.SceneStates.InGame);
+                    SceneTransitionHandler.Instance.RegisterNetworkCallbacks();
+                    SceneTransitionHandler.Instance.LoadScene(SceneTransitionHandler.SceneStates.InGame);
                     Debug.Log("Host started");
                 }
                 else

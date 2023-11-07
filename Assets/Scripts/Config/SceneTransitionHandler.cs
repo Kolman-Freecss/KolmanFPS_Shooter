@@ -26,9 +26,12 @@ namespace Config
         
         [HideInInspector]
         public delegate void SceneStateChangedDelegateHandler(SceneStates newState);
-
         [HideInInspector]
         public event SceneStateChangedDelegateHandler OnSceneStateChanged;
+        [HideInInspector]
+        public delegate void ClientLoadedSceneDelegateHandler(ulong clientId);
+        [HideInInspector]
+        public event ClientLoadedSceneDelegateHandler OnClientLoadedGameScene;
 
         #endregion
         
@@ -95,6 +98,29 @@ namespace Config
             SetSceneState(sceneState);
         }
         
+        #endregion
+
+        #region Network Calls/Events
+
+        public void RegisterNetworkCallbacks()
+        {
+            NetworkManager.Singleton.SceneManager.OnLoadComplete += OnLoadComplete;
+        }
+        
+        private void OnLoadComplete(ulong clientId, string sceneName, LoadSceneMode loadSceneMode)
+        {
+            Debug.Log("OnLoadComplete " + sceneName);
+            if (SceneStates.InGame.ToString().Equals(sceneName))
+            {
+                //m_numberOfClientLoaded += 1;
+                OnClientLoadedGameScene?.Invoke(clientId);
+            }
+            // else
+            // {
+            //     OnClientLoadedGameSceneCount?.Invoke(clientId);
+            // }
+        }
+
         #endregion
 
         #region Getter & Setter

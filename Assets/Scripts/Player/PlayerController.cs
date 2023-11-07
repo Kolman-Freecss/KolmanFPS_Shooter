@@ -68,16 +68,11 @@ namespace Player
 
         private void Awake()
         {
-            GetReferences();
+            GetComponentReferences();
         }
 
-        void GetReferences()
+        void GetComponentReferences()
         {
-            if (_mainCamera == null)
-            {
-                _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
-            }
-
             _playerInputController = PlayerInputController.Instance;
             _controller = GetComponent<CharacterController>();
         }
@@ -88,7 +83,8 @@ namespace Player
             if (IsServer)
             {
                 Debug.Log("Server");
-                transform.position = RoundManager.Instance.GetRandomCheckpoint().transform.position;
+                RoundManager.OnRoundManagerSpawned += () => transform.position = RoundManager.Instance.GetRandomCheckpoint().transform.position;
+                RegisterServerCallbacks();
             }
             else
             {
@@ -97,9 +93,17 @@ namespace Player
             
             SceneTransitionHandler.Instance.SetSceneState(SceneTransitionHandler.SceneStates.InGame);
         }
+        
+        private void RegisterServerCallbacks()
+        {
+            //Server will be notified when a client connects
+            SceneTransitionHandler.Instance.OnClientLoadedGameScene += ClientLoadedGameScene;
+        }
 
         void Start()
         {
+            Debug.Log("Start PlayerController, IsLocalPlayer= " + IsLocalPlayer + " IsOwner= " + IsOwner + " IsServer= " + IsServer + " IsClient= " + IsClient);
+            if (!IsLocalPlayer) return;
             SubscribeToDelegatesAndUpdateValues();
         }
 
@@ -203,7 +207,6 @@ namespace Player
         {
             float targetSpeed = _playerInputController.sprint ? _sprintSpeed : _speed;
 
-            Debug.Log(_playerInputController.move);
             if (_playerInputController.move == Vector2.zero) targetSpeed = 0.0f;
 
             Vector3 currentHorizontalSpeed =
@@ -239,5 +242,48 @@ namespace Player
         }
 
         #endregion
+
+        #region Network Calls/Events
+
+        // This is called when a client connects to the server
+        // Invoked when a client has loaded this scene
+        private void ClientLoadedGameScene(ulong clientId)
+        {
+            if (IsServer)
+            {
+                ClientRpcParams clientRpcParams = new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
+                    {
+                        TargetClientIds = new ulong[] {clientId}
+                    }
+                };
+                SendClientInitDataClientRpc(clientId, clientRpcParams);
+            }
+        }
+        
+        [ClientRpc]
+        private void SendClientInitDataClientRpc(ulong clientId, ClientRpcParams clientRpcParams = default)
+        {
+            Debug.Log("------------------SENT Client Init Awake Data------------------");
+            Debug.Log("Client Id -> " + clientId);
+            InitClientData(clientId);
+        }
+
+        public void InitClientData(ulong clientId)
+        {
+            GetSceneReferences();
+        }
+        
+        void GetSceneReferences()
+        {
+            if (_mainCamera == null)
+            {
+                _mainCamera = UnityEngine.Camera.main != null ? UnityEngine.Camera.main.gameObject : GameObject.FindGameObjectWithTag("MainCamera");
+            }
+        }
+
+        #endregion
+        
     }
 }

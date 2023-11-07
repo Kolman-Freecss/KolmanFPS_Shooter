@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Config
 {
@@ -20,22 +22,26 @@ namespace Config
 
         #endregion
 
+        #region Events
+
+        public static event Action OnRoundManagerSpawned;
+
+        #endregion
+
         #region InitData
 
         public override void OnNetworkSpawn()
         {
-            Debug.Log("RoundManager spawned");
             base.OnNetworkSpawn();
             if (IsServer)
             {
-                Debug.Log("RoundManager is server");
                 GetReferences();
+                OnRoundManagerSpawned?.Invoke();
             }
         }
 
         private void Awake()
         {
-            Debug.Log("RoundManager awake");
             ManageSingleton();
         }
         
