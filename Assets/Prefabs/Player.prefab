@@ -2345,6 +2345,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 590c0a658481f3444a368bdd350dcd0c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _playerFpsCameraCenter: {fileID: 712998597426653382}
   _speed: 6
   _sprintSpeed: 12
   RotationSmoothTime: 0.12

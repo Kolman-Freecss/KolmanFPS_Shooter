@@ -78,13 +78,11 @@ namespace Player
 
         public void OnMove(InputAction.CallbackContext value)
         {
-            Debug.Log("Move");
             MoveInput(value.ReadValue<Vector2>());
         }
 
         public void OnJump(InputAction.CallbackContext value)
         {
-            Debug.Log("Jump");
             JumpInput(value.ReadValue<float>());
         }
 

@@ -514,7 +514,7 @@ GameObject:
   - component: {fileID: 377005642}
   m_Layer: 0
   m_Name: PlayerFollowCamera
-  m_TagString: Untagged
+  m_TagString: PlayerFPSCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1528,6 +1528,21 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 2122260565
       objectReference: {fileID: 0}
+    - target: {fileID: 4013407591034060653, guid: 904e845a7deb9af488458a6aacb32178,
+        type: 3}
+      propertyPath: Cameras.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4013407591034060653, guid: 904e845a7deb9af488458a6aacb32178,
+        type: 3}
+      propertyPath: Cameras.Array.data[0]
+      value: 
+      objectReference: {fileID: 1856702485}
+    - target: {fileID: 4013407591034060653, guid: 904e845a7deb9af488458a6aacb32178,
+        type: 3}
+      propertyPath: Cameras.Array.data[1]
+      value: 
+      objectReference: {fileID: 377005638}
     - target: {fileID: 4013407591034060653, guid: 904e845a7deb9af488458a6aacb32178,
         type: 3}
       propertyPath: _checkpoints.Array.data[0]

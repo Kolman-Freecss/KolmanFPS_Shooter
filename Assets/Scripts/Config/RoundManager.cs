@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Cinemachine;
 using Unity.Netcode;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -13,6 +14,7 @@ namespace Config
         #region Inspector Variables
 
         public List<GameObject> _checkpoints;
+        public List<GameObject> Cameras;
 
         #endregion
 
@@ -81,5 +83,20 @@ namespace Config
         }
 
         #endregion
+
+        #region Getter & Setter
+
+        public UnityEngine.Camera GetMainCamera()
+        {
+            return this.Cameras.Find(camera => camera.CompareTag("MainCamera")).GetComponent<UnityEngine.Camera>();
+        }
+        
+        public CinemachineVirtualCamera GetPlayerFPSCamera()
+        {
+            return this.Cameras.Find(camera => camera.CompareTag("PlayerFPSCamera")).GetComponent<CinemachineVirtualCamera>();
+        }
+
+        #endregion
+        
     }
 }

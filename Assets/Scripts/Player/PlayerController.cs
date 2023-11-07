@@ -1,3 +1,4 @@
+using Cinemachine;
 using Config;
 using Unity.Netcode;
 using UnityEngine;
@@ -10,7 +11,12 @@ namespace Player
     {
         #region Inspector Variables
 
-        [Header("Player")] [Tooltip("Movement speed of the player")] [SerializeField]
+        [Header("Player")] 
+        
+        [Tooltip("Player FPS Camera center")]
+        [SerializeField] private Transform _playerFpsCameraCenter;
+        
+        [Tooltip("Movement speed of the player")] [SerializeField]
         private float _speed = 6f;
 
         [Tooltip("Sprint speed of the player")] [SerializeField]
@@ -50,6 +56,9 @@ namespace Player
         GameObject _mainCamera;
         [HideInInspector]
         public GameObject MainCamera => _mainCamera;
+        CinemachineVirtualCamera _playerFpsCamera;
+        [HideInInspector]
+        public CinemachineVirtualCamera PlayerFpsCamera => _playerFpsCamera;
 
         private float _targetRotation = 0.0f;
         private float _rotationVelocity;
@@ -118,6 +127,8 @@ namespace Player
 
         void Update()
         {
+            // Debug.Log("Update GameManager.Instance.isGameStarted.Value= " + GameManager.Instance.isGameStarted.Value + " GameManager.isGameStarted.Value= " + GameManager.isGameStarted.Value);
+            if (!GameManager.Instance.isGameStarted.Value) return;
             Jump();
             GroundCheck();
             Move();
@@ -279,7 +290,17 @@ namespace Player
         {
             if (_mainCamera == null)
             {
-                _mainCamera = UnityEngine.Camera.main != null ? UnityEngine.Camera.main.gameObject : GameObject.FindGameObjectWithTag("MainCamera");
+                _mainCamera = RoundManager.Instance.GetMainCamera().gameObject;
+            }
+            this._playerFpsCamera = RoundManager.Instance.GetPlayerFPSCamera();
+            if (this._playerFpsCamera != null)
+            {
+                this._playerFpsCamera.Follow = _playerFpsCameraCenter;
+                this._playerFpsCamera.LookAt = _playerFpsCameraCenter;
+            }
+            else
+            {
+                Debug.LogWarning("Player FPS Camera not found");
             }
         }
 

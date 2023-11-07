@@ -1,3 +1,4 @@
+using Config;
 using UnityEngine;
 
 namespace Player
@@ -33,6 +34,7 @@ namespace Player
 
         void Update()
         {
+            if (!GameManager.Instance.isGameStarted.Value) return;
             Vector3 rot = player.GetComponent<PlayerController>().MainCamera.transform.localRotation.eulerAngles;
             transform.localRotation = Quaternion.Euler(0f, rot.y, 0f);
         }
