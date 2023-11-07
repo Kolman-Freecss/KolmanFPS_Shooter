@@ -2,7 +2,10 @@ using Camera;
 using Cinemachine;
 using Config;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
 
 namespace Player
 {
@@ -279,7 +282,16 @@ namespace Player
         {
             Debug.Log("------------------SENT Client Init Awake Data------------------");
             Debug.Log("Client Id -> " + clientId);
-            GameManager.Instance.AddPlayer(clientId, this);
+            GameManager.Instance.AddPlayer(NetworkObjectId, this);
+            if (!IsLocalPlayer || !IsOwner)
+            {
+                // We need to disable the player input controller for the other clients in every player
+                GetComponent<PlayerInput>().enabled = false;
+                GetComponent<CameraController>().enabled = false;
+                GetComponent<PlayerInputController>().enabled = false;
+                enabled = false;
+                return;
+            }
             InitClientData(clientId);
         }
 
@@ -305,6 +317,10 @@ namespace Player
             {
                 Debug.LogWarning("Player FPS Camera not found");
             }
+            GetComponent<PlayerInput>().enabled = true;
+            GetComponent<CameraController>().enabled = true;
+            GetComponent<PlayerInputController>().enabled = true;
+            enabled = true;
         }
 
         #endregion

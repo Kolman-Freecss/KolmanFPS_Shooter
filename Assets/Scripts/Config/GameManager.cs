@@ -110,9 +110,9 @@ namespace Config
             StartGame();
         }
 
-        public void AddPlayer(ulong clientId, PlayerController player)
+        public void AddPlayer(ulong networkObjectId, PlayerController player)
         {
-            players.Add(clientId, player);
+            players.Add(networkObjectId, player);
         }
 
         #endregion
