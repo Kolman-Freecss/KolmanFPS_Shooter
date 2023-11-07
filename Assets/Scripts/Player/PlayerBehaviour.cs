@@ -47,7 +47,7 @@ namespace Player
         
         void GetReferences()
         {
-            _playerInputController = PlayerInputController.Instance;
+            _playerInputController = GetComponent<PlayerInputController>();
             _playerController = GetComponent<PlayerController>();
             if (_defaultWeapon != null)
             {

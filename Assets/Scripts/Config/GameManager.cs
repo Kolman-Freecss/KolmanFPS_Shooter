@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using Player;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -19,6 +21,8 @@ namespace Config
         public NetworkVariable<bool> isGameOver = new NetworkVariable<bool>(false, 
             NetworkVariableReadPermission.Everyone, 
             NetworkVariableWritePermission.Server);
+        
+        Dictionary<ulong, PlayerController> players = new Dictionary<ulong, PlayerController>();
 
         #endregion
 
@@ -36,12 +40,18 @@ namespace Config
             if (IsServer)
             {
                 SceneTransitionHandler.Instance.OnClientLoadedGameScene += ClientLoadedGameScene;
-                
-                isGameStarted.Value = false;
-                isGameOver.Value = false;
+
+                Init();
             }
             
             //NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnect;
+        }
+
+        private void Init()
+        {
+            isGameStarted.Value = false;
+            isGameOver.Value = false;
+            players.Clear();
         }
 
         private void ManageSingleton()
@@ -78,6 +88,19 @@ namespace Config
             }
         }
         
+        private void StartGame()
+        {
+            if (!isGameStarted.Value && SceneTransitionHandler.Instance.GetCurrentSceneState().Equals(SceneTransitionHandler.SceneStates.InGame))
+            {
+                Debug.Log("------------------START GAME------------------");
+                isGameStarted.Value = true;
+            }
+        }
+
+        #endregion
+
+        #region Network calls/Events
+        
         [ClientRpc]
         private void OnClientConnectedCallbackClientRpc(ulong clientId, ClientRpcParams clientRpcParams = default)
         {
@@ -87,13 +110,9 @@ namespace Config
             StartGame();
         }
 
-        private void StartGame()
+        public void AddPlayer(ulong clientId, PlayerController player)
         {
-            if (!isGameStarted.Value && SceneTransitionHandler.Instance.GetCurrentSceneState().Equals(SceneTransitionHandler.SceneStates.InGame))
-            {
-                Debug.Log("------------------START GAME------------------");
-                isGameStarted.Value = true;
-            }
+            players.Add(clientId, player);
         }
 
         #endregion

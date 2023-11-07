@@ -25,8 +25,8 @@ namespace Camera
 
         protected override void Awake()
         {
-            _playerInputs = PlayerInputController.Instance;
             base.Awake();
+            // GetReferences();
         }
 
         #endregion
@@ -42,7 +42,6 @@ namespace Camera
                 if (stage == CinemachineCore.Stage.Aim)
                 {
                     if (_startingRotation == null) _startingRotation = transform.localRotation.eulerAngles;
-                    if (_playerInputs == null) _playerInputs = PlayerInputController.Instance;
                     if (_playerInputs == null) return;
                     Vector2 delta = _playerInputs.GetMouseDelta();
                     _startingRotation.x += delta.x * Time.deltaTime * _verticalSpeed;
@@ -51,6 +50,11 @@ namespace Camera
                     state.RawOrientation = Quaternion.Euler(-_startingRotation.y, _startingRotation.x, 0f);
                 }
             }
+        }
+
+        public void SetPlayer(PlayerInputController player)
+        {
+            this._playerInputs = player;
         }
 
         #endregion

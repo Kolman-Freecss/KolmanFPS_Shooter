@@ -1,3 +1,4 @@
+using Camera;
 using Cinemachine;
 using Config;
 using Unity.Netcode;
@@ -82,7 +83,7 @@ namespace Player
 
         void GetComponentReferences()
         {
-            _playerInputController = PlayerInputController.Instance;
+            _playerInputController = GetComponent<PlayerInputController>(); 
             _controller = GetComponent<CharacterController>();
         }
         
@@ -278,6 +279,7 @@ namespace Player
         {
             Debug.Log("------------------SENT Client Init Awake Data------------------");
             Debug.Log("Client Id -> " + clientId);
+            GameManager.Instance.AddPlayer(clientId, this);
             InitClientData(clientId);
         }
 
@@ -297,6 +299,7 @@ namespace Player
             {
                 this._playerFpsCamera.Follow = _playerFpsCameraCenter;
                 this._playerFpsCamera.LookAt = _playerFpsCameraCenter;
+                this._playerFpsCamera.GetComponent<CinemachinePOVExtension>().SetPlayer(_playerInputController); 
             }
             else
             {
