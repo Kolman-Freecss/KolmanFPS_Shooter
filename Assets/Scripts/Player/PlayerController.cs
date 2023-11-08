@@ -126,7 +126,6 @@ namespace Player
 
         #endregion
 
-
         #region Loop
 
         void Update()
@@ -321,6 +320,27 @@ namespace Player
             GetComponent<CameraController>().enabled = true;
             GetComponent<PlayerInputController>().enabled = true;
             enabled = true;
+        }
+
+        #endregion
+
+        #region Destructor
+
+        public override void OnNetworkDespawn()
+        {
+            base.OnNetworkDespawn();
+            if (IsServer)
+            {
+                UnregisterServerCallbacks();
+            }
+            
+        }
+        
+        private void UnregisterServerCallbacks()
+        {
+            //Server will be notified when a client connects
+            RoundManager.OnRoundManagerSpawned -= () => transform.position = RoundManager.Instance.GetRandomCheckpoint().transform.position;
+            SceneTransitionHandler.Instance.OnClientLoadedGameScene -= ClientLoadedGameScene;
         }
 
         #endregion
