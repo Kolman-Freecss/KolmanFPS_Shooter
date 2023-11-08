@@ -12,9 +12,10 @@ namespace Config
 
         public static ConnectionManager Instance { get; private set; }
         
-        [HideInInspector]
-        public List<NetworkClient> clients;
-
+        // TODO: Add client list to manage clients
+        // [HideInInspector]
+        // public List<NetworkClient> clients;
+        
         #endregion
         
         #region InitData
@@ -48,7 +49,6 @@ namespace Config
         
         void GetReferences()
         {
-            if (clients == null) clients = new List<NetworkClient>();
         }
 
         #endregion
@@ -92,27 +92,6 @@ namespace Config
             {
                 Debug.LogError(e);
             }
-        }
-        
-        public void AddClient(NetworkClient client)
-        {
-            if (!clients.Contains(client))
-            {
-                clients.Add(client);
-            }
-        }
-        
-        public void RemoveClient(NetworkClient client)
-        {
-            if (clients.Contains(client))
-            {
-                clients.Remove(client);
-            }
-        }
-        
-        public void RemoveAllClients()
-        {
-            clients.Clear();
         }
         
         #endregion

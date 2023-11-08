@@ -95,7 +95,6 @@ namespace Player
             base.OnNetworkSpawn();
             if (IsServer)
             {
-                Debug.Log("Server");
                 RoundManager.OnRoundManagerSpawned += () => transform.position = RoundManager.Instance.GetRandomCheckpoint().transform.position;
                 RegisterServerCallbacks();
             }
@@ -115,8 +114,7 @@ namespace Player
 
         void Start()
         {
-            Debug.Log("Start PlayerController, IsLocalPlayer= " + IsLocalPlayer + " IsOwner= " + IsOwner + " IsServer= " + IsServer + " IsClient= " + IsClient);
-            if (!IsLocalPlayer) return;
+            if (!IsLocalPlayer || !IsOwner) return;
             SubscribeToDelegatesAndUpdateValues();
         }
 
@@ -329,10 +327,16 @@ namespace Player
         public override void OnNetworkDespawn()
         {
             base.OnNetworkDespawn();
+            if (IsLocalPlayer)
+            {
+                GameManager.Instance.ClearInitData();
+            }
             if (IsServer)
             {
                 UnregisterServerCallbacks();
+                GameManager.Instance.RemovePlayerAllClients(NetworkObjectId);
             }
+            UnSubscribeToDelegatesAndUpdateValues();
             
         }
         
@@ -341,6 +345,10 @@ namespace Player
             //Server will be notified when a client connects
             RoundManager.OnRoundManagerSpawned -= () => transform.position = RoundManager.Instance.GetRandomCheckpoint().transform.position;
             SceneTransitionHandler.Instance.OnClientLoadedGameScene -= ClientLoadedGameScene;
+        }
+        
+        void UnSubscribeToDelegatesAndUpdateValues()
+        {
         }
 
         #endregion

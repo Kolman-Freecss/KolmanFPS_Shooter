@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Player;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -110,9 +111,72 @@ namespace Config
             StartGame();
         }
 
+        // <summary>
+        // Called when a client connects to the server
+        // TODO: Manage it from the server
+        // </summary>
         public void AddPlayer(ulong networkObjectId, PlayerController player)
         {
             players.Add(networkObjectId, player);
+        }
+        
+        
+        // <summary>
+        // Called when a client disconnects from the server
+        // TODO: Manage it from the server
+        // </summary>
+        public void RemovePlayerAllClients(ulong networkObjectId)
+        {
+            //Server will notified to a single client when his scene is loaded
+            ClientRpcParams clientRpcParams = new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] {networkObjectId}
+                }
+            };
+            RemovePlayerFromGameClientRpc(networkObjectId);
+        }
+        
+        [ClientRpc]
+        private void RemovePlayerFromGameClientRpc(ulong networkObjectId, ClientRpcParams clientRpcParams = default)
+        {
+            Debug.Log("------------------ Player removed------------------ " + networkObjectId);
+            RemovePlayer(networkObjectId);
+        }
+        
+        public void RemovePlayer(ulong networkObjectId)
+        {
+            players.Remove(networkObjectId);
+        }
+
+        #endregion
+        
+        #region Destructor
+
+        public override void OnNetworkDespawn()
+        {
+            base.OnNetworkDespawn();
+            if (IsServer)
+            {
+                UnregisterServerCallbacks();
+            }
+            ClearInitData();
+            UnSubscribeToDelegatesAndUpdateValues();
+        }
+        
+        public void ClearInitData()
+        {
+            players.Clear();
+        }
+        
+        private void UnregisterServerCallbacks()
+        {
+            SceneTransitionHandler.Instance.OnClientLoadedGameScene -= ClientLoadedGameScene;
+        }
+        
+        void UnSubscribeToDelegatesAndUpdateValues()
+        {
         }
 
         #endregion

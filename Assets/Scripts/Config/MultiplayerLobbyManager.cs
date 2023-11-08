@@ -1,7 +1,4 @@
-using System;
-using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Config
@@ -42,6 +39,16 @@ namespace Config
         #region Logic
 
         
+
+        #endregion
+        
+        #region Destructor
+
+        public void OnDisable()
+        {
+            startHostButton.onClick.RemoveAllListeners();
+            startClientButton.onClick.RemoveAllListeners();   
+        }
 
         #endregion
         

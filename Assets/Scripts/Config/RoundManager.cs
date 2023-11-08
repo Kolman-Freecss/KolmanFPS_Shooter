@@ -32,6 +32,11 @@ namespace Config
 
         #region InitData
 
+        private void Awake()
+        {
+            ManageSingleton();
+        }
+        
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
@@ -41,12 +46,12 @@ namespace Config
                 OnRoundManagerSpawned?.Invoke();
             }
         }
-
-        private void Awake()
-        {
-            ManageSingleton();
-        }
         
+        private void Start()
+        {
+            GetReferences();
+        }
+
         /**
          * <summary>Manage the singleton pattern for this class (Object destroyed when changing scene)</summary>
          */
@@ -63,11 +68,6 @@ namespace Config
             }
         }
 
-        private void Start()
-        {
-            GetReferences();
-        }
-        
         void GetReferences()
         {
             if (_checkpoints == null) _checkpoints = new List<GameObject>();
@@ -94,6 +94,16 @@ namespace Config
         public CinemachineVirtualCamera GetPlayerFPSCamera()
         {
             return this.Cameras.Find(camera => camera.CompareTag("PlayerFPSCamera")).GetComponent<CinemachineVirtualCamera>();
+        }
+
+        #endregion
+
+        #region Destructor
+
+        public override void OnNetworkDespawn()
+        {
+            base.OnNetworkDespawn();
+            Debug.Log("RoundManager despawned");
         }
 
         #endregion

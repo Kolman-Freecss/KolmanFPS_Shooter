@@ -122,6 +122,22 @@ namespace Config
         }
 
         #endregion
+        
+        #region Destructor
+
+        public override void OnNetworkDespawn()
+        {
+            base.OnNetworkDespawn();
+            UnRegisterNetworkCallbacks();
+            
+        }
+        
+        private void UnRegisterNetworkCallbacks()
+        {
+            NetworkManager.Singleton.SceneManager.OnLoadComplete -= OnLoadComplete;
+        }
+
+        #endregion
 
         #region Getter & Setter
         

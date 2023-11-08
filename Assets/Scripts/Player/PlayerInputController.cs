@@ -32,6 +32,12 @@ namespace Player
             GetReferences();
         }
         
+        private void OnEnable()
+        {
+            _playerInputs.Enable();
+            SubscribeToDelegatesAndUpdateValues();
+        }
+        
         private void GetReferences()
         {
             _playerInputs = new PlayerInputs();
@@ -124,13 +130,7 @@ namespace Player
 
         #endregion
 
-        #region Component Enable / Disable Events
-
-        private void OnEnable()
-        {
-            _playerInputs.Enable();
-            SubscribeToDelegatesAndUpdateValues();
-        }
+        #region Destructor
 
         private void OnDisable()
         {
