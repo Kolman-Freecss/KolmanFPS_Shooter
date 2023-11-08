@@ -116,7 +116,6 @@ namespace Weapons
             if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, Mathf.Infinity)) //_range
             {
                 Debug.DrawRay(cameraTransform.position, cameraTransform.forward * _range, Color.green, 1f);
-                // Gizmos.DrawRay(cameraTransform.position, cameraTransform.forward * _range);
                 Debug.Log("Hit");
                 string hitTag = hit.transform.gameObject.tag;
                 switch (hitTag)
@@ -136,7 +135,6 @@ namespace Weapons
             else
             {
                 Debug.DrawRay(cameraTransform.position, cameraTransform.forward * _range, Color.red, 1f);
-                // Gizmos.DrawRay(cameraTransform.position, cameraTransform.forward * _range);
                 Debug.Log("No hit");
                 return;
             }

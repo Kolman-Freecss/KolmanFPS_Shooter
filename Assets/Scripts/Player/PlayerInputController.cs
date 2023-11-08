@@ -33,36 +33,32 @@ namespace Player
         
         private void OnEnable()
         {
+            _playerInputs = new PlayerInputs();
             Cursor.visible = false;
-            _playerInputs.Enable();
+            _playerInputs.Desktop.Enable();
             SubscribeToDelegatesAndUpdateValues();
         }
         
         private void GetReferences()
         {
-            _playerInputs = new PlayerInputs();
+            
         }
 
         private void SubscribeToDelegatesAndUpdateValues()
         {
-            _playerInputs.Desktop.Move.started += OnMove;
             _playerInputs.Desktop.Move.performed += OnMove;
             _playerInputs.Desktop.Move.canceled += OnMove;
 
             _playerInputs.Desktop.Jump.started += OnJump;
-            _playerInputs.Desktop.Jump.performed += OnJump;
             _playerInputs.Desktop.Jump.canceled += OnJump;
 
-            _playerInputs.Desktop.Sprint.started += OnSprint;
             _playerInputs.Desktop.Sprint.performed += OnSprint;
             _playerInputs.Desktop.Sprint.canceled += OnSprint;
             
-            _playerInputs.Desktop.Shoot.started += OnLeftClick;
             _playerInputs.Desktop.Shoot.performed += OnLeftClick;
             _playerInputs.Desktop.Shoot.canceled += OnLeftClick;
             
             _playerInputs.Desktop.Aim.started += OnRightClick;
-            _playerInputs.Desktop.Aim.performed += OnRightClick;
             _playerInputs.Desktop.Aim.canceled += OnRightClick;
             
         }
@@ -134,27 +130,27 @@ namespace Player
 
         private void OnDisable()
         {
-            _playerInputs.Disable();
+            _playerInputs.Desktop.Disable();
 
             UnsubscribeToDelegates();
         }
 
         private void UnsubscribeToDelegates()
         {
-            _playerInputs.Desktop.Move.started -= OnMove;
             _playerInputs.Desktop.Move.performed -= OnMove;
+            _playerInputs.Desktop.Move.canceled -= OnMove;
 
             _playerInputs.Desktop.Jump.started -= OnJump;
-            _playerInputs.Desktop.Jump.performed -= OnJump;
+            _playerInputs.Desktop.Jump.canceled -= OnJump;
 
-            _playerInputs.Desktop.Sprint.started -= OnSprint;
             _playerInputs.Desktop.Sprint.performed -= OnSprint;
+            _playerInputs.Desktop.Sprint.canceled -= OnSprint;
             
-            _playerInputs.Desktop.Shoot.started -= OnLeftClick;
             _playerInputs.Desktop.Shoot.performed -= OnLeftClick;
+            _playerInputs.Desktop.Shoot.canceled -= OnLeftClick;
             
             _playerInputs.Desktop.Aim.started -= OnRightClick;
-            _playerInputs.Desktop.Aim.performed -= OnRightClick;
+            _playerInputs.Desktop.Aim.canceled -= OnRightClick;
         }
 
         #endregion
