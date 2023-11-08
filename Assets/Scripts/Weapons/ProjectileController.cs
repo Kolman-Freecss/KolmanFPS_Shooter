@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Weapons
 {
-    public class MoveProjectile : NetworkBehaviour
+    public class ProjectileController : NetworkBehaviour
     {
 
         #region Inspector Variables

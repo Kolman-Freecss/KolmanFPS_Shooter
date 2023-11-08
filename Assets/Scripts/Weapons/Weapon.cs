@@ -110,10 +110,10 @@ namespace Weapons
         private void ProcessRaycast()
         {
             RaycastHit hit;
-            Transform cameraTransform = _playerBehaviour.PlayerController.MainCamera.transform;
+            Transform cameraTransform = _playerBehaviour.PlayerController.PlayerFpsCamera.transform;
             Debug.Log("ProcessRaycast" + cameraTransform.position + " " + cameraTransform.forward);
             ShootServerRpc(cameraTransform.position, cameraTransform.forward);
-            if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, _range))
+            if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, Mathf.Infinity)) //_range
             {
                 Debug.DrawRay(cameraTransform.position, cameraTransform.forward * _range, Color.green, 1f);
                 // Gizmos.DrawRay(cameraTransform.position, cameraTransform.forward * _range);
@@ -200,38 +200,19 @@ namespace Weapons
         public void ShootServerRpc(Vector3 hitPoint, Vector3 hitNormal, ServerRpcParams serverRpcParams = default)
         {
             Debug.Log("ShootServerRpc -> " + hitPoint + " " + hitNormal);
-            // GameObject impact = Instantiate(_hitEffect, hitPoint, Quaternion.LookRotation(hitNormal));
-            // Destroy(impact, 0.1f);
-            Transform cameraTransform = _playerBehaviour.PlayerController.MainCamera.transform;
-            if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out RaycastHit hit, _range))
-            {
-                Debug.Log("ShootServerRpc -> " + hit.transform.gameObject.tag);
-                string hitTag = hit.transform.gameObject.tag;
-                switch (hitTag)
-                {
-                    case "Player":
-                        Debug.Log("Player hit");
-                        // EnemyHealth target = hit.transform.GetComponent<EnemyHealth>();
-                        // if (target == null) return;
-                        // target.TakeDamage(_damage); + ammoDamage
-                        break;
-                    default:
-                        Debug.Log("Other hit");
-                        // CreateHitImpact(hit);
-                        break;
-                }
-            }
-            else
-            {
-                Debug.Log("ShootServerRpc -> No hit");
-            }
+            GameObject impact = Instantiate(_hitEffect, hitPoint, Quaternion.LookRotation(hitNormal));
+            NetworkObject no = impact.GetComponent<NetworkObject>();
+            no.Spawn();
+            ParticleSystem particleSystem = impact.GetComponentInChildren<ParticleSystem>();
+            particleSystem.Play();
+            Destroy(impact, particleSystem.main.duration);
         }
 
         [ServerRpc]
         public void ShootProjectileServerRpc()
         {
             GameObject go = Instantiate(_currentAmmo.GetAmmoPrefab(), transform.position, Quaternion.identity);
-            go.GetComponent<MoveProjectile>().parent = this;
+            go.GetComponent<ProjectileController>().parent = this;
             go.GetComponent<Rigidbody>().velocity = go.transform.forward * 15f;//_currentAmmo.GetShootForce();
             go.GetComponent<NetworkObject>().Spawn();
         }
