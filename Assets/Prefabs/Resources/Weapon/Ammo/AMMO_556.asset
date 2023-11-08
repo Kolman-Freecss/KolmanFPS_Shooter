@@ -15,6 +15,6 @@ MonoBehaviour:
   _ammoType: 0
   _ammoInClipCapacity: 30
   _ammoClips: 4
-  _ammoPrefab: {fileID: 261854439437891699, guid: c8984051bb690dd4e88a5b08adaf6490,
+  _ammoPrefab: {fileID: 6987895163802861416, guid: 7593d181f80aef8408b05343011c0f85,
     type: 3}
   _ammoDamage: 12

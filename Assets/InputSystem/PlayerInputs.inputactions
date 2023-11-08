@@ -43,21 +43,21 @@
                 },
                 {
                     "name": "Shoot",
-                    "type": "Button",
+                    "type": "Value",
                     "id": "1ab2187b-40c7-4d9e-bf7c-2bb0723e08d4",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "Stick",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": false
+                    "initialStateCheck": true
                 },
                 {
                     "name": "Aim",
-                    "type": "Button",
+                    "type": "Value",
                     "id": "8073568b-bf01-4d5e-93c5-f5026d5ba9b0",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "Stick",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": false
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [

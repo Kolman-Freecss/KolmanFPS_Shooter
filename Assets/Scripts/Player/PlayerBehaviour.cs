@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Config;
 using Model;
 using UnityEngine;
 using Weapons;
@@ -85,6 +86,7 @@ namespace Player
 
         private void Update()
         {
+            if (!GameManager.Instance.isGameStarted.Value) return; 
             Shoot();
         }
 

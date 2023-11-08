@@ -28,12 +28,12 @@ namespace Player
 
         private void Awake()
         {
-            Cursor.visible = false;
             GetReferences();
         }
         
         private void OnEnable()
         {
+            Cursor.visible = false;
             _playerInputs.Enable();
             SubscribeToDelegatesAndUpdateValues();
         }

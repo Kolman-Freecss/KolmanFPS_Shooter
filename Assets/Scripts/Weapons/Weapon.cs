@@ -1,9 +1,12 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using Config;
 using Model;
 using Model.Weapon;
 using Model.Weapon.SO;
 using Player;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace Weapons
@@ -35,13 +38,18 @@ namespace Weapons
         #endregion
 
         #region InitData
-        
+
+        private void OnEnable()
+        {
+            _isReloading = false;
+            _canShoot = true;
+        }
+
         private void Start()
         {
             GetReferences();
-            
         }
-        
+
         void GetReferences()
         {
             if (_ammoType == null)
@@ -61,6 +69,7 @@ namespace Weapons
                     Debug.LogWarning("No AmmoSO found for " + _ammoType[0].ToString() + " ammo type");
                 }
             }
+
             if (_audioSource == null)
             {
                 _audioSource = GetComponent<AudioSource>();
@@ -69,13 +78,8 @@ namespace Weapons
                     Debug.LogWarning("No audio source found for " + weaponType + " weapon");
                 }
             }
+
             _playerBehaviour = GetComponentInParent<PlayerBehaviour>();
-        }
-        
-        private void OnEnable()
-        {
-            _isReloading = false;
-            _canShoot = true;
         }
 
         #endregion
@@ -90,13 +94,8 @@ namespace Weapons
             }
         }
 
-        private void PlayMuzzleFlashAndAudio()
+        private void PlayMuzzleFlash()
         {
-            if (_audioSource != null)
-            {
-                if (_audioSource.isPlaying) _audioSource.Stop();
-                _audioSource.Play();
-            }
             if (muzzleFlash != null)
             {
                 if (muzzleFlash.isPlaying) muzzleFlash.Stop();
@@ -107,36 +106,55 @@ namespace Weapons
                 Debug.LogWarning("No muzzle flash found");
             }
         }
-        
+
         private void ProcessRaycast()
         {
             RaycastHit hit;
-            if (Physics.Raycast(_playerBehaviour.PlayerController.MainCamera.transform.position, _playerBehaviour.PlayerController.MainCamera.transform.forward, out hit, _range))
+            Transform cameraTransform = _playerBehaviour.PlayerController.MainCamera.transform;
+            Debug.Log("ProcessRaycast" + cameraTransform.position + " " + cameraTransform.forward);
+            ShootServerRpc(cameraTransform.position, cameraTransform.forward);
+            if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, _range))
             {
-                CreateHitImpact(hit);
-                // EnemyHealth target = hit.transform.GetComponent<EnemyHealth>();
-                // if (target == null) return;
-                // target.TakeDamage(_damage); + ammoDamage
+                Debug.DrawRay(cameraTransform.position, cameraTransform.forward * _range, Color.green, 1f);
+                // Gizmos.DrawRay(cameraTransform.position, cameraTransform.forward * _range);
+                Debug.Log("Hit");
+                string hitTag = hit.transform.gameObject.tag;
+                switch (hitTag)
+                {
+                    case "PLayer":
+                        Debug.Log("Player hit");
+                        // EnemyHealth target = hit.transform.GetComponent<EnemyHealth>();
+                        // if (target == null) return;
+                        // target.TakeDamage(_damage); + ammoDamage
+                        break;
+                    default:
+                        Debug.Log("Other hit");
+                        CreateHitImpact(hit);
+                        break;
+                }
             }
             else
             {
+                Debug.DrawRay(cameraTransform.position, cameraTransform.forward * _range, Color.red, 1f);
+                // Gizmos.DrawRay(cameraTransform.position, cameraTransform.forward * _range);
+                Debug.Log("No hit");
                 return;
             }
         }
-        
+
         private void CreateHitImpact(RaycastHit hit)
         {
             if (_hitEffect != null)
             {
-                GameObject impact = Instantiate(_hitEffect, hit.point, Quaternion.LookRotation(hit.normal));
-                Destroy(impact, 0.1f);
+                Debug.LogWarning("Hit Effect");
+                ShootServerRpc(hit.point, hit.normal);
             }
             else
             {
                 Debug.LogWarning("No hit effect found");
             }
         }
-        
+
         #endregion
 
         #region Events
@@ -146,20 +164,95 @@ namespace Weapons
             _canShoot = false;
             if (_currentAmmo != null && _currentAmmo.IsAmmoInClip())
             {
-                PlayMuzzleFlashAndAudio();
-                ProcessRaycast();
                 _currentAmmo.ReduceCurrentAmmo();
+                ShootClientRpc();
+                PlayMuzzleFlash();
+                //TODO: Make projectiles
+                //TEMPORAL
+                ShootProjectileServerRpc();
+                ProcessRaycast();
             }
             else
             {
                 //TODO: reload and play sound
                 Debug.LogWarning("No ammo");
             }
+
             yield return new WaitForSeconds(_fireRate);
             _canShoot = true;
         }
 
         #endregion
+
+        #region Network Calls/Events
+
+        [ClientRpc]
+        public void ShootClientRpc()
+        {
+            if (_audioSource != null)
+            {
+                if (_audioSource.isPlaying) _audioSource.Stop();
+                _audioSource.Play();
+            }
+        }
         
+        [ServerRpc]
+        public void ShootServerRpc(Vector3 hitPoint, Vector3 hitNormal, ServerRpcParams serverRpcParams = default)
+        {
+            Debug.Log("ShootServerRpc -> " + hitPoint + " " + hitNormal);
+            // GameObject impact = Instantiate(_hitEffect, hitPoint, Quaternion.LookRotation(hitNormal));
+            // Destroy(impact, 0.1f);
+            Transform cameraTransform = _playerBehaviour.PlayerController.MainCamera.transform;
+            if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out RaycastHit hit, _range))
+            {
+                Debug.Log("ShootServerRpc -> " + hit.transform.gameObject.tag);
+                string hitTag = hit.transform.gameObject.tag;
+                switch (hitTag)
+                {
+                    case "Player":
+                        Debug.Log("Player hit");
+                        // EnemyHealth target = hit.transform.GetComponent<EnemyHealth>();
+                        // if (target == null) return;
+                        // target.TakeDamage(_damage); + ammoDamage
+                        break;
+                    default:
+                        Debug.Log("Other hit");
+                        // CreateHitImpact(hit);
+                        break;
+                }
+            }
+            else
+            {
+                Debug.Log("ShootServerRpc -> No hit");
+            }
+        }
+
+        [ServerRpc]
+        public void ShootProjectileServerRpc()
+        {
+            GameObject go = Instantiate(_currentAmmo.GetAmmoPrefab(), transform.position, Quaternion.identity);
+            go.GetComponent<MoveProjectile>().parent = this;
+            go.GetComponent<Rigidbody>().velocity = go.transform.forward * 15f;//_currentAmmo.GetShootForce();
+            go.GetComponent<NetworkObject>().Spawn();
+        }
+
+        [ServerRpc]
+        public void DestroyProjectileServerRpc(ulong networkObjectId, ServerRpcParams serverRpcParams = default)
+        {
+            Debug.Log("DestroyProjectileServerRpc -> " + networkObjectId);
+            NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
+            if (no != null)
+            {
+                no.Despawn();
+                Destroy(no.gameObject);
+            }
+        }
+
+        #endregion
+
+
+        #region Debug
+
+        #endregion
     }
 }
