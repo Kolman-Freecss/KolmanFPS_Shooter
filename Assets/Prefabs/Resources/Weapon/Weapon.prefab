@@ -51,16 +51,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weaponType: 0
-  _damage: 0
-  _range: 0
-  _fireRate: 0
-  _reloadTime: 0
-  _ammoType: 
+  damage: 40
+  range: 100
+  fireRate: 1
+  reloadTime: 1
+  ammoType: 
   muzzleFlash: {fileID: 0}
-  _audioSource: {fileID: 743745308091662217}
-  _isReloading: 0
-  _hitEffect: {fileID: 0}
+  audioSource: {fileID: 0}
+  isReloading: 0
+  hitEffect: {fileID: 0}
   playerBehaviour: {fileID: 0}
+  canShoot: 1
+  timerToShoot: 0
 --- !u!114 &3481065482787017615
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -123,7 +125,7 @@ MonoBehaviour:
   PositionThreshold: 0.001
   RotAngleThreshold: 0.01
   ScaleThreshold: 0.01
-  UseQuaternionSynchronization: 0
+  UseQuaternionSynchronization: 1
   UseQuaternionCompression: 0
   UseHalfFloatPrecision: 0
   InLocalSpace: 0
