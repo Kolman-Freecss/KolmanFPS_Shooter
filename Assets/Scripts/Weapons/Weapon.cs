@@ -17,8 +17,8 @@ namespace Weapons
 
         public WeaponType weaponType;
         [SerializeField] private float _damage = 40f;
-        [SerializeField] private float _range = 100f;
-        [SerializeField] private float _fireRate = 1f;
+        [SerializeField] private float _range = 100f; // Range of the weapon
+        [SerializeField] private float _fireRate = 1f; // Cadency
         [SerializeField] private float _reloadTime = 1f;
         [SerializeField] private List<AmmoType> _ammoType;
         [SerializeField] private ParticleSystem muzzleFlash;
@@ -34,6 +34,7 @@ namespace Weapons
 
         private Ammo _currentAmmo;
         bool _canShoot = true;
+        float _timerToShoot;
 
         #endregion
 
@@ -47,6 +48,7 @@ namespace Weapons
 
         private void Start()
         {
+            _timerToShoot = _fireRate;
             GetReferences();
         }
 
@@ -84,13 +86,45 @@ namespace Weapons
 
         #endregion
 
+        #region Loop
+
+        private void Update()
+        {
+            if (_timerToShoot > 0.0f)
+            {
+                _timerToShoot -= Time.deltaTime;
+            }
+            else
+            {
+                _canShoot = true;
+            }
+        }
+
+        #endregion
+
         #region Logic
 
         public void Shoot()
         {
             if (_canShoot)
             {
-                StartCoroutine(Shooting());
+                if (_currentAmmo != null && _currentAmmo.IsAmmoInClip())
+                {
+                    _timerToShoot = _fireRate;
+                    _canShoot = false;
+                    _currentAmmo.ReduceCurrentAmmo();
+                    ShootClientRpc();
+                    PlayMuzzleFlash();
+                    //TODO: Make projectiles
+                    //TEMPORAL
+                    ShootProjectileServerRpc();
+                    ProcessRaycast();
+                }
+                else
+                {
+                    //TODO: reload and play sound
+                    Debug.LogWarning("No ammo");
+                }
             }
         }
 
@@ -157,28 +191,6 @@ namespace Weapons
 
         #region Events
 
-        IEnumerator Shooting()
-        {
-            _canShoot = false;
-            if (_currentAmmo != null && _currentAmmo.IsAmmoInClip())
-            {
-                _currentAmmo.ReduceCurrentAmmo();
-                ShootClientRpc();
-                PlayMuzzleFlash();
-                //TODO: Make projectiles
-                //TEMPORAL
-                ShootProjectileServerRpc();
-                ProcessRaycast();
-            }
-            else
-            {
-                //TODO: reload and play sound
-                Debug.LogWarning("No ammo");
-            }
-
-            yield return new WaitForSeconds(_fireRate);
-            _canShoot = true;
-        }
 
         #endregion
 
@@ -194,7 +206,7 @@ namespace Weapons
             }
         }
         
-        [ServerRpc]
+        [ServerRpc(RequireOwnership = false)]
         public void ShootServerRpc(Vector3 hitPoint, Vector3 hitNormal, ServerRpcParams serverRpcParams = default)
         {
             Debug.Log("ShootServerRpc -> " + hitPoint + " " + hitNormal);
@@ -206,8 +218,8 @@ namespace Weapons
             Destroy(impact, particleSystem.main.duration);
         }
 
-        [ServerRpc]
-        public void ShootProjectileServerRpc()
+        [ServerRpc(RequireOwnership = false)]
+        public void ShootProjectileServerRpc(ServerRpcParams serverRpcParams = default)
         {
             GameObject go = Instantiate(_currentAmmo.GetAmmoPrefab(), transform.position, Quaternion.identity);
             go.GetComponent<ProjectileController>().parent = this;
@@ -215,7 +227,7 @@ namespace Weapons
             go.GetComponent<NetworkObject>().Spawn();
         }
 
-        [ServerRpc]
+        [ServerRpc(RequireOwnership = false)]
         public void DestroyProjectileServerRpc(ulong networkObjectId, ServerRpcParams serverRpcParams = default)
         {
             Debug.Log("DestroyProjectileServerRpc -> " + networkObjectId);
