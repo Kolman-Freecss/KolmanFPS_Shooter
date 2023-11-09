@@ -76,6 +76,11 @@ namespace Player
         private float _jumpTimeoutDelta;
         private float _fallTimeoutDelta;
         private float _terminalVelocity = 53.0f;
+        
+        [HideInInspector]
+        public delegate void ClientPlayerControllerReadyDelegateHandler(ulong clientId);
+        [HideInInspector]
+        public event ClientPlayerControllerReadyDelegateHandler OnClientPlayerControllerReady;
 
         #endregion
 
@@ -293,6 +298,7 @@ namespace Player
                 return;
             }
             InitClientData(clientId);
+            OnClientPlayerControllerReady?.Invoke(clientId);
         }
 
         public void InitClientData(ulong clientId)

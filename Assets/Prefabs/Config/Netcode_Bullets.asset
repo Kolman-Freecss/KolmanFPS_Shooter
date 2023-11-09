@@ -10,31 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e651dbb3fbac04af2b8f5abf007ddc23, type: 3}
-  m_Name: Netcode_Managers
+  m_Name: Netcode_Bullets
   m_EditorClassIdentifier: 
   IsDefault: 0
   List:
   - Override: 0
-    Prefab: {fileID: 1200899905283512595, guid: d0c4ad78eba50354fb4e5505890a67f1,
+    Prefab: {fileID: 6987895163802861416, guid: 7593d181f80aef8408b05343011c0f85,
       type: 3}
     SourcePrefabToOverride: {fileID: 0}
     SourceHashToOverride: 0
     OverridingTargetPrefab: {fileID: 0}
   - Override: 0
-    Prefab: {fileID: 8025889188684966667, guid: 610aff578d97cd34fb590e15e7f3dbf8,
-      type: 3}
-    SourcePrefabToOverride: {fileID: 0}
-    SourceHashToOverride: 0
-    OverridingTargetPrefab: {fileID: 0}
-  - Override: 0
-    Prefab: {fileID: 7036425015246623268, guid: ecd63e4fa7b15294c876edcad8268f6f,
-      type: 3}
-    SourcePrefabToOverride: {fileID: 0}
-    SourceHashToOverride: 0
-    OverridingTargetPrefab: {fileID: 0}
-  - Override: 0
-    Prefab: {fileID: 9117676357610684044, guid: 904e845a7deb9af488458a6aacb32178,
-      type: 3}
+    Prefab: {fileID: 535524865388472756, guid: 94916c676e57ef74785e5b4f279dfdc6, type: 3}
     SourcePrefabToOverride: {fileID: 0}
     SourceHashToOverride: 0
     OverridingTargetPrefab: {fileID: 0}

@@ -13,4 +13,16 @@ MonoBehaviour:
   m_Name: Netcode_Weapons
   m_EditorClassIdentifier: 
   IsDefault: 0
-  List: []
+  List:
+  - Override: 0
+    Prefab: {fileID: 1318817178837645610, guid: 53c0fdc8c01053d4f9eb8d661b121789,
+      type: 3}
+    SourcePrefabToOverride: {fileID: 0}
+    SourceHashToOverride: 0
+    OverridingTargetPrefab: {fileID: 0}
+  - Override: 0
+    Prefab: {fileID: 7657918242203893956, guid: d90e9c5dc17f6554fb6fa7f25421c133,
+      type: 3}
+    SourcePrefabToOverride: {fileID: 0}
+    SourceHashToOverride: 0
+    OverridingTargetPrefab: {fileID: 0}

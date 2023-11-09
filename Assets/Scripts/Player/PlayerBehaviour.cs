@@ -35,50 +35,45 @@ namespace Player
         int _currentWeaponIndex = 0;
 
         private float _health = 100f;
+        private bool _ready = false;
 
         #endregion
 
         #region InitData
 
-        private void Awake()
+        private void OnEnable()
         {
-            GetReferences();
+            _ready = false;
+            
         }
-        
-        void GetReferences()
-        {
-            _playerInputController = GetComponent<PlayerInputController>();
-            _playerController = GetComponent<PlayerController>();
-        }
-        
+
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
-            RoundManager.OnRoundManagerSpawned += InitRound;
+            if (IsServer)
+            {
+                RegisterServerCallbacks();
+                
+            }
+            Debug.Log("PlayerBehaviour OnNetworkSpawn + " + NetworkObjectId + " " + NetworkManager.Singleton.LocalClientId + " " + IsOwner);
+        }
+
+        void ClientPlayerControllerReady(ulong clientId)
+        {
+            Debug.Log("ClientPlayerControllerReady -> " + clientId + " " + NetworkManager.Singleton.LocalClientId + " " + IsOwner);
+            ClientLoadedGameScene(clientId);
+        }
+        
+        private void RegisterServerCallbacks()
+        {
+            // _playerController.OnClientPlayerControllerReady += ClientPlayerControllerReady;
+            // RoundManager.OnRoundManagerSpawned += InitRound;
         }
 
         private void InitRound()
         {
-            if (IsServer)
-            {
-                if (_defaultWeapon != null)
-                {
-                    EquipWeapon(_defaultWeapon.weaponType);
-                }
-                else
-                {
-                    EquipWeapon(WeaponType.Ak47);
-                }
-            }
-            if (_weapons.Count > 0)
-            {
-                _currentWeapon = _weapons[_currentWeaponIndex].GetComponent<Weapon>();
-            }
-            else
-            {
-                Debug.LogError("No weapons found");
-            }
-            SetWeaponActive();
+            SceneTransitionHandler.Instance.OnClientLoadedGameScene += ClientLoadedGameScene;
+            Debug.Log("InitRound -> " + NetworkObjectId + " " + NetworkManager.Singleton.LocalClientId + " " + IsOwner);
         }
 
         private void Start()
@@ -92,13 +87,52 @@ namespace Player
             _health = _maxHealth;
         }
 
+        /// <summary>
+        /// Invoked when a client loaded the game scene
+        /// </summary>
+        /// <param name="clientId"></param>
+        void ClientLoadedGameScene(ulong clientId)
+        {
+            if (IsServer)
+            {
+                ClientRpcParams clientRpcParams = new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
+                    {
+                        TargetClientIds = new ulong[] {clientId}
+                    }
+                };
+                SendClientInitDataClientRpc(clientId, clientRpcParams);
+            }
+        }
+        
+        [ClientRpc]
+        private void SendClientInitDataClientRpc(ulong clientId, ClientRpcParams clientRpcParams = default)
+        {
+            Debug.Log("------------------SENT Client Behaviour init data ------------------");
+            Debug.Log("Client Id -> " + clientId + " - " + NetworkManager.Singleton.LocalClientId + " - " + IsOwner + " - " + IsLocalPlayer);
+            if (!IsLocalPlayer || !IsOwner) return;
+            _playerInputController = GetComponent<PlayerInputController>();
+            _playerController = GetComponent<PlayerController>();
+            _playerController.OnClientPlayerControllerReady += ClientPlayerControllerReady;
+            if (_defaultWeapon != null)
+            {
+                EquipWeapon(_defaultWeapon.weaponType);
+            }
+            else
+            {
+                EquipWeapon(WeaponType.Ak47);
+            }
+            _ready = true;
+        }
+
         #endregion
 
         #region Loop
 
         private void Update()
         {
-            if (!GameManager.Instance.isGameStarted.Value) return;
+            if (!GameManager.Instance.isGameStarted.Value ||!_ready) return;
             UpdateWeaponRotation();
             Shoot();
         }
@@ -109,6 +143,7 @@ namespace Player
 
         public void UpdateWeaponRotation()
         {
+            if (_currentWeapon == null) return;
             Vector3 desiredRotation = _playerController.MainCamera.transform.localRotation.eulerAngles;
             _currentWeapon.transform.localRotation = Quaternion.Euler(desiredRotation.x, desiredRotation.y, 0f);
             // Move weapon Y and Z position in proportion to camera X rotation
@@ -253,9 +288,10 @@ namespace Player
             }
         }
 
-        [ServerRpc]
+        [ServerRpc (RequireOwnership = false)]
         void EquipWeaponServerRpc(int weaponTypeReference, ulong clientId, ServerRpcParams serverRpcParams = default)
         {
+            Debug.Log("EquipWeaponServerRpc");
             WeaponType weaponType = (WeaponType) weaponTypeReference;
             String path = "Weapon/" + weaponType.ToString();
             GameObject weaponPrefab = Resources.Load<GameObject>(path);
@@ -266,43 +302,97 @@ namespace Player
                 weaponInstance.transform.localRotation = Quaternion.identity;
                 weaponInstance.transform.localScale = weaponPrefab.transform.localScale;
                 weaponInstance.SetActive(false);
-                weaponInstance.GetComponent<Weapon>().playerBehaviour = this;
                 NetworkObject no = weaponInstance.GetComponent<NetworkObject>();
-                no.SpawnWithOwnership(clientId);
-                try
+                no.Spawn();//SpawnWithOwnership(clientId);
+                Debug.Log("EquipWeaponServerRpc -> " + clientId + " " + no.NetworkObjectId);
+                ClientRpcParams clientRpcParams = new ClientRpcParams
                 {
-                    PositionConstraint pc = no.GetComponent<PositionConstraint>();
-                    if (pc)
+                    Send = new ClientRpcSendParams
                     {
-                        var constraintSource = new ConstraintSource()
-                        {
-                            sourceTransform = _playerController.playerWeaponCenter,
-                            weight = 1
-                        };
-                        pc.AddSource(constraintSource);
-                        pc.constraintActive = true;
+                        TargetClientIds = new ulong[] {clientId}
                     }
-                } catch (Exception e)
-                {
-                    Debug.LogWarning("No PositionConstraint found on weapon: " + weaponType + " - " + e.Message);
-                }
-                AddNewWeaponClientRpc(clientId, no.NetworkObjectId);
+                };
+                AddNewWeapon(clientId, no.NetworkObjectId);
             }
             else
             {
                 Debug.LogError("Weapon prefab not found at path: " + path);
             }
         }
+
+        void AddNewWeapon(ulong clientId, ulong networkObjectId)
+        {
+            Debug.Log("AddNewWeaponClientRpc -> " + clientId + " " + networkObjectId);
+            if (clientId != NetworkManager.Singleton.LocalClientId) return;
+            NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
+            _weapons.Add(no);
+            Weapon weapon = no.GetComponent<Weapon>();
+            weapon.playerBehaviour = this;
+            try
+            {
+                PositionConstraint pc = weapon.GetComponent<PositionConstraint>();
+                if (pc)
+                {
+                    var constraintSource = new ConstraintSource()
+                    {
+                        sourceTransform = _playerController.playerWeaponCenter,
+                        weight = 1
+                    };
+                    pc.AddSource(constraintSource);
+                    pc.constraintActive = true;
+                }
+            } catch (Exception e)
+            {
+                Debug.LogWarning("No PositionConstraint found on weapon: " + weapon.weaponType + " - " + e.Message);
+            }
+            
+            if (_weapons.Count > 0)
+            {
+                _currentWeapon = _weapons[_currentWeaponIndex].GetComponent<Weapon>();
+            }
+            else
+            {
+                Debug.LogError("No weapons found");
+            }
+            SetWeaponActive();
+        }
         
         [ClientRpc]
         private void AddNewWeaponClientRpc(ulong clientId, ulong networkObjectId, ClientRpcParams clientRpcParams = default)
         {
-            if (clientId == NetworkManager.Singleton.LocalClientId)
+            Debug.Log("AddNewWeaponClientRpc -> " + clientId + " " + networkObjectId);
+            if (clientId != NetworkManager.Singleton.LocalClientId) return;
+            NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
+            _weapons.Add(no);
+            Weapon weapon = no.GetComponent<Weapon>();
+            weapon.playerBehaviour = this;
+            try
             {
-                Debug.Log("AddNewWeaponClientRpc");
-                NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
-                _weapons.Add(no);
+                PositionConstraint pc = weapon.GetComponent<PositionConstraint>();
+                if (pc)
+                {
+                    var constraintSource = new ConstraintSource()
+                    {
+                        sourceTransform = _playerController.playerWeaponCenter,
+                        weight = 1
+                    };
+                    pc.AddSource(constraintSource);
+                    pc.constraintActive = true;
+                }
+            } catch (Exception e)
+            {
+                Debug.LogWarning("No PositionConstraint found on weapon: " + weapon.weaponType + " - " + e.Message);
             }
+            
+            if (_weapons.Count > 0)
+            {
+                _currentWeapon = _weapons[_currentWeaponIndex].GetComponent<Weapon>();
+            }
+            else
+            {
+                Debug.LogError("No weapons found");
+            }
+            SetWeaponActive();
         }
         
         [ServerRpc(RequireOwnership = false)]
