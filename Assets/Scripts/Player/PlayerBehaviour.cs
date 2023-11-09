@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Config;
 using Model;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Animations;
 using Weapons;
@@ -295,12 +296,13 @@ namespace Player
             if (weaponPrefab != null)
             {
                 GameObject weaponInstance = Instantiate(weaponPrefab, RoundManager.Instance.WeaponPool.transform);
-                weaponInstance.transform.localPosition = weaponPrefab.transform.position;
-                weaponInstance.transform.localRotation = Quaternion.identity;
-                weaponInstance.transform.localScale = weaponPrefab.transform.localScale;
-                weaponInstance.SetActive(false);
                 NetworkObject no = weaponInstance.GetComponent<NetworkObject>();
-                no.Spawn();//SpawnWithOwnership(clientId);
+                no.SpawnWithOwnership(clientId);
+                no.transform.localPosition = weaponPrefab.transform.position;
+                no.transform.localRotation = Quaternion.identity;
+                no.transform.localScale = weaponPrefab.transform.localScale;
+                no.gameObject.SetActive(false);
+                //no.transform.SetParent(RoundManager.Instance.WeaponPool.transform);
                 Debug.Log("EquipWeaponServerRpc -> " + clientId + " " + no.NetworkObjectId);
                 ClientRpcParams clientRpcParams = new ClientRpcParams
                 {
