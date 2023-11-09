@@ -2,15 +2,14 @@ using System;
 using System.Collections.Generic;
 using Config;
 using Model;
+using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Animations;
 using Weapons;
 
 namespace Player
 {
-    [RequireComponent(typeof(CharacterController))]
-    [RequireComponent(typeof(PlayerInputController))]
-    [RequireComponent(typeof(PlayerBehaviour))]
-    public class PlayerBehaviour : MonoBehaviour
+    public class PlayerBehaviour : NetworkBehaviour
     {
 
         #region Inspector variables
@@ -50,13 +49,34 @@ namespace Player
         {
             _playerInputController = GetComponent<PlayerInputController>();
             _playerController = GetComponent<PlayerController>();
-            if (_defaultWeapon != null)
+        }
+        
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+            RoundManager.OnRoundManagerSpawned += InitRound;
+        }
+
+        private void InitRound()
+        {
+            if (IsServer)
             {
-                EquipWeapon(_defaultWeapon.weaponType);
+                if (_defaultWeapon != null)
+                {
+                    EquipWeapon(_defaultWeapon.weaponType);
+                }
+                else
+                {
+                    EquipWeapon(WeaponType.Ak47);
+                }
+            }
+            if (_weapons.Count > 0)
+            {
+                _currentWeapon = _weapons[_currentWeaponIndex];
             }
             else
             {
-                EquipWeapon(WeaponType.Ak47);
+                Debug.LogError("No weapons found");
             }
             SetWeaponActive();
         }
@@ -69,14 +89,6 @@ namespace Player
         void Init()
         {
             _currentWeaponIndex = 0;
-            if (_weapons.Count > 0)
-            {
-                _currentWeapon = _weapons[_currentWeaponIndex];
-            }
-            else
-            {
-                Debug.LogError("No weapons found");
-            }
             _health = _maxHealth;
         }
 
@@ -86,13 +98,27 @@ namespace Player
 
         private void Update()
         {
-            if (!GameManager.Instance.isGameStarted.Value) return; 
+            if (!GameManager.Instance.isGameStarted.Value) return;
+            UpdateWeaponRotation();
             Shoot();
         }
 
         #endregion
         
         #region Logic
+
+        public void UpdateWeaponRotation()
+        {
+            Vector3 desiredRotation = _playerController.MainCamera.transform.localRotation.eulerAngles;
+            _currentWeapon.transform.localRotation = Quaternion.Euler(desiredRotation.x, desiredRotation.y, 0f);
+            // Move weapon Y and Z position in proportion to camera X rotation
+            // float proportionFactor = 2f;
+            // _currentWeapon.transform.localPosition = new Vector3(
+            //     _currentWeapon.transform.localPosition.x + desiredRotation.x * proportionFactor,
+            //     _currentWeapon.transform.localPosition.y + desiredRotation.x * proportionFactor,
+            //     _currentWeapon.transform.localPosition.z + desiredRotation.x * proportionFactor
+            // );
+        }
 
         void Shoot()
         {
@@ -133,29 +159,66 @@ namespace Player
             {
                 _currentWeapon.gameObject.SetActive(false);
             }
-            _currentWeapon = _weapons[_currentWeaponIndex];
-            _currentWeapon.gameObject.SetActive(true);
+            try
+            {
+                _currentWeapon = _weapons[_currentWeaponIndex];
+                _currentWeapon.gameObject.SetActive(true);
+            }
+            catch (ArgumentOutOfRangeException e)
+            {
+                Debug.LogWarning("No weapon found at index: " + _currentWeaponIndex + " - " + e.Message);
+            }
         }
 
         void EquipWeapon(WeaponType weaponType)
         {
+            EquipWeaponServerRpc((int) weaponType);
+        }
+        
+        #endregion
+
+        #region Network Calls/Events
+
+        [ServerRpc]
+        void EquipWeaponServerRpc(int weaponTypeReference, ServerRpcParams serverRpcParams = default)
+        {
+            WeaponType weaponType = (WeaponType) weaponTypeReference;
             String path = "Weapon/" + weaponType.ToString();
             GameObject weaponPrefab = Resources.Load<GameObject>(path);
-            
             if (weaponPrefab != null)
             {
-                GameObject weaponInstance = Instantiate(weaponPrefab, transform);
+                GameObject weaponInstance = Instantiate(weaponPrefab, RoundManager.Instance.WeaponPool.transform);
                 weaponInstance.transform.localPosition = weaponPrefab.transform.position;
                 weaponInstance.transform.localRotation = Quaternion.identity;
                 weaponInstance.transform.localScale = weaponPrefab.transform.localScale;
                 weaponInstance.SetActive(false);
+                weaponInstance.GetComponent<Weapon>().playerBehaviour = this;
+                NetworkObject no = weaponInstance.GetComponent<NetworkObject>();
+                no.Spawn(true);
+                try
+                {
+                    PositionConstraint pc = no.GetComponent<PositionConstraint>();
+                    if (pc)
+                    {
+                        var constraintSource = new ConstraintSource()
+                        {
+                            sourceTransform = _playerController.playerWeaponCenter,
+                            weight = 1
+                        };
+                        pc.AddSource(constraintSource);
+                        pc.constraintActive = true;
+                    }
+                } catch (Exception e)
+                {
+                    Debug.LogWarning("No PositionConstraint found on weapon: " + weaponType + " - " + e.Message);
+                }
+                
                 _weapons.Add(weaponInstance.GetComponent<Weapon>());
             }
             else
             {
                 Debug.LogError("Weapon prefab not found at path: " + path);
             }
-            
         }
 
         #endregion

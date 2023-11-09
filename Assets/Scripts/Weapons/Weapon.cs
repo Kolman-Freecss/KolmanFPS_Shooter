@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using Config;
+﻿using System.Collections.Generic;
 using Model;
 using Model.Weapon;
 using Model.Weapon.SO;
 using Player;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Weapons
 {
-    public class Weapon : MonoBehaviour
+    public class Weapon : NetworkBehaviour
     {
         #region Inspector Variables
 
@@ -30,7 +28,8 @@ namespace Weapons
 
         #region Auxiliary Variables
 
-        PlayerBehaviour _playerBehaviour;
+        [HideInInspector]
+        public PlayerBehaviour playerBehaviour;
 
         private Ammo _currentAmmo;
         bool _canShoot = true;
@@ -81,7 +80,6 @@ namespace Weapons
                 }
             }
 
-            _playerBehaviour = GetComponentInParent<PlayerBehaviour>();
         }
 
         #endregion
@@ -103,6 +101,14 @@ namespace Weapons
         #endregion
 
         #region Logic
+        
+        public void Reload()
+        {
+            if (_isReloading) return;
+            _isReloading = true;
+            Debug.Log("Reloading...");
+            //Invoke("ReloadFinished", _reloadTime);
+        }
 
         public void Shoot()
         {
@@ -144,7 +150,7 @@ namespace Weapons
         private void ProcessRaycast()
         {
             RaycastHit hit;
-            Transform cameraTransform = _playerBehaviour.PlayerController.PlayerFpsCamera.transform;
+            Transform cameraTransform = playerBehaviour.PlayerController.PlayerFpsCamera.transform;
             Debug.Log("ProcessRaycast" + cameraTransform.position + " " + cameraTransform.forward);
             ShootServerRpc(cameraTransform.position, cameraTransform.forward);
             if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, Mathf.Infinity)) //_range
@@ -224,7 +230,7 @@ namespace Weapons
             GameObject go = Instantiate(_currentAmmo.GetAmmoPrefab(), transform.position, Quaternion.identity);
             go.GetComponent<ProjectileController>().parent = this;
             go.GetComponent<Rigidbody>().velocity = go.transform.forward * 15f;//_currentAmmo.GetShootForce();
-            go.GetComponent<NetworkObject>().Spawn();
+            go.GetComponent<NetworkObject>().Spawn(true);
         }
 
         [ServerRpc(RequireOwnership = false)]

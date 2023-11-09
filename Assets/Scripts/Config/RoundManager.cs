@@ -15,6 +15,7 @@ namespace Config
 
         public List<GameObject> _checkpoints;
         public List<GameObject> Cameras;
+        public GameObject WeaponPool;
 
         #endregion
 

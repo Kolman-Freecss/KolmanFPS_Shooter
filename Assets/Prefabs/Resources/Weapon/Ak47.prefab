@@ -279,10 +279,30 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3421177706475298659, guid: 53c0fdc8c01053d4f9eb8d661b121789,
         type: 3}
+      propertyPath: _range
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 3421177706475298659, guid: 53c0fdc8c01053d4f9eb8d661b121789,
+        type: 3}
+      propertyPath: _damage
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 3421177706475298659, guid: 53c0fdc8c01053d4f9eb8d661b121789,
+        type: 3}
+      propertyPath: _fireRate
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3421177706475298659, guid: 53c0fdc8c01053d4f9eb8d661b121789,
+        type: 3}
       propertyPath: _hitEffect
       value: 
       objectReference: {fileID: 7428321867167607110, guid: 8ae84d9b0ff61ff4b9c78876c3b4acb5,
         type: 3}
+    - target: {fileID: 3421177706475298659, guid: 53c0fdc8c01053d4f9eb8d661b121789,
+        type: 3}
+      propertyPath: _reloadTime
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3421177706475298659, guid: 53c0fdc8c01053d4f9eb8d661b121789,
         type: 3}
       propertyPath: muzzleFlash
@@ -368,7 +388,11 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 8667228412784390775}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1318817178837645610, guid: 53c0fdc8c01053d4f9eb8d661b121789,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -519958708194027712}
   m_SourcePrefab: {fileID: 100100000, guid: 53c0fdc8c01053d4f9eb8d661b121789, type: 3}
 --- !u!4 &4855403790462327269 stripped
 Transform:
@@ -382,6 +406,32 @@ ParticleSystem:
     type: 3}
   m_PrefabInstance: {fileID: 8650013204384119278}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &7657918242203893956 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1318817178837645610, guid: 53c0fdc8c01053d4f9eb8d661b121789,
+    type: 3}
+  m_PrefabInstance: {fileID: 8650013204384119278}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &-519958708194027712
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7657918242203893956}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 951099334
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!82 &8239710757519509095 stripped
 AudioSource:
   m_CorrespondingSourceObject: {fileID: 743745308091662217, guid: 53c0fdc8c01053d4f9eb8d661b121789,

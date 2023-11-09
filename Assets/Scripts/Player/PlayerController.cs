@@ -6,11 +6,10 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
+using UnityEngine.Serialization;
 
 namespace Player
 {
-    [RequireComponent(typeof(CharacterController))]
-    [RequireComponent(typeof(PlayerInputController))]
     public class PlayerController : NetworkBehaviour
     {
         #region Inspector Variables
@@ -19,6 +18,9 @@ namespace Player
         
         [Tooltip("Player FPS Camera center")]
         [SerializeField] private Transform _playerFpsCameraCenter;
+        
+        [Tooltip("Player Weapon center")]
+        public Transform playerWeaponCenter;
         
         [Tooltip("Movement speed of the player")] [SerializeField]
         private float _speed = 6f;
@@ -283,6 +285,7 @@ namespace Player
             if (!IsLocalPlayer || !IsOwner)
             {
                 // We need to disable the player input controller for the other clients in every player
+                GetComponent<PlayerBehaviour>().enabled = false;
                 GetComponent<PlayerInput>().enabled = false;
                 GetComponent<CameraController>().enabled = false;
                 GetComponent<PlayerInputController>().enabled = false;
@@ -314,6 +317,7 @@ namespace Player
             {
                 Debug.LogWarning("Player FPS Camera not found");
             }
+            GetComponent<PlayerBehaviour>().enabled = true;
             GetComponent<PlayerInput>().enabled = true;
             GetComponent<CameraController>().enabled = true;
             GetComponent<PlayerInputController>().enabled = true;
