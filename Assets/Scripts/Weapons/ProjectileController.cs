@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Player;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -18,7 +19,7 @@ namespace Weapons
         #region Auxiliar variables
 
         [HideInInspector]
-        public Weapon parent;
+        public PlayerBehaviour parent;
         private Rigidbody rb; 
 
         #endregion

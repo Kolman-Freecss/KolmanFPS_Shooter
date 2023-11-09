@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3421177706475298659}
   - component: {fileID: 3481065482787017615}
   - component: {fileID: 5015667810168769643}
+  - component: {fileID: 8343812559523573342}
   m_Layer: 0
   m_Name: Weapon
   m_TagString: Untagged
@@ -59,6 +60,7 @@ MonoBehaviour:
   _audioSource: {fileID: 743745308091662217}
   _isReloading: 0
   _hitEffect: {fileID: 0}
+  playerBehaviour: {fileID: 0}
 --- !u!114 &3481065482787017615
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -97,6 +99,36 @@ PositionConstraint:
   m_Active: 0
   m_IsLocked: 0
   m_Sources: []
+--- !u!114 &8343812559523573342
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1318817178837645610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df2868252ab5c4d1da357e8f11f1b524, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SyncPositionX: 1
+  SyncPositionY: 1
+  SyncPositionZ: 1
+  SyncRotAngleX: 1
+  SyncRotAngleY: 1
+  SyncRotAngleZ: 1
+  SyncScaleX: 1
+  SyncScaleY: 1
+  SyncScaleZ: 1
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &2016159576318379139
 GameObject:
   m_ObjectHideFlags: 0

@@ -30,7 +30,7 @@ namespace Player
         PlayerController _playerController;
         [HideInInspector]
         public PlayerController PlayerController => _playerController;
-        List<Weapon> _weapons = new List<Weapon>();
+        List<NetworkObject> _weapons = new List<NetworkObject>();
         Weapon _currentWeapon;
         int _currentWeaponIndex = 0;
 
@@ -72,7 +72,7 @@ namespace Player
             }
             if (_weapons.Count > 0)
             {
-                _currentWeapon = _weapons[_currentWeaponIndex];
+                _currentWeapon = _weapons[_currentWeaponIndex].GetComponent<Weapon>();
             }
             else
             {
@@ -129,7 +129,71 @@ namespace Player
                     //TODO: Make some kind of melee attack
                     return;
                 }
-                _currentWeapon.Shoot();
+                if (_currentWeapon.canShoot)
+                {
+                    if (_currentWeapon.currentAmmo != null && _currentWeapon.currentAmmo.IsAmmoInClip())
+                    {
+                        _currentWeapon.timerToShoot = _currentWeapon.fireRate;
+                        _currentWeapon.canShoot = false;
+                        _currentWeapon.currentAmmo.ReduceCurrentAmmo();
+                        ShootClientRpc();
+                        _currentWeapon.PlayMuzzleFlash();
+                        //TODO: Make projectiles
+                        //TEMPORAL
+                        /////ShootProjectileServerRpc();
+                        ProcessShootRaycast();
+                    }
+                    else
+                    {
+                        //TODO: reload and play sound
+                        Debug.LogWarning("No ammo");
+                    }
+                }
+            }
+        }
+        
+        public void ProcessShootRaycast()
+        {
+            RaycastHit hit;
+            Transform cameraTransform = PlayerController.PlayerFpsCamera.transform;
+            ShootServerRpc(cameraTransform.position, cameraTransform.forward);
+            if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, Mathf.Infinity)) //range
+            {
+                Debug.DrawRay(cameraTransform.position, cameraTransform.forward * _currentWeapon.range, Color.green, 1f);
+                Debug.Log("Hit");
+                string hitTag = hit.transform.gameObject.tag;
+                switch (hitTag)
+                {
+                    case "PLayer":
+                        Debug.Log("Player hit");
+                        // EnemyHealth target = hit.transform.GetComponent<EnemyHealth>();
+                        // if (target == null) return;
+                        // target.TakeDamage(damage); + ammoDamage
+                        break;
+                    default:
+                        Debug.Log("Other hit");
+                        CreateHitImpact(hit);
+                        break;
+                }
+            }
+            else
+            {
+                Debug.DrawRay(cameraTransform.position, cameraTransform.forward * _currentWeapon.range, Color.red, 1f);
+                Debug.Log("No hit");
+                return;
+            }
+        }
+        
+        private void CreateHitImpact(RaycastHit hit)
+        {
+            if (_currentWeapon.hitEffect != null)
+            {
+                Debug.LogWarning("Hit Effect");
+                ShootServerRpc(hit.point, hit.normal);
+            }
+            else
+            {
+                Debug.LogWarning("No hit effect found");
             }
         }
         
@@ -161,7 +225,7 @@ namespace Player
             }
             try
             {
-                _currentWeapon = _weapons[_currentWeaponIndex];
+                _currentWeapon = _weapons[_currentWeaponIndex].GetComponent<Weapon>();
                 _currentWeapon.gameObject.SetActive(true);
             }
             catch (ArgumentOutOfRangeException e)
@@ -172,15 +236,25 @@ namespace Player
 
         void EquipWeapon(WeaponType weaponType)
         {
-            EquipWeaponServerRpc((int) weaponType);
+            EquipWeaponServerRpc((int) weaponType, NetworkManager.Singleton.LocalClientId);
         }
         
         #endregion
 
         #region Network Calls/Events
+        
+        [ClientRpc]
+        public void ShootClientRpc()
+        {
+            if (_currentWeapon.audioSource != null)
+            {
+                if (_currentWeapon.audioSource.isPlaying) _currentWeapon.audioSource.Stop();
+                _currentWeapon.audioSource.Play();
+            }
+        }
 
         [ServerRpc]
-        void EquipWeaponServerRpc(int weaponTypeReference, ServerRpcParams serverRpcParams = default)
+        void EquipWeaponServerRpc(int weaponTypeReference, ulong clientId, ServerRpcParams serverRpcParams = default)
         {
             WeaponType weaponType = (WeaponType) weaponTypeReference;
             String path = "Weapon/" + weaponType.ToString();
@@ -194,7 +268,7 @@ namespace Player
                 weaponInstance.SetActive(false);
                 weaponInstance.GetComponent<Weapon>().playerBehaviour = this;
                 NetworkObject no = weaponInstance.GetComponent<NetworkObject>();
-                no.Spawn(true);
+                no.SpawnWithOwnership(clientId);
                 try
                 {
                     PositionConstraint pc = no.GetComponent<PositionConstraint>();
@@ -212,12 +286,54 @@ namespace Player
                 {
                     Debug.LogWarning("No PositionConstraint found on weapon: " + weaponType + " - " + e.Message);
                 }
-                
-                _weapons.Add(weaponInstance.GetComponent<Weapon>());
+                AddNewWeaponClientRpc(clientId, no.NetworkObjectId);
             }
             else
             {
                 Debug.LogError("Weapon prefab not found at path: " + path);
+            }
+        }
+        
+        [ClientRpc]
+        private void AddNewWeaponClientRpc(ulong clientId, ulong networkObjectId, ClientRpcParams clientRpcParams = default)
+        {
+            if (clientId == NetworkManager.Singleton.LocalClientId)
+            {
+                Debug.Log("AddNewWeaponClientRpc");
+                NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
+                _weapons.Add(no);
+            }
+        }
+        
+        [ServerRpc(RequireOwnership = false)]
+        public void ShootServerRpc(Vector3 hitPoint, Vector3 hitNormal, ServerRpcParams serverRpcParams = default)
+        {
+            GameObject impact = Instantiate(_currentWeapon.hitEffect, hitPoint, Quaternion.LookRotation(hitNormal));
+            NetworkObject no = impact.GetComponent<NetworkObject>();
+            no.Spawn();
+            ParticleSystem particleSystem = impact.GetComponentInChildren<ParticleSystem>();
+            particleSystem.Play();
+            Destroy(impact, particleSystem.main.duration);
+        }
+
+        [ServerRpc]
+        public void ShootProjectileServerRpc(ServerRpcParams serverRpcParams = default)
+        {
+            GameObject go = Instantiate(_currentWeapon.currentAmmo.GetAmmoPrefab(), transform.position, Quaternion.identity);
+            go.GetComponent<ProjectileController>().parent = this;
+            go.GetComponent<Rigidbody>().velocity = go.transform.forward * 15f;//currentAmmo.GetShootForce();
+            go.GetComponent<NetworkObject>().Spawn(true);
+        }
+
+        [ServerRpc]
+        public void DestroyProjectileServerRpc(ulong networkObjectId, ServerRpcParams serverRpcParams = default)
+        {
+            Debug.Log("DestroyProjectileServerRpc -> " + networkObjectId);
+            NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
+            if (no != null)
+            {
+                no.Despawn();
+                Destroy(no.gameObject);
             }
         }
 
