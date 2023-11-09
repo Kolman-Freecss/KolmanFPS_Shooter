@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Config;
 using Model;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Animations;
 using Weapons;
@@ -35,7 +36,6 @@ namespace Player
         int _currentWeaponIndex = 0;
 
         private float _health = 100f;
-        private bool _ready = false;
 
         #endregion
 
@@ -43,8 +43,7 @@ namespace Player
 
         private void OnEnable()
         {
-            _ready = false;
-            
+            _playerController = GetComponent<PlayerController>();
         }
 
         public override void OnNetworkSpawn()
@@ -53,21 +52,13 @@ namespace Player
             if (IsServer)
             {
                 RegisterServerCallbacks();
-                
             }
             Debug.Log("PlayerBehaviour OnNetworkSpawn + " + NetworkObjectId + " " + NetworkManager.Singleton.LocalClientId + " " + IsOwner);
-        }
-
-        void ClientPlayerControllerReady(ulong clientId)
-        {
-            Debug.Log("ClientPlayerControllerReady -> " + clientId + " " + NetworkManager.Singleton.LocalClientId + " " + IsOwner);
-            ClientLoadedGameScene(clientId);
         }
         
         private void RegisterServerCallbacks()
         {
-            // _playerController.OnClientPlayerControllerReady += ClientPlayerControllerReady;
-            // RoundManager.OnRoundManagerSpawned += InitRound;
+            RoundManager.OnRoundManagerSpawned += InitRound;
         }
 
         private void InitRound()
@@ -76,6 +67,9 @@ namespace Player
             Debug.Log("InitRound -> " + NetworkObjectId + " " + NetworkManager.Singleton.LocalClientId + " " + IsOwner);
         }
 
+        /// <summary>
+        /// Invoked when the object is instantiated, we need to wait for the scene to load
+        /// </summary>
         private void Start()
         {
             Init();
@@ -110,20 +104,20 @@ namespace Player
         private void SendClientInitDataClientRpc(ulong clientId, ClientRpcParams clientRpcParams = default)
         {
             Debug.Log("------------------SENT Client Behaviour init data ------------------");
+            //NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerBehaviour>();
             Debug.Log("Client Id -> " + clientId + " - " + NetworkManager.Singleton.LocalClientId + " - " + IsOwner + " - " + IsLocalPlayer);
-            if (!IsLocalPlayer || !IsOwner) return;
-            _playerInputController = GetComponent<PlayerInputController>();
-            _playerController = GetComponent<PlayerController>();
-            _playerController.OnClientPlayerControllerReady += ClientPlayerControllerReady;
-            if (_defaultWeapon != null)
+            PlayerBehaviour playerBehaviour = NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerBehaviour>();
+            playerBehaviour._playerInputController = playerBehaviour.GetComponent<PlayerInputController>();
+            playerBehaviour._playerController = playerBehaviour.GetComponent<PlayerController>();
+            if (playerBehaviour._defaultWeapon != null)
             {
-                EquipWeapon(_defaultWeapon.weaponType);
+                EquipWeapon(playerBehaviour._defaultWeapon.weaponType);
             }
             else
             {
                 EquipWeapon(WeaponType.Ak47);
             }
-            _ready = true;
+            Debug.Log("Player Behaviour READY SendClientInitDataClientRpc -> " + clientId + " " + NetworkManager.Singleton.LocalClientId + " " + IsOwner);
         }
 
         #endregion
@@ -132,7 +126,7 @@ namespace Player
 
         private void Update()
         {
-            if (!GameManager.Instance.isGameStarted.Value ||!_ready) return;
+            if (!GameManager.Instance.isGameStarted.Value) return;
             UpdateWeaponRotation();
             Shoot();
         }
@@ -143,6 +137,7 @@ namespace Player
 
         public void UpdateWeaponRotation()
         {
+            Debug.Log("UpdateWeaponRotation -> " + _currentWeapon);
             if (_currentWeapon == null) return;
             Vector3 desiredRotation = _playerController.MainCamera.transform.localRotation.eulerAngles;
             _currentWeapon.transform.localRotation = Quaternion.Euler(desiredRotation.x, desiredRotation.y, 0f);
@@ -157,7 +152,7 @@ namespace Player
 
         void Shoot()
         {
-            if (_playerInputController.leftClick)
+            if (_playerInputController != null && _playerInputController.leftClick)
             {
                 if (_currentWeapon == null)
                 {
@@ -254,21 +249,13 @@ namespace Player
         
         void SetWeaponActive()
         {
-            if (_currentWeapon != null)
-            {
-                _currentWeapon.gameObject.SetActive(false);
-            }
-            try
-            {
-                _currentWeapon = _weapons[_currentWeaponIndex].GetComponent<Weapon>();
-                _currentWeapon.gameObject.SetActive(true);
-            }
-            catch (ArgumentOutOfRangeException e)
-            {
-                Debug.LogWarning("No weapon found at index: " + _currentWeaponIndex + " - " + e.Message);
-            }
+            
         }
 
+        /// <summary>
+        /// We call server to spawn the weapon and then we equip it
+        /// </summary>
+        /// <param name="weaponType"></param>
         void EquipWeapon(WeaponType weaponType)
         {
             EquipWeaponServerRpc((int) weaponType, NetworkManager.Singleton.LocalClientId);
@@ -277,6 +264,20 @@ namespace Player
         #endregion
 
         #region Network Calls/Events
+
+        /// <summary>
+        /// Called to set the current weapon active on the client
+        /// </summary>
+        /// <param name="networkObjectId"></param>
+        [ServerRpc(RequireOwnership = false)]
+        public void SetClientWeaponActiveServerRpc(ulong networkObjectId, bool active = true)
+        {
+            NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
+            if (no != null)
+            {
+                no.gameObject.SetActive(active);
+            }
+        }
         
         [ClientRpc]
         public void ShootClientRpc()
@@ -291,19 +292,19 @@ namespace Player
         [ServerRpc (RequireOwnership = false)]
         void EquipWeaponServerRpc(int weaponTypeReference, ulong clientId, ServerRpcParams serverRpcParams = default)
         {
-            Debug.Log("EquipWeaponServerRpc");
             WeaponType weaponType = (WeaponType) weaponTypeReference;
             String path = "Weapon/" + weaponType.ToString();
             GameObject weaponPrefab = Resources.Load<GameObject>(path);
             if (weaponPrefab != null)
             {
                 GameObject weaponInstance = Instantiate(weaponPrefab, RoundManager.Instance.WeaponPool.transform);
-                weaponInstance.transform.localPosition = weaponPrefab.transform.position;
-                weaponInstance.transform.localRotation = Quaternion.identity;
-                weaponInstance.transform.localScale = weaponPrefab.transform.localScale;
-                weaponInstance.SetActive(false);
                 NetworkObject no = weaponInstance.GetComponent<NetworkObject>();
-                no.Spawn();//SpawnWithOwnership(clientId);
+                no.SpawnWithOwnership(clientId);
+                no.transform.localPosition = weaponPrefab.transform.position;
+                no.transform.localRotation = Quaternion.identity;
+                no.transform.localScale = weaponPrefab.transform.localScale;
+                no.gameObject.SetActive(false);
+                //no.transform.SetParent(RoundManager.Instance.WeaponPool.transform);
                 Debug.Log("EquipWeaponServerRpc -> " + clientId + " " + no.NetworkObjectId);
                 ClientRpcParams clientRpcParams = new ClientRpcParams
                 {
@@ -312,7 +313,7 @@ namespace Player
                         TargetClientIds = new ulong[] {clientId}
                     }
                 };
-                AddNewWeapon(clientId, no.NetworkObjectId);
+                AttachSpawnedWeaponClientRpc(clientId, no.NetworkObjectId, clientRpcParams);
             }
             else
             {
@@ -320,52 +321,23 @@ namespace Player
             }
         }
 
-        void AddNewWeapon(ulong clientId, ulong networkObjectId)
-        {
-            Debug.Log("AddNewWeaponClientRpc -> " + clientId + " " + networkObjectId);
-            if (clientId != NetworkManager.Singleton.LocalClientId) return;
-            NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
-            _weapons.Add(no);
-            Weapon weapon = no.GetComponent<Weapon>();
-            weapon.playerBehaviour = this;
-            try
-            {
-                PositionConstraint pc = weapon.GetComponent<PositionConstraint>();
-                if (pc)
-                {
-                    var constraintSource = new ConstraintSource()
-                    {
-                        sourceTransform = _playerController.playerWeaponCenter,
-                        weight = 1
-                    };
-                    pc.AddSource(constraintSource);
-                    pc.constraintActive = true;
-                }
-            } catch (Exception e)
-            {
-                Debug.LogWarning("No PositionConstraint found on weapon: " + weapon.weaponType + " - " + e.Message);
-            }
-            
-            if (_weapons.Count > 0)
-            {
-                _currentWeapon = _weapons[_currentWeaponIndex].GetComponent<Weapon>();
-            }
-            else
-            {
-                Debug.LogError("No weapons found");
-            }
-            SetWeaponActive();
-        }
-        
+        /// <summary>
+        /// Invoked from server to attach the spawned weapon to the player 
+        /// </summary>
+        /// <param name="clientId"></param>
+        /// <param name="networkObjectId"></param>
+        /// <param name="clientRpcParams"></param>
         [ClientRpc]
-        private void AddNewWeaponClientRpc(ulong clientId, ulong networkObjectId, ClientRpcParams clientRpcParams = default)
+        private void AttachSpawnedWeaponClientRpc(ulong clientId, ulong networkObjectId, ClientRpcParams clientRpcParams = default)
         {
             Debug.Log("AddNewWeaponClientRpc -> " + clientId + " " + networkObjectId);
             if (clientId != NetworkManager.Singleton.LocalClientId) return;
+            // We need to get the player object from the client that called the server because the server invoked the method from his own NetworkObject
+            NetworkObject player = NetworkManager.LocalClient.PlayerObject;
             NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
-            _weapons.Add(no);
+            PlayerBehaviour playerBehaviour = player.GetComponent<PlayerBehaviour>();
+            playerBehaviour._weapons.Add(no);
             Weapon weapon = no.GetComponent<Weapon>();
-            weapon.playerBehaviour = this;
             try
             {
                 PositionConstraint pc = weapon.GetComponent<PositionConstraint>();
@@ -373,7 +345,7 @@ namespace Player
                 {
                     var constraintSource = new ConstraintSource()
                     {
-                        sourceTransform = _playerController.playerWeaponCenter,
+                        sourceTransform = playerBehaviour._playerController.playerWeaponCenter,
                         weight = 1
                     };
                     pc.AddSource(constraintSource);
@@ -384,15 +356,30 @@ namespace Player
                 Debug.LogWarning("No PositionConstraint found on weapon: " + weapon.weaponType + " - " + e.Message);
             }
             
-            if (_weapons.Count > 0)
+            if (playerBehaviour._weapons.Count > 0)
             {
-                _currentWeapon = _weapons[_currentWeaponIndex].GetComponent<Weapon>();
+                playerBehaviour._currentWeapon = playerBehaviour._weapons[playerBehaviour._currentWeaponIndex].GetComponent<Weapon>();
             }
             else
             {
                 Debug.LogError("No weapons found");
             }
-            SetWeaponActive();
+            //SetWeaponActive();
+            
+            if (playerBehaviour._currentWeapon != null)
+            {
+                SetClientWeaponActiveServerRpc(playerBehaviour._currentWeapon.NetworkObjectId, false);
+            }
+            try
+            {
+                playerBehaviour._currentWeapon = playerBehaviour._weapons[playerBehaviour._currentWeaponIndex].GetComponent<Weapon>();
+                SetClientWeaponActiveServerRpc(playerBehaviour._currentWeapon.NetworkObjectId, true);
+                //_currentWeapon.gameObject.SetActive(true);
+            }
+            catch (ArgumentOutOfRangeException e)
+            {
+                Debug.LogWarning("No weapon found at index: " + playerBehaviour._currentWeaponIndex + " - " + e.Message);
+            }
         }
         
         [ServerRpc(RequireOwnership = false)]
