@@ -199,7 +199,7 @@ namespace Player
             if (_currentWeapon.hitEffect != null)
             {
                 Debug.LogWarning("Hit Effect");
-                ShootServerRpc(hit.point, hit.normal);
+                ShootServerRpc(hit.point, hit.normal, _currentWeapon.NetworkObjectId);
             }
             else
             {
@@ -389,14 +389,15 @@ namespace Player
         }
         
         [ServerRpc(RequireOwnership = false)]
-        public void ShootServerRpc(Vector3 hitPoint, Vector3 hitNormal, ServerRpcParams serverRpcParams = default)
+        public void ShootServerRpc(Vector3 hitPoint, Vector3 hitNormal, ulong networkObjectId,ServerRpcParams serverRpcParams = default)
         {
-            GameObject impact = Instantiate(_currentWeapon.hitEffect, hitPoint, Quaternion.LookRotation(hitNormal));
+            NetworkObject weaponNetworkObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
+            GameObject impact = Instantiate(weaponNetworkObject.GetComponent<Weapon>().hitEffect, hitPoint, Quaternion.LookRotation(hitNormal));
             NetworkObject no = impact.GetComponent<NetworkObject>();
             no.Spawn();
             // Despawn projectile after 2 seconds
             StartCoroutine(DestroyProjectile(no.NetworkObjectId, 2f));
-            ShootParticleClientRpc(hitPoint, hitNormal);
+            ShootParticleClientRpc(hitPoint, hitNormal, no.NetworkObjectId);
         }
         
         private IEnumerator DestroyProjectile(ulong networkObjectId, float timeToDestroy)
@@ -407,9 +408,10 @@ namespace Player
         }
         
         [ClientRpc]
-        void ShootParticleClientRpc (Vector3 hitPoint, Vector3 hitNormal, ClientRpcParams clientRpcParams = default)
+        void ShootParticleClientRpc (Vector3 hitPoint, Vector3 hitNormal, ulong networkObjectId, ClientRpcParams clientRpcParams = default)
         {
-            ParticleSystem particleSystem = _currentWeapon.hitEffect.GetComponentInChildren<ParticleSystem>();
+            NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
+            ParticleSystem particleSystem = no.GetComponentInChildren<ParticleSystem>();
             particleSystem.Play();
         }
 
