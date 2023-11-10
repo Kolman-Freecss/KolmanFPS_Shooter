@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Config;
 using Model;
@@ -100,26 +101,6 @@ namespace Player
             }
         }
         
-        [ClientRpc]
-        private void SendClientInitDataClientRpc(ulong clientId, ClientRpcParams clientRpcParams = default)
-        {
-            Debug.Log("------------------SENT Client Behaviour init data ------------------");
-            //NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerBehaviour>();
-            Debug.Log("Client Id -> " + clientId + " - " + NetworkManager.Singleton.LocalClientId + " - " + IsOwner + " - " + IsLocalPlayer);
-            PlayerBehaviour playerBehaviour = NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerBehaviour>();
-            playerBehaviour._playerInputController = playerBehaviour.GetComponent<PlayerInputController>();
-            playerBehaviour._playerController = playerBehaviour.GetComponent<PlayerController>();
-            if (playerBehaviour._defaultWeapon != null)
-            {
-                EquipWeapon(playerBehaviour._defaultWeapon.weaponType);
-            }
-            else
-            {
-                EquipWeapon(WeaponType.Ak47);
-            }
-            Debug.Log("Player Behaviour READY SendClientInitDataClientRpc -> " + clientId + " " + NetworkManager.Singleton.LocalClientId + " " + IsOwner);
-        }
-
         #endregion
 
         #region Loop
@@ -166,7 +147,7 @@ namespace Player
                         _currentWeapon.timerToShoot = _currentWeapon.fireRate;
                         _currentWeapon.canShoot = false;
                         _currentWeapon.currentAmmo.ReduceCurrentAmmo();
-                        ShootClientRpc();
+                        ShootAudioServerRpc(_currentWeapon.NetworkObjectId);
                         _currentWeapon.PlayMuzzleFlash();
                         //TODO: Make projectiles
                         //TEMPORAL
@@ -186,7 +167,7 @@ namespace Player
         {
             RaycastHit hit;
             Transform cameraTransform = PlayerController.PlayerFpsCamera.transform;
-            ShootServerRpc(cameraTransform.position, cameraTransform.forward);
+            // ShootServerRpc(cameraTransform.position, cameraTransform.forward);
             if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, Mathf.Infinity)) //range
             {
                 Debug.DrawRay(cameraTransform.position, cameraTransform.forward * _currentWeapon.range, Color.green, 1f);
@@ -210,7 +191,6 @@ namespace Player
             {
                 Debug.DrawRay(cameraTransform.position, cameraTransform.forward * _currentWeapon.range, Color.red, 1f);
                 Debug.Log("No hit");
-                return;
             }
         }
         
@@ -246,11 +226,6 @@ namespace Player
             //     }
             // }
         }
-        
-        void SetWeaponActive()
-        {
-            
-        }
 
         /// <summary>
         /// We call server to spawn the weapon and then we equip it
@@ -264,6 +239,26 @@ namespace Player
         #endregion
 
         #region Network Calls/Events
+        
+        [ClientRpc]
+        private void SendClientInitDataClientRpc(ulong clientId, ClientRpcParams clientRpcParams = default)
+        {
+            Debug.Log("------------------SENT Client Behaviour init data ------------------");
+            //NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerBehaviour>();
+            Debug.Log("Client Id -> " + clientId + " - " + NetworkManager.Singleton.LocalClientId + " - " + IsOwner + " - " + IsLocalPlayer);
+            PlayerBehaviour playerBehaviour = NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerBehaviour>();
+            playerBehaviour._playerInputController = playerBehaviour.GetComponent<PlayerInputController>();
+            playerBehaviour._playerController = playerBehaviour.GetComponent<PlayerController>();
+            if (playerBehaviour._defaultWeapon != null)
+            {
+                EquipWeapon(playerBehaviour._defaultWeapon.weaponType);
+            }
+            else
+            {
+                EquipWeapon(WeaponType.Ak47);
+            }
+            Debug.Log("Player Behaviour READY SendClientInitDataClientRpc -> " + clientId + " " + NetworkManager.Singleton.LocalClientId + " " + IsOwner);
+        }
 
         /// <summary>
         /// Called to set the current weapon active on the client
@@ -279,13 +274,24 @@ namespace Player
             }
         }
         
-        [ClientRpc]
-        public void ShootClientRpc()
+        /// <summary>
+        /// Invoke the audio source from the networkObject client that called the server to the rest of the clients 
+        /// </summary>
+        [ServerRpc]
+        public void ShootAudioServerRpc(ulong networkObjectId)
         {
-            if (_currentWeapon.audioSource != null)
+            ShootAudioClientRpc(NetworkManager.Singleton.LocalClientId, networkObjectId);
+        }
+
+        [ClientRpc]
+        private void ShootAudioClientRpc(ulong clientId, ulong networkObjectId)
+        {
+            NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
+            Weapon sourceWeapon = no.GetComponent<Weapon>();
+            if (sourceWeapon.audioSource != null)
             {
-                if (_currentWeapon.audioSource.isPlaying) _currentWeapon.audioSource.Stop();
-                _currentWeapon.audioSource.Play();
+                if (sourceWeapon.audioSource.isPlaying) sourceWeapon.audioSource.Stop();
+                sourceWeapon.audioSource.Play();
             }
         }
 
@@ -388,9 +394,23 @@ namespace Player
             GameObject impact = Instantiate(_currentWeapon.hitEffect, hitPoint, Quaternion.LookRotation(hitNormal));
             NetworkObject no = impact.GetComponent<NetworkObject>();
             no.Spawn();
-            ParticleSystem particleSystem = impact.GetComponentInChildren<ParticleSystem>();
+            // Despawn projectile after 2 seconds
+            StartCoroutine(DestroyProjectile(no.NetworkObjectId, 2f));
+            ShootParticleClientRpc(hitPoint, hitNormal);
+        }
+        
+        private IEnumerator DestroyProjectile(ulong networkObjectId, float timeToDestroy)
+        {
+            Debug.Log("DestroyProjectile -> " + networkObjectId);
+            yield return new WaitForSeconds(timeToDestroy);
+            DestroyProjectileServerRpc(networkObjectId);
+        }
+        
+        [ClientRpc]
+        void ShootParticleClientRpc (Vector3 hitPoint, Vector3 hitNormal, ClientRpcParams clientRpcParams = default)
+        {
+            ParticleSystem particleSystem = _currentWeapon.hitEffect.GetComponentInChildren<ParticleSystem>();
             particleSystem.Play();
-            Destroy(impact, particleSystem.main.duration);
         }
 
         [ServerRpc]
@@ -413,7 +433,7 @@ namespace Player
                 Destroy(no.gameObject);
             }
         }
-
+        
         #endregion
         
     }
