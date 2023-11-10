@@ -3,8 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using Config;
 using Model;
+using TMPro;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Animations;
 using Weapons;
@@ -13,16 +13,13 @@ namespace Player
 {
     public class PlayerBehaviour : NetworkBehaviour
     {
-
         #region Inspector variables
 
-        [Header("Player")]
-        [Tooltip("Max health of the player")]
-        [SerializeField] private float _maxHealth = 100f;
-        
-        [Header("Weapons")]
-        [Tooltip("Default weapon of the player")]
-        [SerializeField] private Weapon _defaultWeapon;
+        [Header("Player")] [Tooltip("Max health of the player")] [SerializeField]
+        private float _maxHealth = 100f;
+
+        [Header("Weapons")] [Tooltip("Default weapon of the player")] [SerializeField]
+        private Weapon _defaultWeapon;
 
         #endregion
 
@@ -30,18 +27,22 @@ namespace Player
 
         PlayerInputController _playerInputController;
         PlayerController _playerController;
-        [HideInInspector]
-        public PlayerController PlayerController => _playerController;
+        [HideInInspector] public PlayerController PlayerController => _playerController;
         List<NetworkObject> _weapons = new List<NetworkObject>();
         Weapon _currentWeapon;
         int _currentWeaponIndex = 0;
 
         private float _health = 100f;
+        private TextMeshProUGUI _healthText;
+        private TextMeshProUGUI _ammoText;
 
         #endregion
 
         #region InitData
 
+        /// <summary>
+        /// Only Get own GameObject components
+        /// </summary>
         private void OnEnable()
         {
             _playerController = GetComponent<PlayerController>();
@@ -54,14 +55,19 @@ namespace Player
             {
                 RegisterServerCallbacks();
             }
-            Debug.Log("PlayerBehaviour OnNetworkSpawn + " + NetworkObjectId + " " + NetworkManager.Singleton.LocalClientId + " " + IsOwner);
+
+            Debug.Log("PlayerBehaviour OnNetworkSpawn + " + NetworkObjectId + " " +
+                      NetworkManager.Singleton.LocalClientId + " " + IsOwner);
         }
-        
+
         private void RegisterServerCallbacks()
         {
             RoundManager.OnRoundManagerSpawned += InitRound;
         }
 
+        /// <summary>
+        /// When the round manager is spawned we need to wait for the scene to load
+        /// </summary>
         private void InitRound()
         {
             SceneTransitionHandler.Instance.OnClientLoadedGameScene += ClientLoadedGameScene;
@@ -75,7 +81,10 @@ namespace Player
         {
             Init();
         }
-        
+
+        /// <summary>
+        /// Init default values
+        /// </summary>
         void Init()
         {
             _currentWeaponIndex = 0;
@@ -94,13 +103,13 @@ namespace Player
                 {
                     Send = new ClientRpcSendParams
                     {
-                        TargetClientIds = new ulong[] {clientId}
+                        TargetClientIds = new ulong[] { clientId }
                     }
                 };
                 SendClientInitDataClientRpc(clientId, clientRpcParams);
             }
         }
-        
+
         #endregion
 
         #region Loop
@@ -108,13 +117,23 @@ namespace Player
         private void Update()
         {
             if (!GameManager.Instance.isGameStarted.Value) return;
+            UpdatePlayerCanvas();
             UpdateWeaponRotation();
             Shoot();
         }
 
         #endregion
-        
+
         #region Logic
+
+        void UpdatePlayerCanvas()
+        {
+            this._healthText.text = _health.ToString();
+            if (_currentWeapon != null)
+            {
+                this._ammoText.text = _currentWeapon.currentAmmo.getAmmoInfo();
+            }
+        }
 
         public void UpdateWeaponRotation()
         {
@@ -140,6 +159,7 @@ namespace Player
                     //TODO: Make some kind of melee attack
                     return;
                 }
+
                 if (_currentWeapon.canShoot)
                 {
                     if (_currentWeapon.currentAmmo != null && _currentWeapon.currentAmmo.IsAmmoInClip())
@@ -162,7 +182,7 @@ namespace Player
                 }
             }
         }
-        
+
         public void ProcessShootRaycast()
         {
             RaycastHit hit;
@@ -170,7 +190,8 @@ namespace Player
             // ShootServerRpc(cameraTransform.position, cameraTransform.forward);
             if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, Mathf.Infinity)) //range
             {
-                Debug.DrawRay(cameraTransform.position, cameraTransform.forward * _currentWeapon.range, Color.green, 1f);
+                Debug.DrawRay(cameraTransform.position, cameraTransform.forward * _currentWeapon.range, Color.green,
+                    1f);
                 Debug.Log("Hit");
                 string hitTag = hit.transform.gameObject.tag;
                 switch (hitTag)
@@ -193,7 +214,7 @@ namespace Player
                 Debug.Log("No hit");
             }
         }
-        
+
         private void CreateHitImpact(RaycastHit hit)
         {
             if (_currentWeapon.hitEffect != null)
@@ -205,7 +226,7 @@ namespace Player
                 Debug.LogWarning("No hit effect found");
             }
         }
-        
+
         void SwitchWeapon()
         {
             // if (_playerInputController.mouseWheelUp)
@@ -232,21 +253,31 @@ namespace Player
         /// <param name="weaponType"></param>
         void EquipWeapon(WeaponType weaponType)
         {
-            EquipWeaponServerRpc((int) weaponType, NetworkManager.Singleton.LocalClientId);
+            EquipWeaponServerRpc((int)weaponType, NetworkManager.Singleton.LocalClientId);
         }
-        
+
         #endregion
 
         #region Network Calls/Events
-        
+
+        /// <summary>
+        /// Call to send the init data to the spawned client on the game scene
+        /// </summary>
+        /// <param name="clientId"></param>
+        /// <param name="clientRpcParams"></param>
         [ClientRpc]
         private void SendClientInitDataClientRpc(ulong clientId, ClientRpcParams clientRpcParams = default)
         {
             Debug.Log("------------------SENT Client Behaviour init data ------------------");
-            Debug.Log("Client Id -> " + clientId + " - " + NetworkManager.Singleton.LocalClientId + " - " + IsOwner + " - " + IsLocalPlayer);
+            Debug.Log("Client Id -> " + clientId + " - " + NetworkManager.Singleton.LocalClientId + " - " + IsOwner +
+                      " - " + IsLocalPlayer);
             PlayerBehaviour playerBehaviour = NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerBehaviour>();
             playerBehaviour._playerInputController = playerBehaviour.GetComponent<PlayerInputController>();
             playerBehaviour._playerController = playerBehaviour.GetComponent<PlayerController>();
+            GameObject c = GameObject.FindGameObjectWithTag("PlayerCanvas");
+            playerBehaviour._healthText = c.transform.Find("HealthWrapper").transform.Find("HealthText")
+                .GetComponent<TextMeshProUGUI>();
+            playerBehaviour._ammoText = c.transform.Find("AmmoText").GetComponent<TextMeshProUGUI>();
             if (playerBehaviour._defaultWeapon != null)
             {
                 EquipWeapon(playerBehaviour._defaultWeapon.weaponType);
@@ -270,7 +301,7 @@ namespace Player
                 no.gameObject.SetActive(active);
             }
         }
-        
+
         /// <summary>
         /// Invoke the audio source from the networkObject client that called the server to the rest of the clients 
         /// </summary>
@@ -292,10 +323,10 @@ namespace Player
             }
         }
 
-        [ServerRpc (RequireOwnership = false)]
+        [ServerRpc(RequireOwnership = false)]
         void EquipWeaponServerRpc(int weaponTypeReference, ulong clientId, ServerRpcParams serverRpcParams = default)
         {
-            WeaponType weaponType = (WeaponType) weaponTypeReference;
+            WeaponType weaponType = (WeaponType)weaponTypeReference;
             String path = "Weapon/" + weaponType.ToString();
             GameObject weaponPrefab = Resources.Load<GameObject>(path);
             if (weaponPrefab != null)
@@ -314,7 +345,7 @@ namespace Player
                 {
                     Send = new ClientRpcSendParams
                     {
-                        TargetClientIds = new ulong[] {clientId}
+                        TargetClientIds = new ulong[] { clientId }
                     }
                 };
                 AttachSpawnedWeaponClientRpc(clientId, no.NetworkObjectId, clientRpcParams);
@@ -332,7 +363,8 @@ namespace Player
         /// <param name="networkObjectId"></param>
         /// <param name="clientRpcParams"></param>
         [ClientRpc]
-        private void AttachSpawnedWeaponClientRpc(ulong clientId, ulong networkObjectId, ClientRpcParams clientRpcParams = default)
+        private void AttachSpawnedWeaponClientRpc(ulong clientId, ulong networkObjectId,
+            ClientRpcParams clientRpcParams = default)
         {
             if (clientId != NetworkManager.Singleton.LocalClientId) return;
             // We need to get the player object from the client that called the server because the server invoked the method from his own NetworkObject
@@ -354,56 +386,63 @@ namespace Player
                     pc.AddSource(constraintSource);
                     pc.constraintActive = true;
                 }
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 Debug.LogWarning("No PositionConstraint found on weapon: " + weapon.weaponType + " - " + e.Message);
             }
-            
+
             if (playerBehaviour._weapons.Count > 0)
             {
-                playerBehaviour._currentWeapon = playerBehaviour._weapons[playerBehaviour._currentWeaponIndex].GetComponent<Weapon>();
+                playerBehaviour._currentWeapon = playerBehaviour._weapons[playerBehaviour._currentWeaponIndex]
+                    .GetComponent<Weapon>();
             }
             else
             {
                 Debug.LogError("No weapons found");
             }
-            
+
             if (playerBehaviour._currentWeapon != null)
             {
                 SetClientWeaponActiveServerRpc(playerBehaviour._currentWeapon.NetworkObjectId, false);
             }
+
             try
             {
-                playerBehaviour._currentWeapon = playerBehaviour._weapons[playerBehaviour._currentWeaponIndex].GetComponent<Weapon>();
+                playerBehaviour._currentWeapon = playerBehaviour._weapons[playerBehaviour._currentWeaponIndex]
+                    .GetComponent<Weapon>();
                 SetClientWeaponActiveServerRpc(playerBehaviour._currentWeapon.NetworkObjectId, true);
             }
             catch (ArgumentOutOfRangeException e)
             {
-                Debug.LogWarning("No weapon found at index: " + playerBehaviour._currentWeaponIndex + " - " + e.Message);
+                Debug.LogWarning("No weapon found at index: " + playerBehaviour._currentWeaponIndex + " - " +
+                                 e.Message);
             }
         }
-        
+
         [ServerRpc(RequireOwnership = false)]
-        public void ShootServerRpc(Vector3 hitPoint, Vector3 hitNormal, ulong networkObjectId,ServerRpcParams serverRpcParams = default)
+        public void ShootServerRpc(Vector3 hitPoint, Vector3 hitNormal, ulong networkObjectId,
+            ServerRpcParams serverRpcParams = default)
         {
             NetworkObject weaponNetworkObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
-            GameObject impact = Instantiate(weaponNetworkObject.GetComponent<Weapon>().hitEffect, hitPoint, Quaternion.LookRotation(hitNormal));
+            GameObject impact = Instantiate(weaponNetworkObject.GetComponent<Weapon>().hitEffect, hitPoint,
+                Quaternion.LookRotation(hitNormal));
             NetworkObject no = impact.GetComponent<NetworkObject>();
             no.Spawn();
             // TODO: Despawn projectile after some time
             StartCoroutine(DestroyProjectile(no.NetworkObjectId, 2f));
             ShootParticleClientRpc(hitPoint, hitNormal, no.NetworkObjectId);
         }
-        
+
         private IEnumerator DestroyProjectile(ulong networkObjectId, float timeToDestroy)
         {
-            Debug.Log("DestroyProjectile -> " + networkObjectId);
             yield return new WaitForSeconds(timeToDestroy);
             DestroyProjectileServerRpc(networkObjectId);
         }
-        
+
         [ClientRpc]
-        void ShootParticleClientRpc (Vector3 hitPoint, Vector3 hitNormal, ulong networkObjectId, ClientRpcParams clientRpcParams = default)
+        void ShootParticleClientRpc(Vector3 hitPoint, Vector3 hitNormal, ulong networkObjectId,
+            ClientRpcParams clientRpcParams = default)
         {
             NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
             ParticleSystem particleSystem = no.GetComponentInChildren<ParticleSystem>();
@@ -413,9 +452,10 @@ namespace Player
         [ServerRpc]
         public void ShootProjectileServerRpc(ServerRpcParams serverRpcParams = default)
         {
-            GameObject go = Instantiate(_currentWeapon.currentAmmo.GetAmmoPrefab(), transform.position, Quaternion.identity);
+            GameObject go = Instantiate(_currentWeapon.currentAmmo.GetAmmoPrefab(), transform.position,
+                Quaternion.identity);
             go.GetComponent<ProjectileController>().parent = this;
-            go.GetComponent<Rigidbody>().velocity = go.transform.forward * 15f;//currentAmmo.GetShootForce();
+            go.GetComponent<Rigidbody>().velocity = go.transform.forward * 15f; //currentAmmo.GetShootForce();
             go.GetComponent<NetworkObject>().Spawn(true);
         }
 
@@ -430,7 +470,7 @@ namespace Player
                 Destroy(no.gameObject);
             }
         }
-        
+
         #endregion
 
         #region Destructor
@@ -446,6 +486,5 @@ namespace Player
         }
 
         #endregion
-        
     }
 }

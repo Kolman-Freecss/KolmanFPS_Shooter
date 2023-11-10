@@ -6,6 +6,7 @@ TagManager:
   tags:
   - CinemachineTarget
   - PlayerFPSCamera
+  - PlayerCanvas
   layers:
   - Default
   - TransparentFX

@@ -1,4 +1,5 @@
-﻿using Model.Weapon.SO;
+﻿using System;
+using Model.Weapon.SO;
 using UnityEngine;
 
 namespace Model.Weapon
@@ -110,5 +111,11 @@ namespace Model.Weapon
                 IncreaseCurrentAmmo(ammoNeeded);
             }
         }
+        
+        public String getAmmoInfo()
+        {
+            return ammoCount + "/" + ammoClips;
+        } 
+            
     }
 }
