@@ -198,7 +198,6 @@ namespace Player
         {
             if (_currentWeapon.hitEffect != null)
             {
-                Debug.LogWarning("Hit Effect");
                 ShootServerRpc(hit.point, hit.normal, _currentWeapon.NetworkObjectId);
             }
             else
@@ -244,7 +243,6 @@ namespace Player
         private void SendClientInitDataClientRpc(ulong clientId, ClientRpcParams clientRpcParams = default)
         {
             Debug.Log("------------------SENT Client Behaviour init data ------------------");
-            //NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerBehaviour>();
             Debug.Log("Client Id -> " + clientId + " - " + NetworkManager.Singleton.LocalClientId + " - " + IsOwner + " - " + IsLocalPlayer);
             PlayerBehaviour playerBehaviour = NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerBehaviour>();
             playerBehaviour._playerInputController = playerBehaviour.GetComponent<PlayerInputController>();
@@ -257,7 +255,6 @@ namespace Player
             {
                 EquipWeapon(WeaponType.Ak47);
             }
-            Debug.Log("Player Behaviour READY SendClientInitDataClientRpc -> " + clientId + " " + NetworkManager.Singleton.LocalClientId + " " + IsOwner);
         }
 
         /// <summary>
@@ -310,6 +307,7 @@ namespace Player
                 no.transform.localRotation = Quaternion.identity;
                 no.transform.localScale = weaponPrefab.transform.localScale;
                 no.gameObject.SetActive(false);
+                // TODO: Set the weapon as a child of tthe RoundManager.WeaponPool
                 //no.transform.SetParent(RoundManager.Instance.WeaponPool.transform);
                 Debug.Log("EquipWeaponServerRpc -> " + clientId + " " + no.NetworkObjectId);
                 ClientRpcParams clientRpcParams = new ClientRpcParams
@@ -336,7 +334,6 @@ namespace Player
         [ClientRpc]
         private void AttachSpawnedWeaponClientRpc(ulong clientId, ulong networkObjectId, ClientRpcParams clientRpcParams = default)
         {
-            Debug.Log("AddNewWeaponClientRpc -> " + clientId + " " + networkObjectId);
             if (clientId != NetworkManager.Singleton.LocalClientId) return;
             // We need to get the player object from the client that called the server because the server invoked the method from his own NetworkObject
             NetworkObject player = NetworkManager.LocalClient.PlayerObject;
@@ -370,7 +367,6 @@ namespace Player
             {
                 Debug.LogError("No weapons found");
             }
-            //SetWeaponActive();
             
             if (playerBehaviour._currentWeapon != null)
             {
@@ -380,7 +376,6 @@ namespace Player
             {
                 playerBehaviour._currentWeapon = playerBehaviour._weapons[playerBehaviour._currentWeaponIndex].GetComponent<Weapon>();
                 SetClientWeaponActiveServerRpc(playerBehaviour._currentWeapon.NetworkObjectId, true);
-                //_currentWeapon.gameObject.SetActive(true);
             }
             catch (ArgumentOutOfRangeException e)
             {
@@ -395,7 +390,7 @@ namespace Player
             GameObject impact = Instantiate(weaponNetworkObject.GetComponent<Weapon>().hitEffect, hitPoint, Quaternion.LookRotation(hitNormal));
             NetworkObject no = impact.GetComponent<NetworkObject>();
             no.Spawn();
-            // Despawn projectile after 2 seconds
+            // TODO: Despawn projectile after some time
             StartCoroutine(DestroyProjectile(no.NetworkObjectId, 2f));
             ShootParticleClientRpc(hitPoint, hitNormal, no.NetworkObjectId);
         }
@@ -436,6 +431,20 @@ namespace Player
             }
         }
         
+        #endregion
+
+        #region Destructor
+
+        public override void OnNetworkDespawn()
+        {
+            base.OnNetworkDespawn();
+            if (IsServer)
+            {
+                RoundManager.OnRoundManagerSpawned -= InitRound;
+                SceneTransitionHandler.Instance.OnClientLoadedGameScene -= ClientLoadedGameScene;
+            }
+        }
+
         #endregion
         
     }
