@@ -115,6 +115,8 @@ namespace Player
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+            // This is called when the local player is spawned and will be enabled after the scene is loaded
+            enabled = false;
             if (IsServer)
             {
                 RoundManager.OnRoundManagerSpawned += () => transform.position = RoundManager.Instance.GetRandomCheckpoint().transform.position;

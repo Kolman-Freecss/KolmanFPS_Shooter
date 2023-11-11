@@ -160,7 +160,6 @@ namespace Config
             bool isValid = false;
             if (Regex.IsMatch(input, regex))
             {
-                Debug.Log("IP is valid");
                 isValid = true;
             }
             else

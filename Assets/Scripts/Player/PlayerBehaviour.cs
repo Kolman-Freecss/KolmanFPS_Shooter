@@ -53,11 +53,16 @@ namespace Player
         /// <summary>
         /// Only Get own GameObject components
         /// </summary>
-        private void OnEnable()
+        private void Awake()
         {
-            _playerController = GetComponent<PlayerController>();
             _networkLifeState = GetComponent<NetworkLifeState>();
             _damageReceiver = GetComponent<DamageReceiver>();
+            _playerController = GetComponent<PlayerController>();
+        }
+        
+        private void OnEnable()
+        {
+            
         }
 
         public override void OnNetworkSpawn()
@@ -67,6 +72,7 @@ namespace Player
             {
                 RegisterServerCallbacks();
             }
+            _damageReceiver.DamageReceived += OnDamageReceived;
 
             Debug.Log("PlayerBehaviour OnNetworkSpawn + " + NetworkObjectId + " " +
                       NetworkManager.Singleton.LocalClientId + " " + IsOwner);
@@ -76,7 +82,6 @@ namespace Player
         {
             RoundManager.OnRoundManagerSpawned += InitRound;
             _networkLifeState.LifeState.OnValueChanged += OnLifeStateChanged;
-            _damageReceiver.DamageReceived += OnDamageReceived;
         }
 
         /// <summary>
@@ -156,16 +161,13 @@ namespace Player
         
         void OnDamageReceived(PlayerBehaviour inflicter, int damage)
         {
-            if (inflicter == this)
-            {
-                _currentHealth -= damage;
-                if (_currentHealth <= 0)
-                {
-                    _currentHealth = 0;
-                    _networkLifeState.LifeState.Value = LifeState.Dead;
-                    //TODO: Plus kill to the inflicter
-                }
-            }
+            //NetworkObject networkObjectReceiver = NetworkManager.Singleton.SpawnManager.SpawnedObjects[NetworkObjectId];
+            TakeDamageServerRpc(NetworkObjectId, inflicter.NetworkObjectId, damage);
+            // if (_networkLifeState.LifeState.Value.Equals(LifeState.Dead))
+            // {
+            //     //TODO: Plus kill to the inflicter
+            //     // AddKillToPlayerServerRpc(inflicter.NetworkObjectId);
+            // }
         }
 
         void UpdatePlayerCanvas()
@@ -223,7 +225,7 @@ namespace Player
                 string hitTag = hit.transform.gameObject.tag;
                 switch (hitTag)
                 {
-                    case "PLayer":
+                    case "Player":
                         Debug.Log("Player hit");
                         DamageReceiver damageReceiver = hit.transform.gameObject.GetComponent<DamageReceiver>();
                         if (damageReceiver == null) return;
@@ -286,6 +288,33 @@ namespace Player
         #endregion
 
         #region Network Calls/Events
+        
+        /// <summary>
+        /// The server need to know when the client perform an action over anything 
+        /// </summary>
+        /// <param name="receiverNetworkObjectId"></param>
+        /// <param name="inflicterNetworkObjectId"></param>
+        /// <param name="damage"></param>
+        /// <param name="serverRpcParams"></param>
+        [ServerRpc(RequireOwnership = false)]
+        private void TakeDamageServerRpc(ulong receiverNetworkObjectId, ulong inflicterNetworkObjectId, int damage, ServerRpcParams serverRpcParams = default)
+        {
+            ulong clientIdReceiver = NetworkManager.Singleton.SpawnManager.SpawnedObjects[receiverNetworkObjectId].OwnerClientId;
+            TakeDamageClientRpc(clientIdReceiver, inflicterNetworkObjectId, damage);
+        }
+
+        [ClientRpc]
+        private void TakeDamageClientRpc(ulong clientId, ulong inflicterNetworkObjectId, int damage, ClientRpcParams clientRpcParams = default)
+        {
+            if (clientId != NetworkManager.Singleton.LocalClientId) return;
+            PlayerBehaviour playerBehaviour = NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerBehaviour>();
+            playerBehaviour._currentHealth -= damage;
+            if (playerBehaviour._currentHealth <= 0)
+            {
+                playerBehaviour._currentHealth = 0;
+                playerBehaviour._networkLifeState.LifeState.Value = LifeState.Dead;
+            }
+        }
 
         /// <summary>
         /// Call to send the init data to the spawned client on the game scene
@@ -298,13 +327,16 @@ namespace Player
             Debug.Log("------------------SENT Client Behaviour init data ------------------");
             Debug.Log("Client Id -> " + clientId + " - " + NetworkManager.Singleton.LocalClientId + " - " + IsOwner +
                       " - " + IsLocalPlayer);
+            //Get Components
             PlayerBehaviour playerBehaviour = NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerBehaviour>();
             playerBehaviour._playerInputController = playerBehaviour.GetComponent<PlayerInputController>();
             playerBehaviour._playerController = playerBehaviour.GetComponent<PlayerController>();
+            //Player Canvas
             GameObject c = GameObject.FindGameObjectWithTag("PlayerCanvas");
             playerBehaviour._healthText = c.transform.Find("HealthWrapper").transform.Find("HealthText")
                 .GetComponent<TextMeshProUGUI>();
             playerBehaviour._ammoText = c.transform.Find("AmmoText").GetComponent<TextMeshProUGUI>();
+            //Equip Weapon
             if (playerBehaviour._defaultWeapon != null)
             {
                 EquipWeapon(playerBehaviour._defaultWeapon.weaponType);
@@ -498,7 +530,7 @@ namespace Player
             go.GetComponent<NetworkObject>().Spawn(true);
         }
 
-        [ServerRpc]
+        [ServerRpc(RequireOwnership = false)]
         public void DestroyProjectileServerRpc(ulong networkObjectId, ServerRpcParams serverRpcParams = default)
         {
             NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
@@ -521,8 +553,8 @@ namespace Player
                 RoundManager.OnRoundManagerSpawned -= InitRound;
                 SceneTransitionHandler.Instance.OnClientLoadedGameScene -= ClientLoadedGameScene;
                 _networkLifeState.LifeState.OnValueChanged -= OnLifeStateChanged;
-                _damageReceiver.DamageReceived -= OnDamageReceived;
             }
+            _damageReceiver.DamageReceived -= OnDamageReceived;
         }
 
         #endregion
