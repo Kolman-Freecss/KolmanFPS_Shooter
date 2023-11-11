@@ -19,7 +19,7 @@ GameObject:
   - component: {fileID: -721991409134482856}
   m_Layer: 7
   m_Name: BasePlayer
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -186,8 +186,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 590c0a658481f3444a368bdd350dcd0c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _playerFpsCameraCenter: {fileID: 0}
-  playerWeaponCenter: {fileID: 0}
+  _playerFpsCameraCenter: {fileID: 7728799787280681472}
+  playerWeaponCenter: {fileID: 5056028243761641879}
   _speed: 4
   _sprintSpeed: 6
   RotationSmoothTime: 0.12
@@ -715,6 +715,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 6689379007991028647}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5997d1efc4599f24898ddcabaafe0df4,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6541469131828391937}
   m_SourcePrefab: {fileID: 100100000, guid: 5997d1efc4599f24898ddcabaafe0df4, type: 3}
 --- !u!4 &254750066293685143 stripped
 Transform:
@@ -755,6 +759,20 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &6541469131828391937
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6157547499845227269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad8deae8091111f4eb30a56c1f4e0d3e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  TransitionStateInfoList: []
+  m_Animator: {fileID: 6689379007991028647}
 --- !u!4 &6791376007739656639 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 5997d1efc4599f24898ddcabaafe0df4,

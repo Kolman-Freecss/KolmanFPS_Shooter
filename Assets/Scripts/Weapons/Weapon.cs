@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
+using Entities.Weapon;
+using Entities.Weapon.SO;
 using Model;
-using Model.Weapon;
-using Model.Weapon.SO;
 using Player;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Weapons
 {

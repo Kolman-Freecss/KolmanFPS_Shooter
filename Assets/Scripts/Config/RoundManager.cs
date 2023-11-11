@@ -46,6 +46,7 @@ namespace Config
                 GetReferences();
                 OnRoundManagerSpawned?.Invoke();
             }
+            SoundManager.Instance.StartBackgroundMusic(SoundManager.BackgroundMusic.InGame);
         }
         
         private void Start()
