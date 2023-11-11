@@ -1,5 +1,12 @@
 
-=csharpsquid:S2933"Make '_weapons' 'readonly'.(ëÉ›àûÿÿÿÿ
-†csharpsquid:S1450"bRemove the field '_currentWeaponIndex' and declare it as a local variable in the relevant methods.(ÙÃ‰ö8òĞÛ¹1
-Bcsharpsquid:S125]"Remove this commented out code.(Ú°à¬8öÄ¿Û¹1
-]csharpsquid:S1135S"4Complete the task associated to this 'TODO' comment.(ƒõ‚šıÿÿÿÿ8•ÒÁÛ¹1
+?csharpsquid:S2933"Make '_weapons' 'readonly'.(¯°©€8ğ»õ»1
+Ccsharpsquid:S125®"Remove this commented out code.(÷ó¨¤8ñ»õ»1
+Hcsharpsquid:S125¹"Remove this commented out code.(Ãï² úÿÿÿÿ8ñ»õ»1
+Ccsharpsquid:S125Ù"Remove this commented out code.(Ú°à¬8öÄ¿Û¹1
+Hcsharpsquid:S125Æ"Remove this commented out code.(¦£«—ÿÿÿÿÿ8ñ»õ»1
+Bcsharpsquid:S125Ä"Remove this commented out code.(½Ûí8ò»õ»1
+^csharpsquid:S1135"4Complete the task associated to this 'TODO' comment.(ƒõ‚šıÿÿÿÿ8•ÒÁÛ¹1
+^csharpsquid:S1135œ"4Complete the task associated to this 'TODO' comment.(ÙÃëíüÿÿÿÿ8ò»õ»1
+^csharpsquid:S1135£"4Complete the task associated to this 'TODO' comment.(´‚•­úÿÿÿÿ8ò»õ»1
+^csharpsquid:S1135Å"4Complete the task associated to this 'TODO' comment.(òÈíÕøÿÿÿÿ8ò»õ»1
+^csharpsquid:S1135ª"4Complete the task associated to this 'TODO' comment.(š¯äâıÿÿÿÿ8ò»õ»1

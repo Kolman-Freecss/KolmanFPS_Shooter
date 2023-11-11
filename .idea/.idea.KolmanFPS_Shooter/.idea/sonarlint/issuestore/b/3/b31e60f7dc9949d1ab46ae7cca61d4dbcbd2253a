@@ -1,4 +1,6 @@
 
 csharpsquid:S101"sRename class 'CinemachinePOVExtension' to match pascal case naming rules, consider using 'CinemachinePovExtension'.(ìÉƒÅ
-Lcsharpsquid:S1066("/Merge this if statement with the enclosing one.(½¼ä
-ƒcsharpsquid:S2583*"fChange this condition so that it does not always evaluate to 'False'. Some code paths are unreachable.(›ò™¿
+Lcsharpsquid:S1066*"/Merge this if statement with the enclosing one.(½¼ä
+^csharpsquid:S1185":Remove this method 'Awake' to simply inherit its behavior.(÷Û²İ8ÃÅõ»1
+ƒcsharpsquid:S2583,"fChange this condition so that it does not always evaluate to 'False'. Some code paths are unreachable.(›ò™¿
+Acsharpsquid:S125"Remove this commented out code.(ß¨…	8ÄÅõ»1

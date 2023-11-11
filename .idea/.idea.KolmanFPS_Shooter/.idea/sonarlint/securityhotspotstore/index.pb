@@ -13,3 +13,17 @@ X
 (Assets/Scripts/Player/PlayerBehaviour.cs,0\7\079362aa6b192b83b7b366271a301262064b1c23
 P
  Assets/Scripts/Weapons/Weapon.cs,8\d\8d98ef09cb88e26fee805c1e1484ab8b047d30a8
+U
+%Assets/Scripts/Config/SoundManager.cs,4\2\424f8affa5df724ad735efc4c644b888680b2b2a
+U
+%Assets/Scripts/Config/RoundManager.cs,9\6\963592e84f90ff3ee2d876049641467547a12d18
+Y
+)Assets/Scripts/Player/CameraController.cs,0\8\083e55b993c8dae743d4aed6c884a48299fe0cd3
+[
++Assets/Scripts/Entities/Weapon/SO/AmmoSO.cs,0\f\0ff16d22805b20b05bca1f972996c33aab73e1b3
+\
+,Assets/Scripts/Entities/Weapon/WeaponType.cs,d\6\d6d290be826c090e5021ec39c4a4daa96f8fdbd4
+V
+&Assets/Scripts/Entities/Weapon/Ammo.cs,8\3\83577a00d4d1cac4deb74f141f4c795c21a0b3b0
+Z
+*Assets/Scripts/Entities/Weapon/AmmoType.cs,0\d\0d06d00249919a333f92a3f097091e9a3b3dfb53

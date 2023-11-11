@@ -1,0 +1,8 @@
+
+8csharpsquid:S2933	"Make 'ammoType' 'readonly'.(¼¼ç£
+?csharpsquid:S2933
+"Make 'ammoDamage' 'readonly'.(¯ûÿÿÿÿ
+Bcsharpsquid:S2933"%Make 'ammoInClipCapacity' 'readonly'.(¤ŞŞ…
+:csharpsquid:S2933"Make 'ammoPrefab' 'readonly'.(µ¡¸ö
+vcsharpsquid:S4487
+"TRemove this unread private field 'ammoDamage' or refactor the code to use its value.(¯ûÿÿÿÿ
