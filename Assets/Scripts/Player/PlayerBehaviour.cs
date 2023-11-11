@@ -118,7 +118,6 @@ namespace Player
         {
             if (!GameManager.Instance.isGameStarted.Value) return;
             UpdatePlayerCanvas();
-            UpdateWeaponRotation();
             Shoot();
         }
 
@@ -133,20 +132,6 @@ namespace Player
             {
                 this._ammoText.text = _currentWeapon.currentAmmo.getAmmoInfo();
             }
-        }
-
-        public void UpdateWeaponRotation()
-        {
-            if (_currentWeapon == null) return;
-            Vector3 desiredRotation = _playerController.MainCamera.transform.localRotation.eulerAngles;
-            _currentWeapon.transform.localRotation = Quaternion.Euler(desiredRotation.x, desiredRotation.y, 0f);
-            // Move weapon Y and Z position in proportion to camera X rotation
-            // float proportionFactor = 2f;
-            // _currentWeapon.transform.localPosition = new Vector3(
-            //     _currentWeapon.transform.localPosition.x + desiredRotation.x * proportionFactor,
-            //     _currentWeapon.transform.localPosition.y + desiredRotation.x * proportionFactor,
-            //     _currentWeapon.transform.localPosition.z + desiredRotation.x * proportionFactor
-            // );
         }
 
         void Shoot()
@@ -383,6 +368,17 @@ namespace Player
                     };
                     pc.AddSource(constraintSource);
                     pc.constraintActive = true;
+                }
+                RotationConstraint rc = weapon.GetComponent<RotationConstraint>();
+                if (rc)
+                {
+                    var constraintSource = new ConstraintSource()
+                    {
+                        sourceTransform = playerBehaviour.transform,
+                        weight = 1
+                    };
+                    rc.AddSource(constraintSource);
+                    rc.constraintActive = true;
                 }
             }
             catch (Exception e)
