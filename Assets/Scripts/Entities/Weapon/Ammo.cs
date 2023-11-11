@@ -8,6 +8,8 @@ namespace Entities.Weapon
     {
         AmmoType ammoType;
         int ammoDamage;
+        [HideInInspector]
+        public int AmmoDamage => ammoDamage;
         int ammoCount;
         int ammoInClipCapacity;
         int ammoClips;

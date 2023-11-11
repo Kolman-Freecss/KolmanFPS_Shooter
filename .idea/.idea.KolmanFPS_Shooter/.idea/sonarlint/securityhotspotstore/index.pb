@@ -37,3 +37,11 @@ Z
 *Assets/Scripts/Config/ConnectionManager.cs,7\f\7fe1e3102ecfdedd6be640e1c9facdb51cd37a38
 _
 /Assets/Scripts/Config/SceneTransitionHandler.cs,c\8\c83c22f604080e8ce6f266a56352d368d771cdb6
+f
+6Assets/Scripts/Gameplay/GameplayObjects/IDamageable.cs,e\d\edd8616228484ee320c4817bee8c396e5eb24a3b
+^
+.Assets/Scripts/Gameplay/Player/ClientPlayer.cs,1\d\1d587386f9fd059cb2eaeeb5bcc0ab1112933db9
+i
+9Assets/Scripts/Gameplay/GameplayObjects/DamageReceiver.cs,d\6\d6d75f8ce6a5ee7acdef01ef37f4f62a2f49938f
+k
+;Assets/Scripts/Gameplay/GameplayObjects/NetworkLifeState.cs,2\f\2fbecf3eff6f606afabc2d1cca78db7c5682e341

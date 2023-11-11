@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Config;
+using Gameplay.GameplayObjects;
 using Model;
 using TMPro;
 using Unity.Netcode;
@@ -23,16 +24,25 @@ namespace Player
 
         #endregion
 
-        #region Auxiliary Variables
+        #region Member Variables
 
         PlayerInputController _playerInputController;
         PlayerController _playerController;
         [HideInInspector] public PlayerController PlayerController => _playerController;
+
+
+        // Player State
+        NetworkLifeState _networkLifeState;
+        [HideInInspector] public LifeState LifeState => _networkLifeState.LifeState.Value;
+        DamageReceiver _damageReceiver;
+        [HideInInspector] public DamageReceiver DamageReceiver => _damageReceiver;
+        private float _currentHealth = 100f;
         List<NetworkObject> _weapons = new List<NetworkObject>();
         Weapon _currentWeapon;
         int _currentWeaponIndex = 0;
 
-        private float _health = 100f;
+        //TODO: Move this to another class
+        // Canvas state
         private TextMeshProUGUI _healthText;
         private TextMeshProUGUI _ammoText;
 
@@ -46,6 +56,8 @@ namespace Player
         private void OnEnable()
         {
             _playerController = GetComponent<PlayerController>();
+            _networkLifeState = GetComponent<NetworkLifeState>();
+            _damageReceiver = GetComponent<DamageReceiver>();
         }
 
         public override void OnNetworkSpawn()
@@ -63,6 +75,8 @@ namespace Player
         private void RegisterServerCallbacks()
         {
             RoundManager.OnRoundManagerSpawned += InitRound;
+            _networkLifeState.LifeState.OnValueChanged += OnLifeStateChanged;
+            _damageReceiver.DamageReceived += OnDamageReceived;
         }
 
         /// <summary>
@@ -88,7 +102,7 @@ namespace Player
         void Init()
         {
             _currentWeaponIndex = 0;
-            _health = _maxHealth;
+            _currentHealth = _maxHealth;
         }
 
         /// <summary>
@@ -116,7 +130,9 @@ namespace Player
 
         private void Update()
         {
-            if (!GameManager.Instance.isGameStarted.Value) return;
+            if (!GameManager.Instance.isGameStarted.Value ||
+                LifeState != LifeState.Alive)
+                return;
             UpdatePlayerCanvas();
             Shoot();
         }
@@ -125,9 +141,36 @@ namespace Player
 
         #region Logic
 
+        void OnLifeStateChanged(LifeState prevLifeState, LifeState lifeState)
+        {
+            switch (lifeState)
+            {
+                case LifeState.Alive:
+                    //TODO: Play some sound or animation like LETS GO
+                    break;
+                case LifeState.Dead:
+                    //TODO: Clear actions queue and play some animation and sound
+                    break;
+            }
+        }
+        
+        void OnDamageReceived(PlayerBehaviour inflicter, int damage)
+        {
+            if (inflicter == this)
+            {
+                _currentHealth -= damage;
+                if (_currentHealth <= 0)
+                {
+                    _currentHealth = 0;
+                    _networkLifeState.LifeState.Value = LifeState.Dead;
+                    //TODO: Plus kill to the inflicter
+                }
+            }
+        }
+
         void UpdatePlayerCanvas()
         {
-            this._healthText.text = _health.ToString();
+            this._healthText.text = _currentHealth.ToString();
             if (_currentWeapon != null)
             {
                 this._ammoText.text = _currentWeapon.currentAmmo.getAmmoInfo();
@@ -182,12 +225,12 @@ namespace Player
                 {
                     case "PLayer":
                         Debug.Log("Player hit");
-                        // EnemyHealth target = hit.transform.GetComponent<EnemyHealth>();
-                        // if (target == null) return;
-                        // target.TakeDamage(damage); + ammoDamage
+                        DamageReceiver damageReceiver = hit.transform.gameObject.GetComponent<DamageReceiver>();
+                        if (damageReceiver == null) return;
+                        damageReceiver.ReceiveDamage(this, _currentWeapon.GetTotalDamage());
+                        CreateHitImpact(hit, true);
                         break;
                     default:
-                        Debug.Log("Other hit");
                         CreateHitImpact(hit);
                         break;
                 }
@@ -199,11 +242,11 @@ namespace Player
             }
         }
 
-        private void CreateHitImpact(RaycastHit hit)
+        private void CreateHitImpact(RaycastHit hit, bool isPlayer = false)
         {
             if (_currentWeapon.hitEffect != null)
             {
-                ShootServerRpc(hit.point, hit.normal, _currentWeapon.NetworkObjectId);
+                ShootServerRpc(hit.point, hit.normal, _currentWeapon.NetworkObjectId, isPlayer);
             }
             else
             {
@@ -369,6 +412,7 @@ namespace Player
                     pc.AddSource(constraintSource);
                     pc.constraintActive = true;
                 }
+
                 RotationConstraint rc = weapon.GetComponent<RotationConstraint>();
                 if (rc)
                 {
@@ -415,11 +459,12 @@ namespace Player
         }
 
         [ServerRpc(RequireOwnership = false)]
-        public void ShootServerRpc(Vector3 hitPoint, Vector3 hitNormal, ulong networkObjectId,
+        public void ShootServerRpc(Vector3 hitPoint, Vector3 hitNormal, ulong networkObjectId, bool isPlayer,
             ServerRpcParams serverRpcParams = default)
         {
             NetworkObject weaponNetworkObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
-            GameObject impact = Instantiate(weaponNetworkObject.GetComponent<Weapon>().hitEffect, hitPoint,
+            GameObject hitEffect = isPlayer ? weaponNetworkObject.GetComponent<Weapon>().playerHitEffect : weaponNetworkObject.GetComponent<Weapon>().hitEffect;
+            GameObject impact = Instantiate(hitEffect, hitPoint,
                 Quaternion.LookRotation(hitNormal));
             NetworkObject no = impact.GetComponent<NetworkObject>();
             no.Spawn();
@@ -475,6 +520,8 @@ namespace Player
             {
                 RoundManager.OnRoundManagerSpawned -= InitRound;
                 SceneTransitionHandler.Instance.OnClientLoadedGameScene -= ClientLoadedGameScene;
+                _networkLifeState.LifeState.OnValueChanged -= OnLifeStateChanged;
+                _damageReceiver.DamageReceived -= OnDamageReceived;
             }
         }
 

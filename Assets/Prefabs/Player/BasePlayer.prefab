@@ -17,6 +17,8 @@ GameObject:
   - component: {fileID: 6834560104072505948}
   - component: {fileID: 6862180529981736544}
   - component: {fileID: -721991409134482856}
+  - component: {fileID: 963912680402986843}
+  - component: {fileID: 3913008436502510152}
   m_Layer: 7
   m_Name: BasePlayer
   m_TagString: Player
@@ -220,6 +222,33 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
+--- !u!114 &963912680402986843
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 887045496648381731}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62c8ac57e8474789af9118af222fa609, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_LifeState:
+    m_InternalValue: 0
+--- !u!114 &3913008436502510152
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 887045496648381731}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 865903a084704d978e9b00d5a2460cca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_NetworkLifeState: {fileID: 963912680402986843}
 --- !u!1 &4223415584048440867
 GameObject:
   m_ObjectHideFlags: 0

@@ -13,7 +13,7 @@ namespace Weapons
         #region Inspector Variables
 
         public WeaponType weaponType;
-        public float damage = 40f;
+        public int damage = 40;
         public float range = 100f; // Range of the weapon
         public float fireRate = 1f; // Cadency
         public float reloadTime = 1f;
@@ -22,6 +22,7 @@ namespace Weapons
         public AudioSource audioSource;
         public bool isReloading = false;
         public GameObject hitEffect;
+        public GameObject playerHitEffect;
 
         #endregion
 
@@ -130,6 +131,15 @@ namespace Weapons
             }
         }
 
+        /// <summary>
+        /// Return damage of the weapon plus the damage of the ammo
+        /// </summary>
+        /// <returns></returns>
+        public int GetTotalDamage()
+        {
+            return damage + currentAmmo.AmmoDamage;
+        }
+
         #endregion
 
         #region Events
@@ -142,7 +152,6 @@ namespace Weapons
         
 
         #endregion
-
 
         #region Debug
 

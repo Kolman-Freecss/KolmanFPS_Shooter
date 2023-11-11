@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
@@ -36,6 +37,8 @@ namespace Config
 
         #region Member Variables
         
+        private const string RegexIp = @"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b";
+        private const string RegexPort = @"^[0-9]{1,5}$";
         public const string DefaultIp = "127.0.0.1";
         public const int DefaultPort = 7777;
 
@@ -119,6 +122,11 @@ namespace Config
                 portInt = DefaultPort;
             }
 
+            if (!CheckRegex(portInt.ToString(), RegexPort))
+            {
+                portInt = DefaultPort;
+            }
+
             ConnectionManager.Instance.StartHost(DefaultIp, portInt);
         }
         
@@ -129,10 +137,39 @@ namespace Config
             {
                 portInt = DefaultPort;
             }
+
+            if (!CheckRegex(portInt.ToString(), RegexPort))
+            {
+                //TODO: Notify to client that the port is not valid and we are using the default port
+                portInt = DefaultPort;
+            }
             
             string ipAddress = string.IsNullOrEmpty(_textClientIPTToConnect.text) ? DefaultIp : _textClientIPTToConnect.text;
+
+            if (!CheckRegex(_textClientIPTToConnect.text, RegexIp))
+            {
+                //TODO: Notify to client that the ip is not valid and we are using the default ip
+                ipAddress = DefaultIp;
+            }
             
             ConnectionManager.Instance.StartClient(ipAddress, portInt);
+        }
+
+        private bool CheckRegex(string input, string regex)
+        {
+            bool isValid = false;
+            if (Regex.IsMatch(input, regex))
+            {
+                Debug.Log("IP is valid");
+                isValid = true;
+            }
+            else
+            {
+                Debug.LogWarning("IP is not valid");
+                //TODO: Show message to the client
+            }
+
+            return isValid;
         }
 
         #endregion
