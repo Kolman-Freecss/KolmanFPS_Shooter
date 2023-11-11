@@ -155,7 +155,15 @@ namespace Player
                     break;
                 case LifeState.Dead:
                     //TODO: Clear actions queue and play some animation and sound
+                    OnDead();
                     break;
+            }
+
+            void OnDead()
+            {
+                enabled = false;
+                _playerController.OnDead();
+                //TODO: Respawn or wait to finish the current round
             }
         }
         

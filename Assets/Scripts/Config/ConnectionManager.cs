@@ -45,11 +45,13 @@ namespace Config
 
         private void Start()
         {
-            GetReferences();
+            SubscribeToEvents();
         }
         
-        void GetReferences()
+        void SubscribeToEvents()
         {
+            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnect;
         }
 
         #endregion
@@ -64,7 +66,7 @@ namespace Config
                 if (NetworkManager.Singleton.StartHost())
                 {
                     SceneTransitionHandler.Instance.RegisterNetworkCallbacks();
-                    SceneTransitionHandler.Instance.LoadScene(SceneTransitionHandler.SceneStates.InGame);
+                    SceneTransitionHandler.Instance.LoadScene(SceneTransitionHandler.SceneStates.Multiplayer_InGame);
                     Debug.Log("Host started");
                 }
                 else
@@ -97,6 +99,32 @@ namespace Config
             }
         }
         
+        void OnClientConnected(ulong clientId)
+        {
+            Debug.Log($"Client {clientId} connected");
+        }
+        
+        void OnClientDisconnect(ulong clientId)
+        {
+            Debug.Log($"Client {clientId} disconnected");
+            GameManager.Instance.OnClientDisconnectCallbackServerRpc(clientId);
+        }
+        
+        #endregion
+
+        #region Destructor
+
+        private void OnDisable()
+        {
+            UnsubscribeToEvents();
+        }
+        
+        void UnsubscribeToEvents()
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnect;
+        }
+
         #endregion
         
     }

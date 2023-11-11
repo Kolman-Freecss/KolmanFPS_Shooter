@@ -10,7 +10,7 @@ namespace Config
         #region Inspector Variables
 
         [SerializeField]
-        public string DefaultScene = "MultiplayerLobby";
+        public SceneStates DefaultScene = SceneStates.Multiplayer_Lobby;
 
         #endregion
         
@@ -38,8 +38,9 @@ namespace Config
         public enum SceneStates
         {
             Init,
-            MultiplayerLobby,
-            InGame,
+            Multiplayer_Lobby,
+            Multiplayer_InGame,
+            Multiplayer_EndGame,
         }
 
         #region InitData
@@ -68,7 +69,7 @@ namespace Config
         {
             if (m_SceneState == SceneStates.Init)
             {
-                LoadScene(SceneStates.MultiplayerLobby);
+                LoadScene(DefaultScene);
             }
         }
 
@@ -110,7 +111,7 @@ namespace Config
         private void OnLoadComplete(ulong clientId, string sceneName, LoadSceneMode loadSceneMode)
         {
             Debug.Log("OnLoadComplete " + sceneName);
-            if (SceneStates.InGame.ToString().Equals(sceneName))
+            if (SceneStates.Multiplayer_InGame.ToString().Equals(sceneName))
             {
                 //m_numberOfClientLoaded += 1;
                 OnClientLoadedGameScene?.Invoke(clientId);

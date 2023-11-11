@@ -1,14 +1,16 @@
+using System.Collections;
 using System.Collections.Generic;
 using Player;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.UIElements;
 
 namespace Config
 {
     public class GameManager : NetworkBehaviour
     {
-        #region Auxiliar properties
+        #region Member properties
 
         public static GameManager Instance { get; private set; }
         
@@ -22,7 +24,7 @@ namespace Config
             NetworkVariableReadPermission.Everyone, 
             NetworkVariableWritePermission.Server);
         
-        Dictionary<ulong, PlayerController> players = new Dictionary<ulong, PlayerController>();
+        private const int TimeToEndGame = 5;
 
         #endregion
 
@@ -51,7 +53,6 @@ namespace Config
         {
             isGameStarted.Value = false;
             isGameOver.Value = false;
-            players.Clear();
         }
 
         private void ManageSingleton()
@@ -90,16 +91,65 @@ namespace Config
         
         private void StartGame()
         {
-            if (!isGameStarted.Value && SceneTransitionHandler.Instance.GetCurrentSceneState().Equals(SceneTransitionHandler.SceneStates.InGame))
+            if (!isGameStarted.Value && SceneTransitionHandler.Instance.GetCurrentSceneState().Equals(SceneTransitionHandler.SceneStates.Multiplayer_InGame))
             {
                 Debug.Log("------------------START GAME------------------");
                 isGameStarted.Value = true;
             }
         }
+        
+        public void PlayerEndGame(ulong clientId)
+        {
+            SceneTransitionHandler.Instance.LoadScene(SceneTransitionHandler.SceneStates.Multiplayer_EndGame);
+            OnPlayerEndGameServerRpc();
+        }
+        
+        public void AddPlayer(ulong clientId, PlayerController player)
+        {
+        }
+        
+        public void RemovePlayer(ulong clientId)
+        {
+        }
 
         #endregion
 
         #region Network calls/Events
+
+        /// <summary>
+        /// When the game is over, the server will notify all clients to end the game
+        /// </summary>
+        [ServerRpc]
+        public void OnEndGameServerRpc()
+        {
+            OnEndGameClientRpc();
+            //NetworkManager.Singleton.StopHost();
+        }
+
+        [ClientRpc]
+        public void OnEndGameClientRpc()
+        {
+            if (!isGameOver.Value)
+            {
+                Debug.Log("------------------END GAME------------------");
+                isGameOver.Value = true;
+                EndGame();
+            }
+
+            IEnumerator EndGame(int timeToEndGame = TimeToEndGame)
+            {
+                yield return new WaitForSeconds(timeToEndGame);
+                SceneTransitionHandler.Instance.LoadScene(SceneTransitionHandler.SceneStates.Multiplayer_EndGame);
+            }
+        }
+        
+        [ServerRpc(RequireOwnership = false)]
+        public void OnPlayerEndGameServerRpc(ServerRpcParams serverRpcParams = default)
+        {
+            ulong clientId = serverRpcParams.Receive.SenderClientId;
+            PlayerEndGame(clientId);
+            RemovePlayerFromGameClientRpc(clientId);
+        }
         
         [ClientRpc]
         private void OnClientConnectedCallbackClientRpc(ulong clientId, ClientRpcParams clientRpcParams = default)
@@ -109,46 +159,20 @@ namespace Config
             Debug.Log("Client Id -> " + clientId);
             StartGame();
         }
+        
+        [ServerRpc]
+        public void OnClientDisconnectCallbackServerRpc(ulong cliendId, ServerRpcParams serverRpcParams = default)
+        {
+            RemovePlayerFromGameClientRpc(cliendId);
+        }
 
-        // <summary>
-        // Called when a client connects to the server
-        // TODO: Manage it from the server
-        // </summary>
-        public void AddPlayer(ulong networkObjectId, PlayerController player)
-        {
-            players.Add(networkObjectId, player);
-        }
-        
-        
-        // <summary>
-        // Called when a client disconnects from the server
-        // TODO: Manage it from the server
-        // </summary>
-        public void RemovePlayerAllClients(ulong networkObjectId)
-        {
-            //Server will notified to a single client when his scene is loaded
-            ClientRpcParams clientRpcParams = new ClientRpcParams
-            {
-                Send = new ClientRpcSendParams
-                {
-                    TargetClientIds = new ulong[] {networkObjectId}
-                }
-            };
-            RemovePlayerFromGameClientRpc(networkObjectId);
-        }
-        
         [ClientRpc]
-        private void RemovePlayerFromGameClientRpc(ulong networkObjectId, ClientRpcParams clientRpcParams = default)
+        private void RemovePlayerFromGameClientRpc(ulong cliendId, ClientRpcParams clientRpcParams = default)
         {
-            Debug.Log("------------------ Player removed------------------ " + networkObjectId);
-            RemovePlayer(networkObjectId);
+            Debug.Log("------------------ Player removed------------------ " + cliendId);
+            RemovePlayer(cliendId);
         }
         
-        public void RemovePlayer(ulong networkObjectId)
-        {
-            players.Remove(networkObjectId);
-        }
-
         #endregion
         
         #region Destructor
@@ -166,7 +190,6 @@ namespace Config
         
         public void ClearInitData()
         {
-            players.Clear();
         }
         
         private void UnregisterServerCallbacks()
@@ -177,6 +200,7 @@ namespace Config
         void UnSubscribeToDelegatesAndUpdateValues()
         {
         }
+        
 
         #endregion
         

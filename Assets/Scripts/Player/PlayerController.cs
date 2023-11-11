@@ -127,7 +127,7 @@ namespace Player
                 Debug.Log("Client");    
             }
             
-            SceneTransitionHandler.Instance.SetSceneState(SceneTransitionHandler.SceneStates.InGame);
+            SceneTransitionHandler.Instance.SetSceneState(SceneTransitionHandler.SceneStates.Multiplayer_InGame);
         }
         
         private void RegisterServerCallbacks()
@@ -162,6 +162,15 @@ namespace Player
         #endregion
 
         #region Logic
+
+        public void OnDead()
+        {
+            // if (_hasAnimator)
+            // {
+            //     _animator.SetTrigger("Dead");
+            // }
+            RoundManager.Instance.OnPlayerDeathServerRpc(NetworkObjectId);
+        }
 
         void Jump()
         {
@@ -328,7 +337,6 @@ namespace Player
         {
             Debug.Log("------------------SENT Client Init Awake Data------------------");
             Debug.Log("Client Id -> " + clientId);
-            GameManager.Instance.AddPlayer(NetworkObjectId, this);
             if (!IsLocalPlayer || !IsOwner)
             {
                 // We need to disable the player input controller for the other clients in every player
@@ -403,7 +411,6 @@ namespace Player
             if (IsServer)
             {
                 UnregisterServerCallbacks();
-                GameManager.Instance.RemovePlayerAllClients(NetworkObjectId);
             }
             UnSubscribeToDelegatesAndUpdateValues();
             

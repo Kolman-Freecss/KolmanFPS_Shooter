@@ -45,3 +45,5 @@ i
 9Assets/Scripts/Gameplay/GameplayObjects/DamageReceiver.cs,d\6\d6d75f8ce6a5ee7acdef01ef37f4f62a2f49938f
 k
 ;Assets/Scripts/Gameplay/GameplayObjects/NetworkLifeState.cs,2\f\2fbecf3eff6f606afabc2d1cca78db7c5682e341
+T
+$Assets/Scripts/Config/GameManager.cs,5\8\58d232725f5800ded0b5e9940b730451bff13115

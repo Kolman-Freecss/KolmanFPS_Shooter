@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
 using Unity.Netcode;
@@ -19,9 +20,11 @@ namespace Config
 
         #endregion
 
-        #region Auxiliary Variables
+        #region Member Variables
 
         public static RoundManager Instance { get; private set; }
+        //private const int MaxPlayers = 10;
+        private const int TimeToRespawn = 5;
 
         #endregion
 
@@ -82,6 +85,57 @@ namespace Config
         public GameObject GetRandomCheckpoint()
         {
             return _checkpoints[Random.Range(0, _checkpoints.Count)];
+        }
+
+        #endregion
+
+        #region Network Events Handler
+
+        [ServerRpc(RequireOwnership = false)]
+        public void OnPlayerDeathServerRpc(ulong networkObjectPlayerId, ServerRpcParams serverRpcParams = default)
+        {
+            ulong clientId = serverRpcParams.Receive.SenderClientId;
+            OnPlayerDeathClientRpc(clientId);
+            StartCoroutine(OnPlayerDeath(clientId));
+            
+            IEnumerator OnPlayerDeath(ulong clientId, float timeToRespawn = TimeToRespawn)
+            {
+                yield return new WaitForSeconds(timeToRespawn);
+                NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.Despawn();
+                RespawnClientRpc(clientId);
+            }
+        }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="clientId"></param>
+        /// <param name="clientRpcParams"></param>
+        [ClientRpc]
+        public void RespawnClientRpc(ulong clientId, ClientRpcParams clientRpcParams = default)
+        {
+            //TODO: Make the respawn not GAME OVER
+            if (clientId == NetworkManager.Singleton.LocalClientId)
+            {
+                GameManager.Instance.PlayerEndGame(clientId);
+            }
+            // else
+            // {
+            //     Debug.Log("Player " + clientId + " respawned");
+            // }
+        }
+        
+        [ClientRpc]
+        public void OnPlayerDeathClientRpc(ulong clientId, ClientRpcParams clientRpcParams = default)
+        {
+            if (clientId == NetworkManager.Singleton.LocalClientId)
+            {
+                Debug.Log("You died");
+            }
+            else
+            {
+                Debug.Log("Player " + clientId + " died");
+            }
         }
 
         #endregion
