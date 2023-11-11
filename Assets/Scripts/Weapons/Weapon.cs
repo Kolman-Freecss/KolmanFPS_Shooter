@@ -51,8 +51,6 @@ namespace Weapons
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
-            
-            Debug.Log("Weapon OnNetworkSpawn + " + weaponType + " " + NetworkObjectId + " " + NetworkManager.Singleton.LocalClientId + " " + IsOwner);
         }
 
         private void Start()

@@ -2,11 +2,8 @@ using Camera;
 using Cinemachine;
 using Config;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.LowLevel;
-using UnityEngine.Serialization;
 
 namespace Player
 {
@@ -59,6 +56,7 @@ namespace Player
 
         PlayerInputController _playerInputController;
         CharacterController _controller;
+        Animator _animator;
         GameObject _mainCamera;
         [HideInInspector]
         public GameObject MainCamera => _mainCamera;
@@ -69,6 +67,8 @@ namespace Player
         private float _targetRotation = 0.0f;
         private float _rotationVelocity;
         private float _verticalVelocity;
+        
+        private float _animationBlend;
 
         // Jump
         // timeout deltatime
@@ -76,6 +76,15 @@ namespace Player
         private float _jumpTimeoutDelta;
         private float _fallTimeoutDelta;
         private float _terminalVelocity = 53.0f;
+        
+        //Animator
+        private bool _hasAnimator;
+        
+        private int _animIDForwardVelocity;
+        private int _animIDBackwardVelocity;
+        private int _animIDNormalizedVerticalVelocity;
+        private int _animIDIsGrounded;
+        
 
         #endregion
 
@@ -84,12 +93,23 @@ namespace Player
         private void Awake()
         {
             GetComponentReferences();
+            AssignAnimationIDs();
         }
 
         void GetComponentReferences()
         {
             _playerInputController = GetComponent<PlayerInputController>(); 
             _controller = GetComponent<CharacterController>();
+            _animator = GetComponentInChildren<Animator>(); 
+            _hasAnimator = _animator != null;
+        }
+
+        void AssignAnimationIDs()
+        {
+            _animIDForwardVelocity = Animator.StringToHash("ForwardVelocity");
+            _animIDBackwardVelocity = Animator.StringToHash("BackwardVelocity");
+            _animIDNormalizedVerticalVelocity = Animator.StringToHash("NormalizedVerticalVelocity");
+            _animIDIsGrounded = Animator.StringToHash("IsGrounded");
         }
         
         public override void OnNetworkSpawn()
@@ -136,7 +156,7 @@ namespace Player
             GroundCheck();
             Move();
         }
-
+        
         #endregion
 
         #region Logic
@@ -147,7 +167,7 @@ namespace Player
             {
                 // reset the fall timeout timer
                 _fallTimeoutDelta = FallTimeout;
-
+                
                 // if (_hasAnimator)
                 // {
                 //     _animator.SetBool(_animIDJump, false);
@@ -162,14 +182,14 @@ namespace Player
                 // Jump
                 if (_playerInputController.jump && _jumpTimeoutDelta <= 0.0f)
                 {
+                    // the square root of H * -2 * G = how much velocity needed to reach desired height
+                    _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
+                    
                     // update animator if using character
                     // if (_hasAnimator)
                     // {
                     //     _animator.SetBool(_animIDJump, true);
                     // }
-
-                    // the square root of H * -2 * G = how much velocity needed to reach desired height
-                    _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
                 }
 
                 // jump timeout
@@ -188,6 +208,14 @@ namespace Player
                 {
                     _fallTimeoutDelta -= Time.deltaTime;
                 }
+                // else
+                // {
+                //     // update animator if using character
+                //     if (_hasAnimator)
+                //     {
+                //         _animator.SetBool(_animIDFreeFall, true);
+                //     }
+                // }
 
                 // if we are not grounded, do not jump
                 _playerInputController.jump = false;
@@ -202,6 +230,12 @@ namespace Player
                 // }
                 _verticalVelocity += Gravity * Time.deltaTime;
             }
+
+            if (_hasAnimator)
+            {
+                _animator.SetFloat(_animIDNormalizedVerticalVelocity, _verticalVelocity / JumpHeight);
+            }
+            
         }
 
         void GroundCheck()
@@ -211,10 +245,10 @@ namespace Player
                 transform.position.z);
             _isGrounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers,
                 QueryTriggerInteraction.Ignore);
-            // if (_hasAnimator)
-            // {
-            //     _animator.SetBool(_animIDOnGround, Grounded);
-            // }
+            if (_hasAnimator)
+            {
+                _animator.SetBool(_animIDIsGrounded, _isGrounded);
+            }
         }
 
         void Move()
@@ -242,6 +276,9 @@ namespace Player
                 // rotate to face input direction relative to camera position
                 transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
             }
+            
+            // _animationBlend = Mathf.Lerp(_animationBlend, targetSpeed, Time.deltaTime); //TODO: Acceleration * SpeedChangeRate
+            // if (_animationBlend < 0.01f) _animationBlend = 0f;
 
             Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
 
@@ -253,6 +290,14 @@ namespace Player
             _controller.Move(targetDirection.normalized *
                              (currentHorizontalSpeedMagnitude * Time.deltaTime * targetSpeed) +
                              new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+            
+            if (_hasAnimator)
+            {
+                Vector3 localSmoothedAnimationVelocity = transform.InverseTransformDirection(currentHorizontalSpeed);
+                _animator.SetFloat(_animIDForwardVelocity, localSmoothedAnimationVelocity.x);
+                _animator.SetFloat(_animIDBackwardVelocity, localSmoothedAnimationVelocity.z);
+            }
+            
         }
 
         #endregion
@@ -322,6 +367,24 @@ namespace Player
             GetComponent<CameraController>().enabled = true;
             GetComponent<PlayerInputController>().enabled = true;
             enabled = true;
+        }
+
+        #endregion
+
+        #region Event Functions
+
+        private void OnDrawGizmosSelected()
+        {
+            Color transparentGreen = new Color(0.0f, 1.0f, 0.0f, 0.35f);
+            Color transparentRed = new Color(1.0f, 0.0f, 0.0f, 0.35f);
+
+            if (_isGrounded) Gizmos.color = transparentGreen;
+            else Gizmos.color = transparentRed;
+
+            // when selected, draw a gizmo in the position of, and matching radius of, the grounded collider
+            Gizmos.DrawSphere(
+                new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z),
+                GroundedRadius);
         }
 
         #endregion

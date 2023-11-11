@@ -137,7 +137,6 @@ namespace Player
 
         public void UpdateWeaponRotation()
         {
-            Debug.Log("UpdateWeaponRotation -> " + _currentWeapon);
             if (_currentWeapon == null) return;
             Vector3 desiredRotation = _playerController.MainCamera.transform.localRotation.eulerAngles;
             _currentWeapon.transform.localRotation = Quaternion.Euler(desiredRotation.x, desiredRotation.y, 0f);
@@ -340,7 +339,6 @@ namespace Player
                 no.gameObject.SetActive(false);
                 // TODO: Set the weapon as a child of tthe RoundManager.WeaponPool
                 //no.transform.SetParent(RoundManager.Instance.WeaponPool.transform);
-                Debug.Log("EquipWeaponServerRpc -> " + clientId + " " + no.NetworkObjectId);
                 ClientRpcParams clientRpcParams = new ClientRpcParams
                 {
                     Send = new ClientRpcSendParams
@@ -462,7 +460,6 @@ namespace Player
         [ServerRpc]
         public void DestroyProjectileServerRpc(ulong networkObjectId, ServerRpcParams serverRpcParams = default)
         {
-            Debug.Log("DestroyProjectileServerRpc -> " + networkObjectId);
             NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
             if (no != null)
             {
