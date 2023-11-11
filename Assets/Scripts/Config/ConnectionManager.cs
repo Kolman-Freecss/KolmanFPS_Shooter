@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 
 namespace Config
@@ -55,10 +56,11 @@ namespace Config
         
         #region Logic
         
-        public void StartHost()
+        public void StartHost(string ipAddress, int port)
         {
             try
             {
+                NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(ipAddress, (ushort) port);
                 if (NetworkManager.Singleton.StartHost())
                 {
                     SceneTransitionHandler.Instance.RegisterNetworkCallbacks();
@@ -75,10 +77,11 @@ namespace Config
             }
         }
         
-        public void StartClient()
+        public void StartClient(string ipAddress, int port)
         {
             try
             {
+                NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(ipAddress, (ushort) port);
                 if (NetworkManager.Singleton.StartClient())
                 {
                     Debug.Log("Client started");

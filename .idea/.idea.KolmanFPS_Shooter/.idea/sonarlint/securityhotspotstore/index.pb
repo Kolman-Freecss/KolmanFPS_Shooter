@@ -27,3 +27,13 @@ V
 &Assets/Scripts/Entities/Weapon/Ammo.cs,8\3\83577a00d4d1cac4deb74f141f4c795c21a0b3b0
 Z
 *Assets/Scripts/Entities/Weapon/AmmoType.cs,0\d\0d06d00249919a333f92a3f097091e9a3b3dfb53
+l
+<Assets/Scripts/Entities/Utils/SerializableDictionaryEntry.cs,8\8\883822a1b0546f9ae5d531d0cf19a0c1a813cdbf
+S
+#Assets/Scripts/Utils/ConfigScene.cs,9\9\9917168f8301c161734084f14d1b6ba7b3ea997a
+`
+0Assets/Scripts/Config/MultiplayerLobbyManager.cs,1\9\19d875e2e21a1a59d0acbccad30508ebf2d34831
+Z
+*Assets/Scripts/Config/ConnectionManager.cs,7\f\7fe1e3102ecfdedd6be640e1c9facdb51cd37a38
+_
+/Assets/Scripts/Config/SceneTransitionHandler.cs,c\8\c83c22f604080e8ce6f266a56352d368d771cdb6
