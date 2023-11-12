@@ -102,6 +102,7 @@ namespace Config
         {
             if (clientId != NetworkManager.Singleton.LocalClientId) return;
             Debug.Log("------------------YOU DEAD------------------");
+            NetworkManager.Singleton.Shutdown();
             SceneTransitionHandler.Instance.LoadScene(SceneTransitionHandler.SceneStates.Multiplayer_EndGame, false);
         }
         
@@ -148,19 +149,18 @@ namespace Config
         public void OnPlayerEndGameServerRpc(ServerRpcParams serverRpcParams = default)
         {
             ulong clientId = serverRpcParams.Receive.SenderClientId;
-            // Despawn all the components of the player
-            //NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.Despawn();
-            NetworkManager.Singleton.ConnectedClients[clientId].OwnedObjects.ForEach(
-                (obj) => { obj.Despawn(); }
-            );
-            PlayerDeathClientRpc(clientId);
-            RemovePlayerFromGameClientRpc(clientId);
+            if (clientId != NetworkManager.ServerClientId)
+            {
+                //ConnectionManager.Instance.Disconnect(clientId);
+                PlayerDeathClientRpc(clientId);
+                OnClientDisconnectCallbackServerRpc(clientId);
+            }
+            
         }
         
         [ClientRpc]
         private void OnClientConnectedCallbackClientRpc(ulong clientId, ClientRpcParams clientRpcParams = default)
         {
-            /*if (IsOwner) return;*/
             Debug.Log("------------------SENT Client Loaded Scene------------------");
             Debug.Log("Client Id -> " + clientId);
             StartGame();

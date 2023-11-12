@@ -33,14 +33,14 @@ namespace Gameplay.UI
 
         void OnQuitButtonClicked()
         {
-            ConnectionManager.Instance.Disconnect(NetworkManager.Singleton.LocalClientId);
+            //TODO: Disconnect from server if connected
             Application.Quit();
         }
 
         void OnReturnToLobbyButtonClicked()
         {
-            ConnectionManager.Instance.Disconnect(NetworkManager.Singleton.LocalClientId);
-            SceneTransitionHandler.Instance.SetSceneState(SceneTransitionHandler.SceneStates.Multiplayer_Lobby);
+            //TODO: Disconnect from server if connected
+            SceneTransitionHandler.Instance.LoadScene(SceneTransitionHandler.SceneStates.Multiplayer_Lobby, false);
         }
 
         #endregion

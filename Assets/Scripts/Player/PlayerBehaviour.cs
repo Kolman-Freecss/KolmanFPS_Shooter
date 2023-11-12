@@ -81,8 +81,6 @@ namespace Player
                 _networkLifeState.LifeState.OnValueChanged += OnLifeStateChanged;
             }
 
-            Debug.Log("PlayerBehaviour OnNetworkSpawn + " + NetworkObjectId + " " +
-                      NetworkManager.Singleton.LocalClientId + " " + IsOwner);
         }
 
         private void RegisterServerCallbacks()
@@ -235,12 +233,10 @@ namespace Player
             {
                 Debug.DrawRay(cameraTransform.position, cameraTransform.forward * _currentWeapon.range, Color.green,
                     1f);
-                Debug.Log("Hit");
                 string hitTag = hit.transform.gameObject.tag;
                 switch (hitTag)
                 {
                     case "Player":
-                        Debug.Log("Player hit");
                         DamageReceiver damageReceiver = hit.transform.gameObject.GetComponent<DamageReceiver>();
                         if (damageReceiver == null) return;
                         damageReceiver.ReceiveDamage(this, _currentWeapon.GetTotalDamage());

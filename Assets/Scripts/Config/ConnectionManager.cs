@@ -69,7 +69,6 @@ namespace Config
                 {
                     SceneTransitionHandler.Instance.RegisterNetworkCallbacks();
                     SceneTransitionHandler.Instance.LoadScene(SceneTransitionHandler.SceneStates.Multiplayer_InGame);
-                    Debug.Log("Host started");
                 }
                 else
                 {
@@ -92,7 +91,7 @@ namespace Config
                 }
                 else
                 {
-                    Debug.Log("Client failed to start");
+                    Debug.LogWarning("Client failed to start");
                 }
             }
             catch (Exception e)

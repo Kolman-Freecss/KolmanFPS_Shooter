@@ -94,21 +94,33 @@ namespace Config
         #region Network Events Handler
         
         [ServerRpc]
-        private void DetachWeaponFromPlayerServerRpc(ulong clientId, ServerRpcParams serverRpcParams = default)
+        private void DetachWeaponsFromPlayerServerRpc(ulong clientId, ServerRpcParams serverRpcParams = default)
         {
-            Weapon weapon = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.GetComponent<PlayerBehaviour>().CurrentWeapon;
-            if (weapon != null)
+            NetworkManager.Singleton.ConnectedClients[clientId].OwnedObjects.ForEach((netObj) =>
             {
-                PositionConstraint pc = weapon.GetComponent<PositionConstraint>();
-                pc.RemoveSource(0);
-                pc.enabled = false;
-                RotationConstraint rc = weapon.GetComponent<RotationConstraint>();
-                rc.RemoveSource(0);
-                rc.enabled = false;
-                weapon.GetComponent<Rigidbody>().useGravity = true;
-                weapon.GetComponent<BoxCollider>().enabled = true;
-                // Change ownership of the weapon to the server
-                weapon.GetComponent<NetworkObject>().RemoveOwnership();
+                Weapon weapon = netObj.GetComponent<Weapon>();
+                if (weapon != null)
+                {
+                    DetachWeaponFromPlayer(weapon.gameObject);    
+                }
+            });
+            
+            void DetachWeaponFromPlayer(GameObject weapon)
+            {
+                try
+                {
+                    PositionConstraint pc = weapon.GetComponent<PositionConstraint>();
+                    pc.enabled = false;
+                    RotationConstraint rc = weapon.GetComponent<RotationConstraint>();
+                    rc.enabled = false;
+                    weapon.GetComponent<Rigidbody>().useGravity = true;
+                    weapon.GetComponent<BoxCollider>().enabled = true;
+                    // Change ownership of the weapon to the server
+                    weapon.GetComponent<NetworkObject>().RemoveOwnership();
+                } catch (Exception e)
+                {
+                    Debug.LogError("Error detaching weapon from player: " + e.Message);
+                }
             }
         }
 
@@ -122,7 +134,7 @@ namespace Config
             IEnumerator OnPlayerDeath(ulong clientId, float timeToRespawn = TimeToRespawn)
             {
                 yield return new WaitForSeconds(timeToRespawn);
-                DetachWeaponFromPlayerServerRpc(clientId);
+                DetachWeaponsFromPlayerServerRpc(clientId);
                 RespawnClientRpc(clientId);
             }
         }
@@ -139,7 +151,7 @@ namespace Config
             if (clientId == NetworkManager.Singleton.LocalClientId)
             {
                 GameManager.Instance.OnPlayerEndGameServerRpc();
-            }
+            } 
             // else
             // {
             //     Debug.Log("Player " + clientId + " respawned");
