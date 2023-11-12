@@ -189,7 +189,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _playerFpsCameraCenter: {fileID: 7728799787280681472}
-  playerWeaponCenter: {fileID: 5056028243761641879}
+  rightHand: {fileID: 4611903481659806108}
+  leftHand: {fileID: 254750066293685143}
   _speed: 4
   _sprintSpeed: 6
   RotationSmoothTime: 0.12

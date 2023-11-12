@@ -446,12 +446,20 @@ namespace Player
                 PositionConstraint pc = weapon.GetComponent<PositionConstraint>();
                 if (pc)
                 {
-                    var constraintSource = new ConstraintSource()
+                    pc.AddSource(new ConstraintSource()
                     {
-                        sourceTransform = playerBehaviour._playerController.playerWeaponCenter,
+                        sourceTransform = playerBehaviour._playerController.rightHand,
                         weight = 1
-                    };
-                    pc.AddSource(constraintSource);
+                    });
+                    pc.AddSource(new ConstraintSource()
+                    {
+                        sourceTransform = playerBehaviour._playerController.leftHand,
+                        weight = 1
+                    });
+                    // Modify the constraint settings
+                    pc.locked = false;
+                    pc.translationOffset = new Vector3(-0.03f, -0.009f, 0.29f);
+                    pc.locked = true;
                     pc.constraintActive = true;
                 }
 
@@ -464,6 +472,10 @@ namespace Player
                         weight = 1
                     };
                     rc.AddSource(constraintSource);
+                    // Modify the constraint settings
+                    rc.locked = false;
+                    rc.rotationOffset = new Vector3(0, -12.6f, 0);
+                    rc.locked = true;
                     rc.constraintActive = true;
                 }
             }

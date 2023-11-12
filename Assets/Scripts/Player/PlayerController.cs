@@ -18,7 +18,8 @@ namespace Player
         [SerializeField] private Transform _playerFpsCameraCenter;
         
         [Tooltip("Player Weapon center")]
-        public Transform playerWeaponCenter;
+        public Transform rightHand;
+        public Transform leftHand;
         
         [Tooltip("Movement speed of the player")] [SerializeField]
         private float _speed = 6f;
@@ -121,7 +122,11 @@ namespace Player
             enabled = false;
             if (IsServer)
             {
-                RoundManager.OnRoundManagerSpawned += () => transform.position = RoundManager.Instance.GetRandomCheckpoint().transform.position;
+                RoundManager.OnRoundManagerSpawned += () =>
+                {
+                    Transform checkpoint = RoundManager.Instance.GetRandomCheckpoint().transform;
+                    transform.position = new Vector3(checkpoint.position.x, checkpoint.position.y + 1f, checkpoint.position.z);
+                };
                 RegisterServerCallbacks();
             }
             else
@@ -307,8 +312,8 @@ namespace Player
             if (_hasAnimator)
             {
                 Vector3 localSmoothedAnimationVelocity = transform.InverseTransformDirection(currentHorizontalSpeed);
-                _animator.SetFloat(_animIDForwardVelocity, localSmoothedAnimationVelocity.x);
-                _animator.SetFloat(_animIDBackwardVelocity, localSmoothedAnimationVelocity.z);
+                _animator.SetFloat(_animIDForwardVelocity, localSmoothedAnimationVelocity.z);
+                _animator.SetFloat(_animIDBackwardVelocity, localSmoothedAnimationVelocity.x);
             }
             
         }
