@@ -2,7 +2,6 @@
 using Entities.Weapon;
 using Entities.Weapon.SO;
 using Model;
-using Player;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -29,9 +28,6 @@ namespace Weapons
         #region Auxiliary Variables
 
         [HideInInspector]
-        public PlayerBehaviour playerBehaviour;
-
-        [HideInInspector]
         public Ammo currentAmmo;
         [HideInInspector]
         public bool canShoot = true;
@@ -50,7 +46,6 @@ namespace Weapons
 
         public override void OnNetworkSpawn()
         {
-            base.OnNetworkSpawn();
         }
 
         private void Start()

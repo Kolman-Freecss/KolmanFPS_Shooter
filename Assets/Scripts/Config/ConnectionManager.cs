@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
@@ -45,10 +44,13 @@ namespace Config
 
         private void Start()
         {
-            SubscribeToEvents();
+            if (NetworkManager.Singleton.IsServer)
+            {
+                SubscribeToServerEvents();
+            }
         }
         
-        void SubscribeToEvents()
+        void SubscribeToServerEvents()
         {
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnect;
@@ -99,30 +101,57 @@ namespace Config
             }
         }
         
+        /// <summary>
+        /// Callback called when a client connects
+        /// </summary>
+        /// <param name="clientId"></param>
         void OnClientConnected(ulong clientId)
         {
             Debug.Log($"Client {clientId} connected");
         }
         
+        /// <summary>
+        /// Callback called when a client disconnects
+        /// </summary>
+        /// <param name="clientId"></param>
         void OnClientDisconnect(ulong clientId)
         {
             Debug.Log($"Client {clientId} disconnected");
             GameManager.Instance.OnClientDisconnectCallbackServerRpc(clientId);
         }
+
+        public void Disconnect(ulong clientId)
+        {
+            // Check if the clientId that wants to disconnect is the host
+            if (clientId == NetworkManager.ServerClientId)
+            {
+                // If the host disconnects, the server will be stopped
+                NetworkManager.Singleton.Shutdown(false);
+            }
+            else
+            {
+                // If a client disconnects, the server will be notified
+                GameManager.Instance.OnClientDisconnectCallbackServerRpc(clientId);
+                NetworkManager.Singleton.DisconnectClient(clientId, "Client disconnected.");
+            }
+        }
         
         #endregion
 
         #region Destructor
-
-        private void OnDisable()
+        
+        private void OnDestroy()
         {
-            UnsubscribeToEvents();
+            UnsubscribeToServerEvents();
         }
         
-        void UnsubscribeToEvents()
+        void UnsubscribeToServerEvents()
         {
-            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
-            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnect;
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
+            {
+                NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+                NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnect;
+            }
         }
 
         #endregion

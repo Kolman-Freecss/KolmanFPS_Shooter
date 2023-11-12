@@ -2,8 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
+using Player;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Animations;
+using Weapons;
 using Random = UnityEngine.Random;
 
 namespace Config
@@ -43,7 +46,6 @@ namespace Config
         
         public override void OnNetworkSpawn()
         {
-            base.OnNetworkSpawn();
             if (IsServer)
             {
                 GetReferences();
@@ -86,10 +88,29 @@ namespace Config
         {
             return _checkpoints[Random.Range(0, _checkpoints.Count)];
         }
-
+        
         #endregion
 
         #region Network Events Handler
+        
+        [ServerRpc]
+        private void DetachWeaponFromPlayerServerRpc(ulong clientId, ServerRpcParams serverRpcParams = default)
+        {
+            Weapon weapon = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.GetComponent<PlayerBehaviour>().CurrentWeapon;
+            if (weapon != null)
+            {
+                PositionConstraint pc = weapon.GetComponent<PositionConstraint>();
+                pc.RemoveSource(0);
+                pc.enabled = false;
+                RotationConstraint rc = weapon.GetComponent<RotationConstraint>();
+                rc.RemoveSource(0);
+                rc.enabled = false;
+                weapon.GetComponent<Rigidbody>().useGravity = true;
+                weapon.GetComponent<BoxCollider>().enabled = true;
+                // Change ownership of the weapon to the server
+                weapon.GetComponent<NetworkObject>().RemoveOwnership();
+            }
+        }
 
         [ServerRpc(RequireOwnership = false)]
         public void OnPlayerDeathServerRpc(ulong networkObjectPlayerId, ServerRpcParams serverRpcParams = default)
@@ -101,7 +122,7 @@ namespace Config
             IEnumerator OnPlayerDeath(ulong clientId, float timeToRespawn = TimeToRespawn)
             {
                 yield return new WaitForSeconds(timeToRespawn);
-                NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.Despawn();
+                DetachWeaponFromPlayerServerRpc(clientId);
                 RespawnClientRpc(clientId);
             }
         }
@@ -117,7 +138,7 @@ namespace Config
             //TODO: Make the respawn not GAME OVER
             if (clientId == NetworkManager.Singleton.LocalClientId)
             {
-                GameManager.Instance.PlayerEndGame(clientId);
+                GameManager.Instance.OnPlayerEndGameServerRpc();
             }
             // else
             // {
@@ -160,6 +181,11 @@ namespace Config
         {
             base.OnNetworkDespawn();
             Debug.Log("RoundManager despawned");
+        }
+        
+        private void OnDestroy()
+        {
+            Debug.Log("RoundManager destroyed");
         }
 
         #endregion

@@ -1,3 +1,3 @@
 
-gcsharpsquid:S11853"CRemove this method 'OnNetworkSpawn' to simply inherit its behavior.(׀כûֱ8ִץ»1
-Acsharpsquid:S125v"Remove this commented out code.(‘“¹e8ִץ»1
+csharpsquid:S1186/"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(׀כûֱ8לע¥¼1
+Acsharpsquid:S125q"Remove this commented out code.(‘“¹e8ִץ»1

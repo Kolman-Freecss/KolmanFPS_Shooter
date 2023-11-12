@@ -38,7 +38,6 @@ namespace Config
         
         public override void OnNetworkSpawn()
         {
-            base.OnNetworkSpawn();
             if (IsServer)
             {
                 SceneTransitionHandler.Instance.OnClientLoadedGameScene += ClientLoadedGameScene;
@@ -98,10 +97,12 @@ namespace Config
             }
         }
         
-        public void PlayerEndGame(ulong clientId)
+        [ClientRpc]
+        public void PlayerDeathClientRpc(ulong clientId, ClientRpcParams clientRpcParams = default)
         {
-            SceneTransitionHandler.Instance.LoadScene(SceneTransitionHandler.SceneStates.Multiplayer_EndGame);
-            OnPlayerEndGameServerRpc();
+            if (clientId != NetworkManager.Singleton.LocalClientId) return;
+            Debug.Log("------------------YOU DEAD------------------");
+            SceneTransitionHandler.Instance.LoadScene(SceneTransitionHandler.SceneStates.Multiplayer_EndGame, false);
         }
         
         public void AddPlayer(ulong clientId, PlayerController player)
@@ -147,7 +148,12 @@ namespace Config
         public void OnPlayerEndGameServerRpc(ServerRpcParams serverRpcParams = default)
         {
             ulong clientId = serverRpcParams.Receive.SenderClientId;
-            PlayerEndGame(clientId);
+            // Despawn all the components of the player
+            //NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.Despawn();
+            NetworkManager.Singleton.ConnectedClients[clientId].OwnedObjects.ForEach(
+                (obj) => { obj.Despawn(); }
+            );
+            PlayerDeathClientRpc(clientId);
             RemovePlayerFromGameClientRpc(clientId);
         }
         
@@ -160,7 +166,7 @@ namespace Config
             StartGame();
         }
         
-        [ServerRpc]
+        [ServerRpc(RequireOwnership = false)]
         public void OnClientDisconnectCallbackServerRpc(ulong cliendId, ServerRpcParams serverRpcParams = default)
         {
             RemovePlayerFromGameClientRpc(cliendId);
@@ -170,7 +176,7 @@ namespace Config
         private void RemovePlayerFromGameClientRpc(ulong cliendId, ClientRpcParams clientRpcParams = default)
         {
             Debug.Log("------------------ Player removed------------------ " + cliendId);
-            RemovePlayer(cliendId);
+            //RemovePlayer(cliendId);
         }
         
         #endregion

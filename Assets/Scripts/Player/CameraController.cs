@@ -1,4 +1,5 @@
 using Config;
+using Gameplay.GameplayObjects;
 using UnityEngine;
 
 namespace Player
@@ -10,9 +11,10 @@ namespace Player
 
         #endregion
 
-        #region Private Properties
+        #region Member Properties
 
         private Transform player;
+        NetworkLifeState m_NetworkLifeState; 
 
         #endregion
 
@@ -26,6 +28,7 @@ namespace Player
         void GetReferences()
         {
             player = transform;
+            m_NetworkLifeState = GetComponent<NetworkLifeState>();
         }
 
         #endregion
@@ -34,7 +37,9 @@ namespace Player
 
         void Update()
         {
-            if (!GameManager.Instance.isGameStarted.Value) return;
+            if (!GameManager.Instance.isGameStarted.Value
+                || m_NetworkLifeState.LifeState.Value == LifeState.Dead
+                ) return;
             Vector3 rot = player.GetComponent<PlayerController>().MainCamera.transform.localRotation.eulerAngles;
             transform.localRotation = Quaternion.Euler(0f, rot.y, 0f);
         }

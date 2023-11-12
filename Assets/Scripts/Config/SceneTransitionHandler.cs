@@ -86,9 +86,14 @@ namespace Config
             }
         }
         
-        public void LoadScene(SceneStates sceneState)
+        /// <summary>
+        /// Load a scene for all clients or only for a single client
+        /// </summary>
+        /// <param name="sceneState"></param>
+        /// <param name="loadForAll"></param>
+        public void LoadScene(SceneStates sceneState, bool loadForAll = true)
         {
-            if (NetworkManager.Singleton.IsListening)
+            if (NetworkManager.Singleton.IsListening && loadForAll)
             {
                 NetworkManager.Singleton.SceneManager.LoadScene(sceneState.ToString(), LoadSceneMode.Single);
             }

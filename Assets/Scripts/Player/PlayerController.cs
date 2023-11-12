@@ -1,6 +1,7 @@
 using Camera;
 using Cinemachine;
 using Config;
+using Gameplay.GameplayObjects;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -52,10 +53,11 @@ namespace Player
 
         #endregion
 
-        #region Auxiliary Variables
+        #region Member Variables
 
         PlayerInputController _playerInputController;
         CharacterController _controller;
+        PlayerBehaviour m_playerBehaviour;
         Animator _animator;
         GameObject _mainCamera;
         [HideInInspector]
@@ -101,6 +103,7 @@ namespace Player
             _playerInputController = GetComponent<PlayerInputController>(); 
             _controller = GetComponent<CharacterController>();
             _animator = GetComponentInChildren<Animator>(); 
+            m_playerBehaviour = GetComponent<PlayerBehaviour>();
             _hasAnimator = _animator != null;
         }
 
@@ -114,7 +117,6 @@ namespace Player
         
         public override void OnNetworkSpawn()
         {
-            base.OnNetworkSpawn();
             // This is called when the local player is spawned and will be enabled after the scene is loaded
             enabled = false;
             if (IsServer)
@@ -153,7 +155,7 @@ namespace Player
         void Update()
         {
             // Debug.Log("Update GameManager.Instance.isGameStarted.Value= " + GameManager.Instance.isGameStarted.Value + " GameManager.isGameStarted.Value= " + GameManager.isGameStarted.Value);
-            if (!GameManager.Instance.isGameStarted.Value) return;
+            if (!GameManager.Instance.isGameStarted.Value || m_playerBehaviour.LifeState == LifeState.Dead) return;
             Jump();
             GroundCheck();
             Move();

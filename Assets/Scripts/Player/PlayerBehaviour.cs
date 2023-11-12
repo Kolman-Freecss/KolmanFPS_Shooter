@@ -39,6 +39,8 @@ namespace Player
         private float _currentHealth = 100f;
         List<NetworkObject> _weapons = new List<NetworkObject>();
         Weapon _currentWeapon;
+        [HideInInspector]
+        public Weapon CurrentWeapon => _currentWeapon;
         int _currentWeaponIndex = 0;
 
         //TODO: Move this to another class
@@ -67,12 +69,17 @@ namespace Player
 
         public override void OnNetworkSpawn()
         {
-            base.OnNetworkSpawn();
             if (IsServer)
             {
                 RegisterServerCallbacks();
             }
+
             _damageReceiver.DamageReceived += OnDamageReceived;
+            
+            if (IsOwner)
+            {
+                _networkLifeState.LifeState.OnValueChanged += OnLifeStateChanged;
+            }
 
             Debug.Log("PlayerBehaviour OnNetworkSpawn + " + NetworkObjectId + " " +
                       NetworkManager.Singleton.LocalClientId + " " + IsOwner);
@@ -81,7 +88,6 @@ namespace Player
         private void RegisterServerCallbacks()
         {
             RoundManager.OnRoundManagerSpawned += InitRound;
-            _networkLifeState.LifeState.OnValueChanged += OnLifeStateChanged;
         }
 
         /// <summary>
@@ -560,9 +566,20 @@ namespace Player
             {
                 RoundManager.OnRoundManagerSpawned -= InitRound;
                 SceneTransitionHandler.Instance.OnClientLoadedGameScene -= ClientLoadedGameScene;
+            }
+
+            _damageReceiver.DamageReceived -= OnDamageReceived;
+            
+            if (IsOwner)
+            {
                 _networkLifeState.LifeState.OnValueChanged -= OnLifeStateChanged;
             }
-            _damageReceiver.DamageReceived -= OnDamageReceived;
+        }
+
+        public override void OnDestroy()
+        {
+            Debug.Log("PlayerBehaviour OnDestroy");
+            base.OnDestroy();
         }
 
         #endregion

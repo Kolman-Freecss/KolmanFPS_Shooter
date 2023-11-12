@@ -47,3 +47,5 @@ k
 ;Assets/Scripts/Gameplay/GameplayObjects/NetworkLifeState.cs,2\f\2fbecf3eff6f606afabc2d1cca78db7c5682e341
 T
 $Assets/Scripts/Config/GameManager.cs,5\8\58d232725f5800ded0b5e9940b730451bff13115
+`
+0Assets/Scripts/Gameplay/UI/MultiplayerEndGame.cs,7\9\79f780f41981c155e4dd5a30e83dcc919d61aa1a
