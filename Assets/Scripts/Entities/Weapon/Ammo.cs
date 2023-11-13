@@ -51,7 +51,7 @@ namespace Entities.Weapon
             ammoClips = ammoSO.AmmoClipsValue;
             ammoPrefab = ammoSO.AmmoPrefabValue;
             ammoDamage = ammoSO.AmmoDamageValue;
-            // Default ammo count
+            // BasePlayer ammo count
             ammoCount = ammoInClipCapacity;
         }
         

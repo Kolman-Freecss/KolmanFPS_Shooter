@@ -195,8 +195,9 @@ namespace Config
             Debug.Log("RoundManager despawned");
         }
         
-        private void OnDestroy()
+        public void OnDestroy()
         {
+            base.OnDestroy();
             Debug.Log("RoundManager destroyed");
         }
 

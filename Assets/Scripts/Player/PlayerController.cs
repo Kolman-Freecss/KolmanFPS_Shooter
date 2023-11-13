@@ -1,7 +1,9 @@
 using Camera;
 using Cinemachine;
 using Config;
+using Entities.Camera;
 using Gameplay.GameplayObjects;
+using Gameplay.Player;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -17,9 +19,8 @@ namespace Player
         [Tooltip("Player FPS Camera center")]
         [SerializeField] private Transform _playerFpsCameraCenter;
         
-        [Tooltip("Player Weapon center")]
-        public Transform rightHand;
-        public Transform leftHand;
+        [Tooltip("Skin")]
+        [SerializeField] public Entities.Player.Player.PlayerSkin Skin = Entities.Player.Player.PlayerSkin.BasePlayer;
         
         [Tooltip("Movement speed of the player")] [SerializeField]
         private float _speed = 6f;
@@ -56,16 +57,26 @@ namespace Player
 
         #region Member Variables
 
+        Entities.Player.Player m_player;
+        [HideInInspector]
+        public Entities.Player.Player Player => m_player;
+        
         PlayerInputController _playerInputController;
         CharacterController _controller;
         PlayerBehaviour m_playerBehaviour;
         Animator _animator;
+        
+        //Camera
         GameObject _mainCamera;
         [HideInInspector]
         public GameObject MainCamera => _mainCamera;
         CinemachineVirtualCamera _playerFpsCamera;
         [HideInInspector]
         public CinemachineVirtualCamera PlayerFpsCamera => _playerFpsCamera;
+
+        private GameObject m_modelForCamera;
+        [HideInInspector]
+        public GameObject ModelForCamera => m_modelForCamera;
 
         private float _targetRotation = 0.0f;
         private float _rotationVelocity;
@@ -103,9 +114,7 @@ namespace Player
         {
             _playerInputController = GetComponent<PlayerInputController>(); 
             _controller = GetComponent<CharacterController>();
-            _animator = GetComponentInChildren<Animator>(); 
             m_playerBehaviour = GetComponent<PlayerBehaviour>();
-            _hasAnimator = _animator != null;
         }
 
         void AssignAnimationIDs()
@@ -351,6 +360,7 @@ namespace Player
                 GetComponent<PlayerInput>().enabled = false;
                 GetComponent<CameraController>().enabled = false;
                 GetComponent<PlayerInputController>().enabled = false;
+                GetComponent<CameraController>().SetCameraMode(CameraMode.TPS, Player);
                 enabled = false;
                 return;
             }
@@ -372,7 +382,6 @@ namespace Player
             if (this._playerFpsCamera != null)
             {
                 this._playerFpsCamera.Follow = _playerFpsCameraCenter;
-                this._playerFpsCamera.LookAt = _playerFpsCameraCenter;
                 this._playerFpsCamera.GetComponent<CinemachinePOVExtension>().SetPlayer(_playerInputController); 
             }
             else
@@ -383,6 +392,11 @@ namespace Player
             GetComponent<PlayerInput>().enabled = true;
             GetComponent<CameraController>().enabled = true;
             GetComponent<PlayerInputController>().enabled = true;
+            m_player = PlayerFactory.CreatePlayer(Skin, "DefaultNamePlayer");
+            m_player = GetComponent<CameraController>().SetCameraMode(CameraMode.FPS, m_player);
+            m_modelForCamera = m_player.CurrentSkinViewValue.SkinModel;
+            _animator = m_modelForCamera.GetComponent<Animator>(); 
+            _hasAnimator = _animator != null;
             enabled = true;
         }
 

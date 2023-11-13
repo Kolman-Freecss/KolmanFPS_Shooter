@@ -49,3 +49,15 @@ T
 $Assets/Scripts/Config/GameManager.cs,5\8\58d232725f5800ded0b5e9940b730451bff13115
 `
 0Assets/Scripts/Gameplay/UI/MultiplayerEndGame.cs,7\9\79f780f41981c155e4dd5a30e83dcc919d61aa1a
+_
+/Assets/Scripts/Gameplay/Player/PlayerFactory.cs,0\6\06b3eb5e81de47d0b0db84f15e096b1ef0645d3a
+X
+(Assets/Scripts/Entities/Player/Player.cs,7\a\7a0474e145b5a25e5c03413bf611b93847d65656
+a
+1Assets/Scripts/Entities/Player/SO/PlayerSkinSO.cs,4\b\4bf007477f674d792c13a792104c0cebcce1c45b
+\
+,Assets/Scripts/Entities/Camera/CameraMode.cs,9\5\9541b18ec73eb953150cc6985f68de298ad5bec8
+Z
+*Assets/Scripts/Entities/Player/SkinView.cs,8\d\8d641537231427b6fc1405c4eddf2275f761390e
+[
++Assets/Scripts/Entities/Player/SkinParts.cs,e\4\e418f8be157649f100cb1771effcb83921801eb7

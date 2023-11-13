@@ -84,6 +84,13 @@ namespace Config
             {
                 OnSceneStateChanged.Invoke(m_SceneState);
             }
+            if (sceneState == SceneStates.Multiplayer_InGame)
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+            } else
+            {
+                Cursor.lockState = CursorLockMode.None;
+            }
         }
         
         /// <summary>

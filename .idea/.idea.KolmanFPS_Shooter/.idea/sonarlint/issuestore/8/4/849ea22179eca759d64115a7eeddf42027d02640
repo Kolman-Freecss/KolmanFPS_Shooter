@@ -1,2 +1,2 @@
 
-~csharpsquid:S2696)"UMake the enclosing instance method 'static' or remove this set on the 'static' field.(éÏøùÿÿÿÿ8¥ì´¼¹1
+csharpsquid:S1186*"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(«¦· 8ó·Å›¼1

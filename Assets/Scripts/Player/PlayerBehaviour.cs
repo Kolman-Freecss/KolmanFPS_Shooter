@@ -19,7 +19,7 @@ namespace Player
         [Header("Player")] [Tooltip("Max health of the player")] [SerializeField]
         private float _maxHealth = 100f;
 
-        [Header("Weapons")] [Tooltip("Default weapon of the player")] [SerializeField]
+        [Header("Weapons")] [Tooltip("BasePlayer weapon of the player")] [SerializeField]
         private Weapon _defaultWeapon;
 
         #endregion
@@ -448,17 +448,17 @@ namespace Player
                 {
                     pc.AddSource(new ConstraintSource()
                     {
-                        sourceTransform = playerBehaviour._playerController.rightHand,
+                        sourceTransform = playerBehaviour._playerController.Player.RightHand,
                         weight = 1
                     });
                     pc.AddSource(new ConstraintSource()
                     {
-                        sourceTransform = playerBehaviour._playerController.leftHand,
+                        sourceTransform = playerBehaviour._playerController.Player.LeftHand,
                         weight = 1
                     });
                     // Modify the constraint settings
                     pc.locked = false;
-                    pc.translationOffset = new Vector3(-0.03f, -0.009f, 0.29f);
+                    // pc.translationOffset = new Vector3(-0.03f, -0.009f, 0.29f);
                     pc.locked = true;
                     pc.constraintActive = true;
                 }
@@ -474,7 +474,7 @@ namespace Player
                     rc.AddSource(constraintSource);
                     // Modify the constraint settings
                     rc.locked = false;
-                    rc.rotationOffset = new Vector3(0, -12.6f, 0);
+                    // rc.rotationOffset = new Vector3(0, -12.6f, 0);
                     rc.locked = true;
                     rc.constraintActive = true;
                 }
