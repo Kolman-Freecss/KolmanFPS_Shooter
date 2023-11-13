@@ -1,12 +1,12 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Entities.Player
+namespace Entities.Player.Skin
 {
     /// <summary>
     /// Positions of the player's body parts
     /// </summary>
-    [System.Serializable]
+    [Serializable]
     public class SkinParts
     {
         [SerializeField]

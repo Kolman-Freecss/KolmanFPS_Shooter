@@ -61,3 +61,11 @@ Z
 *Assets/Scripts/Entities/Player/SkinView.cs,8\d\8d641537231427b6fc1405c4eddf2275f761390e
 [
 +Assets/Scripts/Entities/Player/SkinParts.cs,e\4\e418f8be157649f100cb1771effcb83921801eb7
+\
+,Assets/Scripts/Entities/Player/PlayerSkin.cs,8\9\89b2b7382c17b36e277f77dcf0f80e155d41a589
+`
+0Assets/Scripts/Entities/Player/Skin/SkinParts.cs,7\4\743dfe98c377474b5b100c8c0528b06a88312588
+_
+/Assets/Scripts/Entities/Player/Skin/SkinView.cs,c\9\c9cf1a75bc2b2ee51a3070e7709889ea5a4dd1ef
+a
+1Assets/Scripts/Entities/Player/Skin/PlayerSkin.cs,5\5\552818591bf006e12b368b24cdcce438f666f800

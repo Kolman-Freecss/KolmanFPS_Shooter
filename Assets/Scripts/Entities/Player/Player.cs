@@ -1,5 +1,5 @@
 ﻿using Entities.Camera;
-using Entities.Player.SO;
+using Entities.Player.Skin;
 using UnityEngine;
 
 namespace Entities.Player
@@ -7,9 +7,9 @@ namespace Entities.Player
     public class Player
     {
         
-        public enum PlayerSkin
+        public enum PlayerTypeSkin
         {
-            BasePlayer = 1,
+            DefaultSkin = 1,
             Krodun = 2,
             Kolman = 3
         }
@@ -24,57 +24,44 @@ namespace Entities.Player
             set => m_name = value;
         }
 
-        private SkinView m_currentSkinView;
+        private GameObject m_playerPrefab;
         
-        public SkinView CurrentSkinViewValue
+        public GameObject PlayerPrefabValue
         {
-            get => m_currentSkinView;
-            set => m_currentSkinView = value;
+            get => m_playerPrefab;
+            set => m_playerPrefab = value;
         }
+
+        private PlayerSkin m_PlayerSkin;
         
-        private PlayerSkinSO m_playerSkinSO;
-        
-        public PlayerSkinSO PlayerSkinSOValue
+        public PlayerSkin PlayerSkinValue
         {
-            set => m_playerSkinSO = value;
+            set => m_PlayerSkin = value;
         }
         
         #endregion
         
         public Player()
         {
-            m_playerSkinSO = new PlayerSkinSO();
-        }
-        
-        public Player(PlayerSkinSO playerSkinSO)
-        {
-            m_playerSkinSO = playerSkinSO;
         }
 
         #region Getter & Setter
         
+        public void Init(CameraMode cameraMode)
+        {
+            m_PlayerSkin.Init(cameraMode);
+        }
+        
         public void ChangeCurrentSkinView(CameraMode cameraMode, out SkinView skinView)
         {
-            skinView = GetSkinView(cameraMode);
-            m_currentSkinView = skinView;
+            skinView = m_PlayerSkin.ChangeSkinViewByCameraMode(cameraMode);
         }
         
-        public SkinView GetSkinView(CameraMode cameraMode)
-        {
-            foreach (var skinView in m_playerSkinSO.SkinViewsValue)
-            {
-                if (skinView.Key == cameraMode)
-                {
-                    return skinView.Value;
-                }
-            }
-
-            return null;
-        }
-        
-        public Transform RightHand => CurrentSkinViewValue.SkinParts.RightHand;
-        public Transform LeftHand => CurrentSkinViewValue.SkinParts.LeftHand;
-        public Transform Head => CurrentSkinViewValue.SkinParts.Head;
+        public CameraMode CurrentCameraMode => m_PlayerSkin.CurrentCameraModeValue;
+        public GameObject CurrentSkinModel => m_PlayerSkin.CurrentSkinViewValue.SkinModel;
+        public Transform RightHand => m_PlayerSkin.CurrentSkinViewValue.SkinParts.RightHand;
+        public Transform LeftHand => m_PlayerSkin.CurrentSkinViewValue.SkinParts.LeftHand;
+        public Transform Head => m_PlayerSkin.CurrentSkinViewValue.SkinParts.Head;
 
         #endregion
         

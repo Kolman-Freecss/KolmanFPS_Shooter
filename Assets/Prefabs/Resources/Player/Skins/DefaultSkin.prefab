@@ -16,7 +16,7 @@ PrefabInstance:
     - target: {fileID: 887045496648381731, guid: 65d76c46b75f1c847a9a4169b63078ec,
         type: 3}
       propertyPath: m_Name
-      value: BasePlayer Variant
+      value: DefaultSkin
       objectReference: {fileID: 0}
     - target: {fileID: 1805831142958404999, guid: 65d76c46b75f1c847a9a4169b63078ec,
         type: 3}
@@ -78,8 +78,30 @@ PrefabInstance:
       propertyPath: m_TranslationOffset.z
       value: 0.17553198
       objectReference: {fileID: 0}
+    - target: {fileID: 8852003985106825504, guid: 65d76c46b75f1c847a9a4169b63078ec,
+        type: 3}
+      propertyPath: _skinViews.Array.data[0].Value._skinParts.m_head
+      value: 
+      objectReference: {fileID: 5245844524145685938}
+    - target: {fileID: 8852003985106825504, guid: 65d76c46b75f1c847a9a4169b63078ec,
+        type: 3}
+      propertyPath: _skinViews.Array.data[0].Value._skinParts.m_leftHand
+      value: 
+      objectReference: {fileID: 4834249783973205273}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 65d76c46b75f1c847a9a4169b63078ec, type: 3}
+--- !u!4 &4834249783973205273 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5464678556820851681, guid: 65d76c46b75f1c847a9a4169b63078ec,
+    type: 3}
+  m_PrefabInstance: {fileID: 630720145584234232}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &5245844524145685938 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4615133452958346058, guid: 65d76c46b75f1c847a9a4169b63078ec,
+    type: 3}
+  m_PrefabInstance: {fileID: 630720145584234232}
+  m_PrefabAsset: {fileID: 0}

@@ -1,9 +1,2 @@
 
-]csharpsquid:S112K"5'System.Exception' should not be thrown by user code.(Š³ŞÂøÿÿÿÿ8¬“‚Á¼1
-Gcsharpsquid:S125"Remove this commented out code.(ë±“úÿÿÿÿ8—õğÌ¼1
-Bcsharpsquid:S125"Remove this commented out code.(Ú°à¬8—õğÌ¼1
-Bcsharpsquid:S125H"Remove this commented out code.(œßª¡8Ñå¾Í¼1
-Bcsharpsquid:S125J"Remove this commented out code.(ÏÀÍå8£§¬Í¼1
-Gcsharpsquid:S125M"Remove this commented out code.(‘§´Øøÿÿÿÿ8Ú”±Í¼1
-Gcsharpsquid:S125R"Remove this commented out code.(˜Ÿ®Ôüÿÿÿÿ8‘Ÿ¡Í¼1
-Bcsharpsquid:S125X"Remove this commented out code.(¹óŞÇ8¾åÍ¼1
+hcsharpsquid:S2292"DMake this an auto-implemented property and remove its backing field.(¦™«‚8Ç­ÇÕ¼1

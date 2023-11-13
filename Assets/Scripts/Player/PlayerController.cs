@@ -7,6 +7,7 @@ using Gameplay.Player;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 namespace Player
 {
@@ -16,11 +17,9 @@ namespace Player
 
         [Header("Player")] 
         
-        [Tooltip("Player FPS Camera center")]
-        [SerializeField] private Transform _playerFpsCameraCenter;
-        
-        [Tooltip("Skin")]
-        [SerializeField] public Entities.Player.Player.PlayerSkin Skin = Entities.Player.Player.PlayerSkin.BasePlayer;
+        [FormerlySerializedAs("Skin")]
+        [Tooltip("typeSkin")]
+        [SerializeField] public Entities.Player.Player.PlayerTypeSkin typeSkin = Entities.Player.Player.PlayerTypeSkin.DefaultSkin;
         
         [Tooltip("Movement speed of the player")] [SerializeField]
         private float _speed = 6f;
@@ -58,7 +57,6 @@ namespace Player
         #region Member Variables
 
         Entities.Player.Player m_player;
-        [HideInInspector]
         public Entities.Player.Player Player => m_player;
         
         PlayerInputController _playerInputController;
@@ -68,14 +66,11 @@ namespace Player
         
         //Camera
         GameObject _mainCamera;
-        [HideInInspector]
         public GameObject MainCamera => _mainCamera;
         CinemachineVirtualCamera _playerFpsCamera;
-        [HideInInspector]
         public CinemachineVirtualCamera PlayerFpsCamera => _playerFpsCamera;
 
         private GameObject m_modelForCamera;
-        [HideInInspector]
         public GameObject ModelForCamera => m_modelForCamera;
 
         private float _targetRotation = 0.0f;
@@ -360,7 +355,7 @@ namespace Player
                 GetComponent<PlayerInput>().enabled = false;
                 GetComponent<CameraController>().enabled = false;
                 GetComponent<PlayerInputController>().enabled = false;
-                GetComponent<CameraController>().SetCameraMode(CameraMode.TPS, Player);
+                CreatePlayerReference(CameraMode.TPS, typeSkin, "DefaultNamePlayer", gameObject);
                 enabled = false;
                 return;
             }
@@ -374,6 +369,8 @@ namespace Player
         
         void GetSceneReferences()
         {
+            CreatePlayerReference(CameraMode.FPS, typeSkin, "DefaultNamePlayer", gameObject);
+            m_modelForCamera = m_player.CurrentSkinModel;
             if (_mainCamera == null)
             {
                 _mainCamera = RoundManager.Instance.GetMainCamera().gameObject;
@@ -381,7 +378,7 @@ namespace Player
             this._playerFpsCamera = RoundManager.Instance.GetPlayerFPSCamera();
             if (this._playerFpsCamera != null)
             {
-                this._playerFpsCamera.Follow = _playerFpsCameraCenter;
+                this._playerFpsCamera.Follow = m_player.Head;
                 this._playerFpsCamera.GetComponent<CinemachinePOVExtension>().SetPlayer(_playerInputController); 
             }
             else
@@ -392,12 +389,22 @@ namespace Player
             GetComponent<PlayerInput>().enabled = true;
             GetComponent<CameraController>().enabled = true;
             GetComponent<PlayerInputController>().enabled = true;
-            m_player = PlayerFactory.CreatePlayer(Skin, "DefaultNamePlayer");
-            m_player = GetComponent<CameraController>().SetCameraMode(CameraMode.FPS, m_player);
-            m_modelForCamera = m_player.CurrentSkinViewValue.SkinModel;
             _animator = m_modelForCamera.GetComponent<Animator>(); 
             _hasAnimator = _animator != null;
             enabled = true;
+        }
+
+        private void CreatePlayerReference(CameraMode cameraMode,
+            Entities.Player.Player.PlayerTypeSkin typeSkin, 
+            string name, 
+            GameObject gameObject)
+        {
+            m_player = PlayerFactory.CreatePlayer(
+                cameraMode,
+                typeSkin, 
+                name, 
+                gameObject);
+            GetComponent<CameraController>().CurrentCameraModeValue = m_player.CurrentCameraMode;
         }
 
         #endregion

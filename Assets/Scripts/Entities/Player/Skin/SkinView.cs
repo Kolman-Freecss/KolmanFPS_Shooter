@@ -1,12 +1,12 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Entities.Player
+namespace Entities.Player.Skin
 {
     /// <summary>
     /// Different skins for the player taking into account the body parts and the Camera mode
     /// </summary>
-    [System.Serializable]
+    [Serializable]
     public class SkinView
     {
         [SerializeField]
