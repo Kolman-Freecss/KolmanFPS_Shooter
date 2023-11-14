@@ -59,9 +59,9 @@ namespace Entities.Player
         
         public CameraMode CurrentCameraMode => m_PlayerSkin.CurrentCameraModeValue;
         public GameObject CurrentSkinModel => m_PlayerSkin.CurrentSkinViewValue.SkinModel;
-        public Transform RightHand => m_PlayerSkin.SkinParts.RightHand;
-        public Transform LeftHand => m_PlayerSkin.SkinParts.LeftHand;
-        public Transform Head => m_PlayerSkin.SkinParts.Head;
+        public Transform RightHand => m_PlayerSkin.CurrentSkinViewValue.SkinParts.RightHand;
+        public Transform LeftHand => m_PlayerSkin.CurrentSkinViewValue.SkinParts.LeftHand;
+        public Transform Head => m_PlayerSkin.CurrentSkinViewValue.SkinParts.Head;
 
         #endregion
         

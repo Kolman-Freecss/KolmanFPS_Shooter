@@ -4,6 +4,7 @@ using Config;
 using Entities.Camera;
 using Gameplay.GameplayObjects;
 using Gameplay.Player;
+using Unity.Multiplayer.Samples.Utilities.ClientAuthority;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -367,7 +368,7 @@ namespace Player
         
         void GetSceneReferences()
         {
-            CreatePlayerReference(CameraMode.FPS, typeSkin, "DefaultNamePlayer", gameObject);
+            CreatePlayerReference(CameraMode.TPS, typeSkin, "DefaultNamePlayer", gameObject);
             if (_mainCamera == null)
             {
                 _mainCamera = RoundManager.Instance.GetMainCamera().gameObject;

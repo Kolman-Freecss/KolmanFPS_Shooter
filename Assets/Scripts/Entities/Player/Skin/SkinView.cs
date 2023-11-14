@@ -13,5 +13,8 @@ namespace Entities.Player.Skin
         private GameObject skinModel;
         public GameObject SkinModel => skinModel;
         
+        [SerializeField]
+        private SkinParts _skinParts;
+        public SkinParts SkinParts => _skinParts;
     }
 }
