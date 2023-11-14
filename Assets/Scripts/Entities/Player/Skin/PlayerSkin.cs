@@ -53,6 +53,18 @@ namespace Entities.Player.Skin
         public void Init(CameraMode cameraMode)
         {
             ChangeSkinViewByCameraMode(cameraMode);
+            DisableAllOtherSkinViews();
+            
+            void DisableAllOtherSkinViews()
+            {
+                foreach (var skinView in _skinViews)
+                {
+                    if (skinView.Key != cameraMode)
+                    {
+                        skinView.Value.SkinModel.SetActive(false);
+                    }
+                }
+            }
         }
 
         public SkinView ChangeSkinViewByCameraMode(CameraMode cameraMode)

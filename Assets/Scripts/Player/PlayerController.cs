@@ -70,9 +70,6 @@ namespace Player
         CinemachineVirtualCamera _playerFpsCamera;
         public CinemachineVirtualCamera PlayerFpsCamera => _playerFpsCamera;
 
-        private GameObject m_modelForCamera;
-        public GameObject ModelForCamera => m_modelForCamera;
-
         private float _targetRotation = 0.0f;
         private float _rotationVelocity;
         private float _verticalVelocity;
@@ -332,14 +329,7 @@ namespace Player
         {
             if (IsServer)
             {
-                ClientRpcParams clientRpcParams = new ClientRpcParams
-                {
-                    Send = new ClientRpcSendParams
-                    {
-                        TargetClientIds = new ulong[] {clientId}
-                    }
-                };
-                SendClientInitDataClientRpc(clientId, clientRpcParams);
+                SendClientInitDataClientRpc(clientId);
             }
         }
         
@@ -350,16 +340,24 @@ namespace Player
             Debug.Log("Client Id -> " + clientId);
             if (!IsLocalPlayer || !IsOwner)
             {
-                // We need to disable the player input controller for the other clients in every player
-                GetComponent<PlayerBehaviour>().enabled = false;
-                GetComponent<PlayerInput>().enabled = false;
-                GetComponent<CameraController>().enabled = false;
-                GetComponent<PlayerInputController>().enabled = false;
-                CreatePlayerReference(CameraMode.TPS, typeSkin, "DefaultNamePlayer", gameObject);
-                enabled = false;
+                InitOtherClientsData();
                 return;
             }
             InitClientData(clientId);
+        }
+
+        /// <summary>
+        /// Init default values for the network player objects
+        /// </summary>
+        public void InitOtherClientsData()
+        {
+            // We need to disable the player input controller for the other clients in every player
+            GetComponent<PlayerBehaviour>().enabled = false;
+            GetComponent<PlayerInput>().enabled = false;
+            GetComponent<CameraController>().enabled = false;
+            GetComponent<PlayerInputController>().enabled = false;
+            CreatePlayerReference(CameraMode.TPS, typeSkin, "DefaultNamePlayer", gameObject);
+            enabled = false;
         }
 
         public void InitClientData(ulong clientId)
@@ -370,7 +368,6 @@ namespace Player
         void GetSceneReferences()
         {
             CreatePlayerReference(CameraMode.FPS, typeSkin, "DefaultNamePlayer", gameObject);
-            m_modelForCamera = m_player.CurrentSkinModel;
             if (_mainCamera == null)
             {
                 _mainCamera = RoundManager.Instance.GetMainCamera().gameObject;
@@ -389,7 +386,7 @@ namespace Player
             GetComponent<PlayerInput>().enabled = true;
             GetComponent<CameraController>().enabled = true;
             GetComponent<PlayerInputController>().enabled = true;
-            _animator = m_modelForCamera.GetComponent<Animator>(); 
+            _animator = m_player.CurrentSkinModel.GetComponent<Animator>(); 
             _hasAnimator = _animator != null;
             enabled = true;
         }
