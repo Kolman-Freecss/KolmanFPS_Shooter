@@ -19,6 +19,10 @@ namespace Entities.Player.Skin
             get => typeSkin;
         }
         
+        [SerializeField]
+        private SkinParts _skinParts;
+        public SkinParts SkinParts => _skinParts;
+        
         [Description("typeSkin View - Positions of the player's body parts")] [SerializeField]
         List<SerializableDictionaryEntry<CameraMode, SkinView>> _skinViews;
 
