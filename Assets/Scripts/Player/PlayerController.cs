@@ -1,3 +1,4 @@
+using System;
 using Camera;
 using Cinemachine;
 using Config;
@@ -61,9 +62,11 @@ namespace Player
         public Entities.Player.Player Player => m_player;
         
         PlayerInputController _playerInputController;
+        TPSPlayerController m_tpsPlayerController;
         CharacterController _controller;
         PlayerBehaviour m_playerBehaviour;
         Animator _animator;
+        public Animator Animator => _animator;
         
         //Camera
         GameObject _mainCamera;
@@ -86,12 +89,16 @@ namespace Player
         
         //Animator
         private bool _hasAnimator;
+        public bool HasAnimator => _hasAnimator;
         
         private int _animIDForwardVelocity;
+        public int AnimIDForwardVelocity => _animIDForwardVelocity;
         private int _animIDBackwardVelocity;
+        public int AnimIDBackwardVelocity => _animIDBackwardVelocity;
         private int _animIDNormalizedVerticalVelocity;
+        public int AnimIDNormalizedVerticalVelocity => _animIDNormalizedVerticalVelocity;
         private int _animIDIsGrounded;
-        
+        public int AnimIDIsGrounded => _animIDIsGrounded;
 
         #endregion
 
@@ -167,7 +174,13 @@ namespace Player
             GroundCheck();
             Move();
         }
-        
+
+        // private void LateUpdate()
+        // {
+        //     if (!GameManager.Instance.isGameStarted.Value || m_playerBehaviour.LifeState == LifeState.Dead) return;
+        //     
+        // }
+
         #endregion
 
         #region Logic
@@ -368,7 +381,13 @@ namespace Player
         
         void GetSceneReferences()
         {
-            CreatePlayerReference(CameraMode.TPS, typeSkin, "DefaultNamePlayer", gameObject);
+            CreatePlayerReference(CameraMode.FPS, typeSkin, "DefaultNamePlayer", gameObject);
+            m_tpsPlayerController = m_player.GetTPSPlayerController();
+            if (m_tpsPlayerController != null)
+            {
+                m_tpsPlayerController.PlayerControllerValue = this;
+                m_tpsPlayerController.enabled = true;
+            }
             if (_mainCamera == null)
             {
                 _mainCamera = RoundManager.Instance.GetMainCamera().gameObject;

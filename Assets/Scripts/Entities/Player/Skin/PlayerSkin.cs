@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Entities.Camera;
 using Entities.Utils;
+using Gameplay.Player;
 using UnityEngine;
 
 namespace Entities.Player.Skin
@@ -38,6 +40,14 @@ namespace Entities.Player.Skin
             get => m_currentCameraMode;
         }
         
+        private TPSPlayerController m_tpsPlayerController;
+        
+        public TPSPlayerController TPSPlayerControllerValue
+        {
+            get => m_tpsPlayerController;
+            set => m_tpsPlayerController = value;
+        }
+        
         private SkinView m_currentSkinView;
 
         public SkinView CurrentSkinViewValue
@@ -50,9 +60,33 @@ namespace Entities.Player.Skin
 
         #region Logic
 
+        private void Start()
+        {
+            m_tpsPlayerController = GetSkinViewByCameraMode(CameraMode.TPS).SkinModel.GetComponent<TPSPlayerController>();
+        }
+
         public void Init(CameraMode cameraMode)
         {
             ChangeSkinViewByCameraMode(cameraMode);
+            
+            if (cameraMode == CameraMode.TPS)
+            {
+                // Unable the FPS skin view if the camera mode is TPS.
+                TPSInit(cameraMode);
+            } else if (cameraMode == CameraMode.FPS)
+            {
+                // Unable the TPS skin view if the camera mode is FPS.
+                FPSInit();
+            }
+        }
+
+        private void FPSInit()
+        {
+            m_tpsPlayerController.mesh.SetActive(false);
+        }
+
+        private void TPSInit(CameraMode cameraMode)
+        {
             DisableAllOtherSkinViews();
             
             void DisableAllOtherSkinViews()
@@ -71,15 +105,27 @@ namespace Entities.Player.Skin
         {
             SkinView skinView = GetSkinViewByCameraMode(cameraMode);
             if (skinView == null) return null;
+            switch (cameraMode)
+            {
+                case CameraMode.TPS:
+                    if (m_currentSkinView != null) m_currentSkinView.SkinModel.SetActive(false);
+                    m_tpsPlayerController.mesh.SetActive(true);
+                    break;
+                case CameraMode.FPS:
+                    m_tpsPlayerController.mesh.SetActive(false);
+                    break;
+                default:   
+                    Debug.LogError("Camera mode not implemented " + cameraMode);
+                    break;
+            }
             
-            if (m_currentSkinView != null) m_currentSkinView.SkinModel.SetActive(false);
             m_currentCameraMode = cameraMode;
             m_currentSkinView = skinView;
             m_currentSkinView.SkinModel.SetActive(true);
             return m_currentSkinView;
         }
         
-        private SkinView GetSkinViewByCameraMode(CameraMode cameraMode)
+        public SkinView GetSkinViewByCameraMode(CameraMode cameraMode)
         {
             foreach (var skinView in _skinViews)
             {

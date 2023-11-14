@@ -1,13 +1,15 @@
 
-kcsharpsquid:S3244À"FUnsubscribe with the same delegate that was used for the subscription.(ÈŞíü8ƒÄ§Ö¼1
-csharpsquid:S1186š"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(È“±8„Ä§Ö¼1
-£csharpsquid:S1186Ä"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(Í”âıÿÿÿÿ8†Ä§Ö¼1
-Mcsharpsquid:S2933U"$Make '_terminalVelocity' 'readonly'.(ÂÜÈœøÿÿÿÿ8ˆÄ§Ö¼1
-Hcsharpsquid:S125¤"Remove this commented out code.(°»ÄÑùÿÿÿÿ8‹Ä§Ö¼1
-Ccsharpsquid:S125²"Remove this commented out code.(Ú°à¬8Ä§Ö¼1
-Ccsharpsquid:S125À"Remove this commented out code.(Ú°à¬8Ä§Ö¼1
-Ccsharpsquid:S125Ò"Remove this commented out code.(Ú°à¬8Ä§Ö¼1
-Ccsharpsquid:S125è"Remove this commented out code.(Ú°à¬8‘Ä§Ö¼1
-Ccsharpsquid:S125ø"Remove this commented out code.(Ú°à¬8“Ä§Ö¼1
-Hcsharpsquid:S125­"Remove this commented out code.(Á§İüÿÿÿÿ8”Ä§Ö¼1
-^csharpsquid:S1135¬"4Complete the task associated to this 'TODO' comment.(Ü¾şÄûÿÿÿÿ8”Ä§Ö¼1
+kcsharpsquid:S3244Ó"FUnsubscribe with the same delegate that was used for the subscription.(ÈŞíü8ş›Éå¼1
+csharpsquid:S1186¡"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(È“±8„Ä§Ö¼1
+£csharpsquid:S1186×"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(Í”âıÿÿÿÿ8ş›Éå¼1
+Mcsharpsquid:S2933X"$Make '_terminalVelocity' 'readonly'.(ÂÜÈœøÿÿÿÿ8ˆÄ§Ö¼1
+ˆcsharpsquid:S1450A"dRemove the field 'm_tpsPlayerController' and declare it as a local variable in the relevant methods.(¢ˆ˜8ƒò„æ¼1
+Hcsharpsquid:S125«"Remove this commented out code.(°»ÄÑùÿÿÿÿ8‹Ä§Ö¼1
+Ccsharpsquid:S125³"Remove this commented out code.(Ú°à¬8ÿ›Éå¼1
+Ccsharpsquid:S125¿"Remove this commented out code.(Ú°à¬8ÿ›Éå¼1
+Ccsharpsquid:S125Í"Remove this commented out code.(Ú°à¬8ÿ›Éå¼1
+Ccsharpsquid:S125ß"Remove this commented out code.(Ú°à¬8ÿ›Éå¼1
+Ccsharpsquid:S125õ"Remove this commented out code.(Ú°à¬8ÿ›Éå¼1
+Ccsharpsquid:S125…"Remove this commented out code.(Ú°à¬8œåå¼1
+Hcsharpsquid:S125º"Remove this commented out code.(Á§İüÿÿÿÿ8ÿ›Éå¼1
+^csharpsquid:S1135¹"4Complete the task associated to this 'TODO' comment.(Ü¾şÄûÿÿÿÿ8€œÉå¼1

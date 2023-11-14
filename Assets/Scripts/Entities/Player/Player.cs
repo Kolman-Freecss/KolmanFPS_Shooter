@@ -1,5 +1,6 @@
 ﻿using Entities.Camera;
 using Entities.Player.Skin;
+using Gameplay.Player;
 using UnityEngine;
 
 namespace Entities.Player
@@ -55,6 +56,11 @@ namespace Entities.Player
         public void ChangeCurrentSkinView(CameraMode cameraMode, out SkinView skinView)
         {
             skinView = m_PlayerSkin.ChangeSkinViewByCameraMode(cameraMode);
+        }
+        
+        public TPSPlayerController GetTPSPlayerController()
+        {
+            return m_PlayerSkin.GetSkinViewByCameraMode(CameraMode.TPS).SkinModel.GetComponent<TPSPlayerController>();
         }
         
         public CameraMode CurrentCameraMode => m_PlayerSkin.CurrentCameraModeValue;
