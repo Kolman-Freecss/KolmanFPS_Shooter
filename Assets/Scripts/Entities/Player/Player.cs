@@ -15,14 +15,28 @@ namespace Entities.Player
             Kolman = 3
         }
 
+        public enum TeamType
+        {
+            Warriors = 1,
+            Wizards = 2
+        }
+
         #region Member Variables
 
         private string m_name;
-
+        
         public string NameValue
         {
             get => m_name;
             set => m_name = value;
+        }
+        
+        private TeamType m_teamType;
+        
+        public TeamType TeamTypeValue
+        {
+            get => m_teamType;
+            set => m_teamType = value;
         }
 
         private GameObject m_playerPrefab;

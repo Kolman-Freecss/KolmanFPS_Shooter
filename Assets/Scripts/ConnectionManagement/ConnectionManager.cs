@@ -1,14 +1,15 @@
 using System;
+using Config;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 
-namespace Config
+namespace ConnectionManagement
 {
     public class ConnectionManager : MonoBehaviour
     {
         
-        #region Auxiliary Variables
+        #region Member Variables
 
         public static ConnectionManager Instance { get; private set; }
         
@@ -52,6 +53,7 @@ namespace Config
         
         void SubscribeToServerEvents()
         {
+            NetworkManager.Singleton.ConnectionApprovalCallback += ConnectionApprovalCallback;
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnect;
         }
@@ -59,7 +61,30 @@ namespace Config
         #endregion
         
         #region Logic
-        
+
+        /// <summary>
+        /// When a client connects, we apply the player prefab to the client through this filter
+        /// </summary>
+        /// <param name="connectionApprovalRequest"></param>
+        /// <param name="connectionApprovalResponse"></param>
+        private void ConnectionApprovalCallback(NetworkManager.ConnectionApprovalRequest connectionApprovalRequest,
+            NetworkManager.ConnectionApprovalResponse connectionApprovalResponse)
+        {
+            // var playerPrefabIndex = System.BitConverter.ToInt32(connectionApprovalRequest.Payload);
+            var payload = System.BitConverter.ToInt32(connectionApprovalRequest.Payload);
+            Entities.Player.Player.TeamType teamType = (Entities.Player.Player.TeamType) payload;
+            var playerPrefabIndex = GameManager.Instance.SkinsGlobalNetworkIds[teamType];
+            if (GameManager.Instance.SkinsGlobalNetworkIds.Count > playerPrefabIndex)
+            {
+                connectionApprovalResponse.PlayerPrefabHash = GameManager.Instance.SkinsGlobalNetworkIds[teamType];
+            }
+            else
+            {
+                Debug.LogError($"Client provided player Prefab index of {playerPrefabIndex} when there are only {GameManager.Instance.SkinsGlobalNetworkIds.Count} entries!");
+                return;
+            }
+        }
+
         public void StartHost(string ipAddress, int port)
         {
             try
@@ -150,6 +175,7 @@ namespace Config
             {
                 NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
                 NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnect;
+                NetworkManager.Singleton.ConnectionApprovalCallback -= ConnectionApprovalCallback;
             }
         }
 

@@ -24,11 +24,13 @@ namespace Gameplay.Player
             CameraMode cameraMode,
             Entities.Player.Player.PlayerTypeSkin typeSkin, 
             string name,
+            Entities.Player.Player.TeamType teamType,
             GameObject playerPrefab
             )
         {
             Entities.Player.Player player = new Entities.Player.Player();
             player.NameValue = name;
+            player.TeamTypeValue = teamType;
             player.PlayerPrefabValue = playerPrefab ? playerPrefab : GetPlayerSkinPrefab(typeSkin);
             player.PlayerSkinValue = player.PlayerPrefabValue.GetComponentInChildren<PlayerSkin>();
             player.Init(cameraMode);

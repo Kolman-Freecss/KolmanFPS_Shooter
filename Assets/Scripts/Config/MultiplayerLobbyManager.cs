@@ -1,6 +1,8 @@
 using System;
 using System.Text.RegularExpressions;
+using ConnectionManagement;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
 using UnityEngine.UI;
@@ -101,6 +103,28 @@ namespace Config
         #endregion
 
         #region Logic
+        
+        /// <summary>
+        /// The purpose of this method is to set the player prefab index to be used by the client when connecting to the server
+        /// This will be handled by the ConnectionApprovalCallback in the ConnectionManager
+        /// @see ConnectionManager
+        /// </summary>
+        /// <param name="index"></param>
+        public void SetClientPlayerPrefab(Entities.Player.Player.TeamType teamType)
+        {
+            uint globalNetworkId = GameManager.Instance.SkinsGlobalNetworkIds[teamType];
+            if (globalNetworkId > GameManager.Instance.SkinsGlobalNetworkIds.Count)
+            {
+                Debug.LogError($"Trying to assign player Prefab index of {globalNetworkId} when there are only {GameManager.Instance.SkinsGlobalNetworkIds.Count} entries!");
+                return;
+            }
+            if (NetworkManager.Singleton.IsListening)
+            {
+                Debug.LogError("This needs to be set this before connecting!");
+                return;
+            }
+            NetworkManager.Singleton.NetworkConfig.ConnectionData = System.BitConverter.GetBytes(teamType.GetHashCode());
+        }
 
         void OnStartClientButton()
         {
@@ -116,6 +140,7 @@ namespace Config
         
         void OnStartGameHostButton()
         {
+            SetClientPlayerPrefab(Entities.Player.Player.TeamType.Warriors);
             Int32.TryParse(_textHostPort.text, out var portInt);
             if (portInt <= 0)
             {
@@ -132,6 +157,7 @@ namespace Config
         
         void OnStartGameClientButton()
         {
+            SetClientPlayerPrefab(Entities.Player.Player.TeamType.Wizards);
             Int32.TryParse(_textClientPortToConnect.text, out var portInt);
             if (portInt <= 0)
             {

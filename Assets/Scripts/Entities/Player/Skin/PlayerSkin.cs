@@ -15,10 +15,17 @@ namespace Entities.Player.Skin
 
         [Description("Type Skin")] [SerializeField]
         Player.PlayerTypeSkin typeSkin;
-
+        
         public Player.PlayerTypeSkin TypeSkinValue
         {
             get => typeSkin;
+        }
+        
+        [Description("Team Skin")] [SerializeField] Player.TeamType teamSkin;
+        
+        public Player.TeamType TeamSkinValue
+        {
+            get => teamSkin;
         }
         
         [Description("typeSkin View - Positions of the player's body parts")] [SerializeField]

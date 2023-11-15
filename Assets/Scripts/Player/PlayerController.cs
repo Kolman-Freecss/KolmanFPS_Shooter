@@ -370,7 +370,9 @@ namespace Player
             GetComponent<PlayerInput>().enabled = false;
             GetComponent<CameraController>().enabled = false;
             GetComponent<PlayerInputController>().enabled = false;
-            CreatePlayerReference(CameraMode.TPS, typeSkin, "DefaultNamePlayer", gameObject);
+            CreatePlayerReference(CameraMode.TPS, typeSkin, "DefaultNamePlayer",
+                Entities.Player.Player.TeamType.Warriors,
+                gameObject);
             enabled = false;
         }
 
@@ -381,7 +383,9 @@ namespace Player
         
         void GetSceneReferences()
         {
-            CreatePlayerReference(CameraMode.FPS, typeSkin, "DefaultNamePlayer", gameObject);
+            CreatePlayerReference(CameraMode.FPS, typeSkin, "DefaultNamePlayer",
+                Entities.Player.Player.TeamType.Wizards,
+                gameObject);
             m_tpsPlayerController = m_player.GetTPSPlayerController();
             if (m_tpsPlayerController != null)
             {
@@ -414,12 +418,14 @@ namespace Player
         private void CreatePlayerReference(CameraMode cameraMode,
             Entities.Player.Player.PlayerTypeSkin typeSkin, 
             string name, 
+            Entities.Player.Player.TeamType teamType,
             GameObject gameObject)
         {
             m_player = PlayerFactory.CreatePlayer(
                 cameraMode,
                 typeSkin, 
                 name, 
+                teamType,
                 gameObject);
             GetComponent<CameraController>().CurrentCameraModeValue = m_player.CurrentCameraMode;
         }

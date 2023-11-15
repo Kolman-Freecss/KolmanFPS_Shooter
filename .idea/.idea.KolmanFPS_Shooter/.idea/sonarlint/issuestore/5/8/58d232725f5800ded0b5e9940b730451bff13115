@@ -1,10 +1,13 @@
 
-csharpsquid:S1186m"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(¨§¤–8¬ñÊ‰¼1
-csharpsquid:S1186q"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(¡ÊÏõ8¬ñÊ‰¼1
-csharpsquid:S1186Å"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(Á»ç8€ÇŒ¼1
-£csharpsquid:S1186Î"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(Í”âıÿÿÿÿ8€ÇŒ¼1
-ocsharpsquid:S3241"JChange return type to 'void'; not a single caller uses the returned value.(Ù°ªÀ8­ñÊ‰¼1
-Bcsharpsquid:S1250"Remove this commented out code.(ªÿ°®8íó€¼1
-Hcsharpsquid:S125€"Remove this commented out code.( úŒÿÿÿÿÿ8­ñÊ‰¼1
-Hcsharpsquid:S125š"Remove this commented out code.(€ØÂĞıÿÿÿÿ8°•¼1
-Hcsharpsquid:S125³"Remove this commented out code.(Øğä®úÿÿÿÿ8ÇŒ¼1
+csharpsquid:S1186…"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(¨§¤–8ä¿œ½1
+csharpsquid:S1186‰"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(¡ÊÏõ8ä¿œ½1
+csharpsquid:S1186İ"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(Á»ç8ä¿œ½1
+£csharpsquid:S1186æ"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(Í”âıÿÿÿÿ8ä¿œ½1
+>csharpsquid:S2933""Make 'm_Skins' 'readonly'.(ˆ—éó8ÅùÅ½1
+Ncsharpsquid:S2933&"*Make 'm_SkinsGlobalNetworkIds' 'readonly'.(ˆÑ–8ûşÆ½1
+ocsharpsquid:S3241¥"JChange return type to 'void'; not a single caller uses the returned value.(Ù°ªÀ8å¿œ½1
+ccsharpsquid:S11174":Rename 'm_Skins' which hides the field with the same name.(€ëòËıÿÿÿÿ8¹¿½1
+Bcsharpsquid:S125H"Remove this commented out code.(ªÿ°®8å¿œ½1
+Hcsharpsquid:S125˜"Remove this commented out code.( úŒÿÿÿÿÿ8å¿œ½1
+Hcsharpsquid:S125²"Remove this commented out code.(€ØÂĞıÿÿÿÿ8å¿œ½1
+Hcsharpsquid:S125Ë"Remove this commented out code.(Øğä®úÿÿÿÿ8å¿œ½1

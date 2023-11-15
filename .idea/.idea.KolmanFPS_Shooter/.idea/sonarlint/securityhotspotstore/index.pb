@@ -63,3 +63,7 @@ a
 1Assets/Scripts/Entities/Player/Skin/PlayerSkin.cs,5\5\552818591bf006e12b368b24cdcce438f666f800
 e
 5Assets/Scripts/Gameplay/Player/TPSPlayerController.cs,3\2\32c72cafe0240f7d8b85cba596f01e00af58be83
+h
+8Assets/Scripts/ConnectionManagement/ConnectionManager.cs,f\5\f5439a85ea74de262658e400df34dcfa1ad9a4c6
+^
+.Assets/Scripts/Weapons/ProjectileController.cs,4\3\43536c695339f82b38ccd4de1bf885370e6b13ba

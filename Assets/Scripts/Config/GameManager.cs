@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Entities.Player.Skin;
 using Player;
 using Unity.Netcode;
 using UnityEngine;
@@ -10,6 +12,7 @@ namespace Config
 {
     public class GameManager : NetworkBehaviour
     {
+        
         #region Member properties
 
         public static GameManager Instance { get; private set; }
@@ -25,6 +28,16 @@ namespace Config
             NetworkVariableWritePermission.Server);
         
         private const int TimeToEndGame = 5;
+        
+        private readonly string PlayerSkinsPath = "Player/Skins";
+        
+        private List<GameObject> m_Skins = new List<GameObject>();
+        
+        public List<GameObject> Skins => m_Skins;
+        
+        private Dictionary<Entities.Player.Player.TeamType, uint> m_SkinsGlobalNetworkIds = new Dictionary<Entities.Player.Player.TeamType, uint>();
+        
+        public Dictionary<Entities.Player.Player.TeamType, uint> SkinsGlobalNetworkIds => m_SkinsGlobalNetworkIds;
 
         #endregion
 
@@ -34,6 +47,17 @@ namespace Config
         {
             Assert.IsNull(Instance, $"Multiple instances of {nameof(Instance)} detected. This should not happen.");
             ManageSingleton();
+            if (m_Skins == null || m_Skins.Count == 0)
+            {
+                List<GameObject> m_Skins = Resources.LoadAll<GameObject>(PlayerSkinsPath).ToList();
+                m_Skins.ForEach(skin =>
+                {
+                    NetworkObject networkObject = skin.GetComponent<NetworkObject>();
+                    PlayerSkin playerSkin = skin.GetComponentInChildren<PlayerSkin>();
+                    if (networkObject != null) m_SkinsGlobalNetworkIds.Add(playerSkin.TeamSkinValue, networkObject.PrefabIdHash);
+                    else Debug.LogWarning("Skin " + skin.name + " has no NetworkObject component");
+                });
+            }
         }
         
         public override void OnNetworkSpawn()
