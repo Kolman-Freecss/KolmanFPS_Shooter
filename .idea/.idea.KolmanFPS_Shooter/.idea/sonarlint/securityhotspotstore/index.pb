@@ -67,3 +67,9 @@ h
 8Assets/Scripts/ConnectionManagement/ConnectionManager.cs,f\5\f5439a85ea74de262658e400df34dcfa1ad9a4c6
 ^
 .Assets/Scripts/Weapons/ProjectileController.cs,4\3\43536c695339f82b38ccd4de1bf885370e6b13ba
+Y
+)Assets/Modules/CacheModule/PlayerCache.cs,5\6\564cace065ca200be3ac941e3789695d4a7c3895
+]
+-Assets/Modules/CacheModule/CacheManagement.cs,6\2\625078277b86459e27237e611306c77ec81f4659
+^
+.Assets/Modules/CacheModule/ICacheableEntity.cs,3\2\325413719b343aaab6bf2b5f364208fa429fc7a6

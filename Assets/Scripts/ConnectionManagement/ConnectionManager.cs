@@ -45,15 +45,12 @@ namespace ConnectionManagement
 
         private void Start()
         {
-            if (NetworkManager.Singleton.IsServer)
-            {
-                SubscribeToServerEvents();
-            }
+            SubscribeToServerEvents();
         }
         
         void SubscribeToServerEvents()
         {
-            NetworkManager.Singleton.ConnectionApprovalCallback += ConnectionApprovalCallback;
+            // NetworkManager.Singleton.ConnectionApprovalCallback += ConnectionApprovalCallback;
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnect;
         }
@@ -62,28 +59,22 @@ namespace ConnectionManagement
         
         #region Logic
 
+        
+        //TODO: Implement ConnectionApproval Checks
         /// <summary>
         /// When a client connects, we apply the player prefab to the client through this filter
         /// </summary>
         /// <param name="connectionApprovalRequest"></param>
         /// <param name="connectionApprovalResponse"></param>
-        private void ConnectionApprovalCallback(NetworkManager.ConnectionApprovalRequest connectionApprovalRequest,
-            NetworkManager.ConnectionApprovalResponse connectionApprovalResponse)
-        {
-            // var playerPrefabIndex = System.BitConverter.ToInt32(connectionApprovalRequest.Payload);
-            var payload = System.BitConverter.ToInt32(connectionApprovalRequest.Payload);
-            Entities.Player.Player.TeamType teamType = (Entities.Player.Player.TeamType) payload;
-            var playerPrefabIndex = GameManager.Instance.SkinsGlobalNetworkIds[teamType];
-            if (GameManager.Instance.SkinsGlobalNetworkIds.Count > playerPrefabIndex)
-            {
-                connectionApprovalResponse.PlayerPrefabHash = GameManager.Instance.SkinsGlobalNetworkIds[teamType];
-            }
-            else
-            {
-                Debug.LogError($"Client provided player Prefab index of {playerPrefabIndex} when there are only {GameManager.Instance.SkinsGlobalNetworkIds.Count} entries!");
-                return;
-            }
-        }
+        // private void ConnectionApprovalCallback(NetworkManager.ConnectionApprovalRequest connectionApprovalRequest,
+        //     NetworkManager.ConnectionApprovalResponse connectionApprovalResponse)
+        // {
+        //     // var playerPrefabIndex = System.BitConverter.ToInt32(connectionApprovalRequest.Payload);
+        //     var payload = System.BitConverter.ToInt32(connectionApprovalRequest.Payload);
+        //     Entities.Player.Player.TeamType teamType = (Entities.Player.Player.TeamType) payload;
+        //     uint playerPrefabSelection = GameManager.Instance.SkinsGlobalNetworkIds.Find(skin => skin.Key == teamType).Value;
+        //     connectionApprovalResponse.PlayerPrefabHash = playerPrefabSelection;
+        // }
 
         public void StartHost(string ipAddress, int port)
         {
@@ -175,7 +166,7 @@ namespace ConnectionManagement
             {
                 NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
                 NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnect;
-                NetworkManager.Singleton.ConnectionApprovalCallback -= ConnectionApprovalCallback;
+                // NetworkManager.Singleton.ConnectionApprovalCallback -= ConnectionApprovalCallback;
             }
         }
 

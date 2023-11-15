@@ -1,7 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Entities.Player.Skin;
+using Entities.Utils;
+using Modules.CacheModule;
 using Player;
 using Unity.Netcode;
 using UnityEngine;
@@ -34,10 +37,12 @@ namespace Config
         private List<GameObject> m_Skins = new List<GameObject>();
         
         public List<GameObject> Skins => m_Skins;
+
+        public List<SerializableDictionaryEntry<Entities.Player.Player.TeamType, uint>> SkinsGlobalNetworkIds;
         
-        private Dictionary<Entities.Player.Player.TeamType, uint> m_SkinsGlobalNetworkIds = new Dictionary<Entities.Player.Player.TeamType, uint>();
+        private CacheManagement m_CacheManagement;
         
-        public Dictionary<Entities.Player.Player.TeamType, uint> SkinsGlobalNetworkIds => m_SkinsGlobalNetworkIds;
+        public CacheManagement CacheManagement => m_CacheManagement;
 
         #endregion
 
@@ -47,19 +52,28 @@ namespace Config
         {
             Assert.IsNull(Instance, $"Multiple instances of {nameof(Instance)} detected. This should not happen.");
             ManageSingleton();
-            if (m_Skins == null || m_Skins.Count == 0)
+            if (SkinsGlobalNetworkIds == null || SkinsGlobalNetworkIds.Count == 0)
             {
-                List<GameObject> m_Skins = Resources.LoadAll<GameObject>(PlayerSkinsPath).ToList();
-                m_Skins.ForEach(skin =>
-                {
-                    NetworkObject networkObject = skin.GetComponent<NetworkObject>();
-                    PlayerSkin playerSkin = skin.GetComponentInChildren<PlayerSkin>();
-                    if (networkObject != null) m_SkinsGlobalNetworkIds.Add(playerSkin.TeamSkinValue, networkObject.PrefabIdHash);
-                    else Debug.LogWarning("Skin " + skin.name + " has no NetworkObject component");
-                });
+                Assert.IsNotNull(SkinsGlobalNetworkIds, "SkinsGlobalNetworkIds is null or empty");
             }
+            // if (m_Skins == null || m_Skins.Count == 0)
+            // {
+            //     List<GameObject> m_Skins = Resources.LoadAll<GameObject>(PlayerSkinsPath).ToList();
+            //     m_Skins.ForEach(skin =>
+            //     {
+            //         NetworkObject networkObject = skin.GetComponent<NetworkObject>();
+            //         PlayerSkin playerSkin = skin.GetComponentInChildren<PlayerSkin>();
+            //         if (networkObject != null) m_SkinsGlobalNetworkIds.Add(playerSkin.TeamSkinValue, networkObject.PrefabIdHash);
+            //         else Debug.LogWarning("Skin " + skin.name + " has no NetworkObject component");
+            //     });
+            // }
         }
-        
+
+        private void Start()
+        {
+            m_CacheManagement = new CacheManagement();
+        }
+
         public override void OnNetworkSpawn()
         {
             if (IsServer)

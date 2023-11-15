@@ -1,6 +1,7 @@
 using System;
 using System.Text.RegularExpressions;
 using ConnectionManagement;
+using Modules.CacheModule;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -112,18 +113,14 @@ namespace Config
         /// <param name="index"></param>
         public void SetClientPlayerPrefab(Entities.Player.Player.TeamType teamType)
         {
-            uint globalNetworkId = GameManager.Instance.SkinsGlobalNetworkIds[teamType];
-            if (globalNetworkId > GameManager.Instance.SkinsGlobalNetworkIds.Count)
-            {
-                Debug.LogError($"Trying to assign player Prefab index of {globalNetworkId} when there are only {GameManager.Instance.SkinsGlobalNetworkIds.Count} entries!");
-                return;
-            }
-            if (NetworkManager.Singleton.IsListening)
-            {
-                Debug.LogError("This needs to be set this before connecting!");
-                return;
-            }
-            NetworkManager.Singleton.NetworkConfig.ConnectionData = System.BitConverter.GetBytes(teamType.GetHashCode());
+            //TODO: Implement through the ConnectionManager
+            // uint globalNetworkId = GameManager.Instance.SkinsGlobalNetworkIds.Find(skin => skin.Key == teamType).Value;
+            // if (NetworkManager.Singleton.IsListening)
+            // {
+            //     Debug.LogError("This needs to be set this before connecting!");
+            //     return;
+            // }
+            // NetworkManager.Singleton.NetworkConfig.ConnectionData = System.BitConverter.GetBytes(teamType.GetHashCode());
         }
 
         void OnStartClientButton()
@@ -140,7 +137,7 @@ namespace Config
         
         void OnStartGameHostButton()
         {
-            SetClientPlayerPrefab(Entities.Player.Player.TeamType.Warriors);
+            SetClientPlayerPrefab(Entities.Player.Player.TeamType.Wizards);
             Int32.TryParse(_textHostPort.text, out var portInt);
             if (portInt <= 0)
             {
@@ -151,13 +148,16 @@ namespace Config
             {
                 portInt = DefaultPort;
             }
+            
+            GameManager.Instance.CacheManagement.SavePlayerCache(PlayerCache.PlayerCacheKeys.Username, "DefaultNameHostCached");
+            GameManager.Instance.CacheManagement.SavePlayerCache(PlayerCache.PlayerCacheKeys.TeamType, Entities.Player.Player.TeamType.Wizards.ToString());
 
             ConnectionManager.Instance.StartHost(DefaultIp, portInt);
         }
         
         void OnStartGameClientButton()
         {
-            SetClientPlayerPrefab(Entities.Player.Player.TeamType.Wizards);
+            SetClientPlayerPrefab(Entities.Player.Player.TeamType.Warriors);
             Int32.TryParse(_textClientPortToConnect.text, out var portInt);
             if (portInt <= 0)
             {
@@ -177,6 +177,9 @@ namespace Config
                 //TODO: Notify to client that the ip is not valid and we are using the default ip
                 ipAddress = DefaultIp;
             }
+            
+            GameManager.Instance.CacheManagement.SavePlayerCache(PlayerCache.PlayerCacheKeys.Username, "DefaultNameClientCached");
+            GameManager.Instance.CacheManagement.SavePlayerCache(PlayerCache.PlayerCacheKeys.TeamType, Entities.Player.Player.TeamType.Warriors.ToString());
             
             ConnectionManager.Instance.StartClient(ipAddress, portInt);
         }
