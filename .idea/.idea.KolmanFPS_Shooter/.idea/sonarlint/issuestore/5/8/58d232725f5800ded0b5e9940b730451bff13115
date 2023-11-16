@@ -1,12 +1,18 @@
 
-csharpsquid:S1186“"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(¨§¤–8ä¿œ½1
-csharpsquid:S1186—"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(¡ÊÏõ8ä¿œ½1
-csharpsquid:S1186ë"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(Á»ç8ä¿œ½1
-£csharpsquid:S1186ô"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(Í”âıÿÿÿÿ8ä¿œ½1
->csharpsquid:S2933%"Make 'm_Skins' 'readonly'.(ˆ—éó8ÅùÅ½1
-ocsharpsquid:S3241³"JChange return type to 'void'; not a single caller uses the returned value.(Ù°ªÀ8å¿œ½1
-Gcsharpsquid:S125;"Remove this commented out code.(ò¿ªôûÿÿÿÿ8Òœó½1
-Bcsharpsquid:S125V"Remove this commented out code.(ªÿ°®8å¿œ½1
-Hcsharpsquid:S125¦"Remove this commented out code.( úŒÿÿÿÿÿ8å¿œ½1
-Hcsharpsquid:S125À"Remove this commented out code.(€ØÂĞıÿÿÿÿ8å¿œ½1
-Hcsharpsquid:S125Ù"Remove this commented out code.(Øğä®úÿÿÿÿ8å¿œ½1
+csharpsquid:S1186›"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(¨§¤–8âï˜É½1
+csharpsquid:S1186Ÿ"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(¡ÊÏõ8âï˜É½1
+csharpsquid:S1186¦"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(Á»ç8âï˜É½1
+£csharpsquid:S1186¯"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(Í”âıÿÿÿÿ8âï˜É½1
+>csharpsquid:S2933$"Make 'm_Skins' 'readonly'.(ˆ—éó8âï˜É½1
+Ycsharpsquid:S32641"5Remove the unused event 'OnGameStarted' or invoke it.(–¢ùì8Ÿ„›É½1
+ocsharpsquid:S3241î"JChange return type to 'void'; not a single caller uses the returned value.(Ù°ªÀ8âï˜É½1
+ccsharpsquid:S1117B":Rename 'm_Skins' which hides the field with the same name.(€ëòËıÿÿÿÿ8âï˜É½1
+Gcsharpsquid:S125S"Remove this commented out code.(˜şáËùÿÿÿÿ8âï˜É½1
+Bcsharpsquid:S125g"Remove this commented out code.(ªÿ°®8âï˜É½1
+Hcsharpsquid:S125¯"Remove this commented out code.(«¦„ºøÿÿÿÿ8âï˜É½1
+Ccsharpsquid:S125Ö"Remove this commented out code.(†·¿…8òÆíÉ½1
+Hcsharpsquid:S125á"Remove this commented out code.( úŒÿÿÿÿÿ8âï˜É½1
+Hcsharpsquid:S125û"Remove this commented out code.(€ØÂĞıÿÿÿÿ8âï˜É½1
+Hcsharpsquid:S125†"Remove this commented out code.(«¦„ºøÿÿÿÿ8Ÿ„›É½1
+Hcsharpsquid:S125“"Remove this commented out code.(Øğä®úÿÿÿÿ8âï˜É½1
+^csharpsquid:S1135Ë"4Complete the task associated to this 'TODO' comment.(ºš¿öøÿÿÿÿ8âï˜É½1

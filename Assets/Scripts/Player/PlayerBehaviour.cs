@@ -39,8 +39,7 @@ namespace Player
         private float _currentHealth = 100f;
         List<NetworkObject> _weapons = new List<NetworkObject>();
         Weapon _currentWeapon;
-        [HideInInspector]
-        public Weapon CurrentWeapon => _currentWeapon;
+        [HideInInspector] public Weapon CurrentWeapon => _currentWeapon;
         int _currentWeaponIndex = 0;
 
         //TODO: Move this to another class
@@ -61,10 +60,9 @@ namespace Player
             _damageReceiver = GetComponent<DamageReceiver>();
             _playerController = GetComponent<PlayerController>();
         }
-        
+
         private void OnEnable()
         {
-            
         }
 
         public override void OnNetworkSpawn()
@@ -75,17 +73,16 @@ namespace Player
             }
 
             _damageReceiver.DamageReceived += OnDamageReceived;
-            
+
             if (IsOwner)
             {
                 _networkLifeState.LifeState.OnValueChanged += OnLifeStateChanged;
             }
-
         }
 
         private void RegisterServerCallbacks()
         {
-            RoundManager.OnRoundManagerSpawned += InitRound;
+            RoundManager.OnRoundStarted += InitRound;
         }
 
         /// <summary>
@@ -93,7 +90,8 @@ namespace Player
         /// </summary>
         private void InitRound()
         {
-            SceneTransitionHandler.Instance.OnClientLoadedGameScene += ClientLoadedGameScene;
+            // SceneTransitionHandler.Instance.OnClientLoadedGameScene += ClientLoadedGameScene;
+            GameManager.Instance.OnGameStarted += ClientLoadedGameScene;
             Debug.Log("InitRound -> " + NetworkObjectId + " " + NetworkManager.Singleton.LocalClientId + " " + IsOwner);
         }
 
@@ -139,7 +137,7 @@ namespace Player
 
         private void Update()
         {
-            if (!GameManager.Instance.isGameStarted.Value ||
+            if (!RoundManager.Instance.isRoundStarted.Value ||
                 LifeState != LifeState.Alive)
                 return;
             UpdatePlayerCanvas();
@@ -170,7 +168,7 @@ namespace Player
                 //TODO: Respawn or wait to finish the current round
             }
         }
-        
+
         void OnDamageReceived(PlayerBehaviour inflicter, int damage)
         {
             //NetworkObject networkObjectReceiver = NetworkManager.Singleton.SpawnManager.SpawnedObjects[NetworkObjectId];
@@ -298,7 +296,7 @@ namespace Player
         #endregion
 
         #region Network Calls/Events
-        
+
         /// <summary>
         /// The server need to know when the client perform an action over anything 
         /// </summary>
@@ -307,14 +305,17 @@ namespace Player
         /// <param name="damage"></param>
         /// <param name="serverRpcParams"></param>
         [ServerRpc(RequireOwnership = false)]
-        private void TakeDamageServerRpc(ulong receiverNetworkObjectId, ulong inflicterNetworkObjectId, int damage, ServerRpcParams serverRpcParams = default)
+        private void TakeDamageServerRpc(ulong receiverNetworkObjectId, ulong inflicterNetworkObjectId, int damage,
+            ServerRpcParams serverRpcParams = default)
         {
-            ulong clientIdReceiver = NetworkManager.Singleton.SpawnManager.SpawnedObjects[receiverNetworkObjectId].OwnerClientId;
+            ulong clientIdReceiver = NetworkManager.Singleton.SpawnManager.SpawnedObjects[receiverNetworkObjectId]
+                .OwnerClientId;
             TakeDamageClientRpc(clientIdReceiver, inflicterNetworkObjectId, damage);
         }
 
         [ClientRpc]
-        private void TakeDamageClientRpc(ulong clientId, ulong inflicterNetworkObjectId, int damage, ClientRpcParams clientRpcParams = default)
+        private void TakeDamageClientRpc(ulong clientId, ulong inflicterNetworkObjectId, int damage,
+            ClientRpcParams clientRpcParams = default)
         {
             if (clientId != NetworkManager.Singleton.LocalClientId) return;
             PlayerBehaviour playerBehaviour = NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerBehaviour>();
@@ -517,7 +518,9 @@ namespace Player
             ServerRpcParams serverRpcParams = default)
         {
             NetworkObject weaponNetworkObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
-            GameObject hitEffect = isPlayer ? weaponNetworkObject.GetComponent<Weapon>().playerHitEffect : weaponNetworkObject.GetComponent<Weapon>().hitEffect;
+            GameObject hitEffect = isPlayer
+                ? weaponNetworkObject.GetComponent<Weapon>().playerHitEffect
+                : weaponNetworkObject.GetComponent<Weapon>().hitEffect;
             GameObject impact = Instantiate(hitEffect, hitPoint,
                 Quaternion.LookRotation(hitNormal));
             NetworkObject no = impact.GetComponent<NetworkObject>();
@@ -572,12 +575,13 @@ namespace Player
             base.OnNetworkDespawn();
             if (IsServer)
             {
-                RoundManager.OnRoundManagerSpawned -= InitRound;
-                SceneTransitionHandler.Instance.OnClientLoadedGameScene -= ClientLoadedGameScene;
+                RoundManager.OnRoundStarted -= InitRound;
+                //SceneTransitionHandler.Instance.OnClientLoadedGameScene -= ClientLoadedGameScene;
+                GameManager.Instance.OnGameStarted -= ClientLoadedGameScene;
             }
 
             _damageReceiver.DamageReceived -= OnDamageReceived;
-            
+
             if (IsOwner)
             {
                 _networkLifeState.LifeState.OnValueChanged -= OnLifeStateChanged;

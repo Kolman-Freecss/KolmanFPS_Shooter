@@ -14,26 +14,38 @@ namespace Config
     public class RoundManager : NetworkBehaviour
     {
         //TODO: Build checkpoint entity
-        
+
         #region Inspector Variables
 
         public List<GameObject> _checkpoints;
         public List<GameObject> Cameras;
         public GameObject WeaponPool;
 
+        public int timeToStartRound = 10;
+
         #endregion
 
         #region Member Variables
 
+        [HideInInspector] public NetworkVariable<bool> isRoundStarted = new NetworkVariable<bool>(false,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server);
+
+        [HideInInspector] public NetworkVariable<bool> isRoundOver = new NetworkVariable<bool>(false,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server);
+
         public static RoundManager Instance { get; private set; }
+
         //private const int MaxPlayers = 10;
         private const int TimeToRespawn = 5;
+        private int m_timeRemainingToStartRound;
 
         #endregion
 
         #region Events
 
-        public static event Action OnRoundManagerSpawned;
+        public static event Action OnRoundStarted;
 
         #endregion
 
@@ -43,17 +55,28 @@ namespace Config
         {
             ManageSingleton();
         }
-        
+
         public override void OnNetworkSpawn()
         {
+            Debug.Log("RoundManager spawned");
             if (IsServer)
             {
                 GetReferences();
-                OnRoundManagerSpawned?.Invoke();
+                if (!isRoundStarted.Value)
+                {
+                    InitServer();
+                    StartRoundServerRpc();
+                }
             }
+
             SoundManager.Instance.StartBackgroundMusic(SoundManager.BackgroundMusic.InGame);
         }
-        
+
+        public void InitServer()
+        {
+            m_timeRemainingToStartRound = timeToStartRound;
+        }
+
         private void Start()
         {
             GetReferences();
@@ -88,11 +111,27 @@ namespace Config
         {
             return _checkpoints[Random.Range(0, _checkpoints.Count)];
         }
-        
+
         #endregion
 
         #region Network Events Handler
-        
+
+        [ServerRpc]
+        void StartRoundServerRpc(ServerRpcParams serverRpcParams = default)
+        {
+            Debug.Log("Round started");
+            GameManager.Instance.OnStartGameServerRpc();
+            OnRoundStarted?.Invoke();
+            StartCoroutine(StartRound());
+
+            IEnumerator StartRound()
+            {
+                m_timeRemainingToStartRound--;
+                yield return new WaitForSeconds(timeToStartRound);
+                isRoundStarted.Value = true;
+            }
+        }
+
         [ServerRpc]
         private void DetachWeaponsFromPlayerServerRpc(ulong clientId, ServerRpcParams serverRpcParams = default)
         {
@@ -101,10 +140,10 @@ namespace Config
                 Weapon weapon = netObj.GetComponent<Weapon>();
                 if (weapon != null)
                 {
-                    DetachWeaponFromPlayer(weapon.gameObject);    
+                    DetachWeaponFromPlayer(weapon.gameObject);
                 }
             });
-            
+
             void DetachWeaponFromPlayer(GameObject weapon)
             {
                 try
@@ -117,7 +156,8 @@ namespace Config
                     weapon.GetComponent<BoxCollider>().enabled = true;
                     // Change ownership of the weapon to the server
                     weapon.GetComponent<NetworkObject>().RemoveOwnership();
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     Debug.LogError("Error detaching weapon from player: " + e.Message);
                 }
@@ -130,7 +170,7 @@ namespace Config
             ulong clientId = serverRpcParams.Receive.SenderClientId;
             OnPlayerDeathClientRpc(clientId);
             StartCoroutine(OnPlayerDeath(clientId));
-            
+
             IEnumerator OnPlayerDeath(ulong clientId, float timeToRespawn = TimeToRespawn)
             {
                 yield return new WaitForSeconds(timeToRespawn);
@@ -138,7 +178,7 @@ namespace Config
                 RespawnClientRpc(clientId);
             }
         }
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -151,13 +191,13 @@ namespace Config
             if (clientId == NetworkManager.Singleton.LocalClientId)
             {
                 GameManager.Instance.OnPlayerEndGameServerRpc();
-            } 
+            }
             // else
             // {
             //     Debug.Log("Player " + clientId + " respawned");
             // }
         }
-        
+
         [ClientRpc]
         public void OnPlayerDeathClientRpc(ulong clientId, ClientRpcParams clientRpcParams = default)
         {
@@ -179,10 +219,11 @@ namespace Config
         {
             return this.Cameras.Find(camera => camera.CompareTag("MainCamera")).GetComponent<UnityEngine.Camera>();
         }
-        
+
         public CinemachineVirtualCamera GetPlayerFPSCamera()
         {
-            return this.Cameras.Find(camera => camera.CompareTag("PlayerFPSCamera")).GetComponent<CinemachineVirtualCamera>();
+            return this.Cameras.Find(camera => camera.CompareTag("PlayerFPSCamera"))
+                .GetComponent<CinemachineVirtualCamera>();
         }
 
         #endregion
@@ -194,7 +235,7 @@ namespace Config
             base.OnNetworkDespawn();
             Debug.Log("RoundManager despawned");
         }
-        
+
         public void OnDestroy()
         {
             base.OnDestroy();
@@ -202,6 +243,5 @@ namespace Config
         }
 
         #endregion
-        
     }
 }

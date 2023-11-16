@@ -6,39 +6,39 @@ namespace Config
 {
     public class SceneTransitionHandler : NetworkBehaviour
     {
-
         #region Inspector Variables
 
-        [SerializeField]
-        public SceneStates DefaultScene = SceneStates.Multiplayer_Lobby;
+        [SerializeField] public SceneStates DefaultScene = SceneStates.Multiplayer_Lobby;
 
         #endregion
-        
+
         #region Auxiliar properties
 
         public static SceneTransitionHandler Instance { get; private set; }
-        
+
         private SceneStates m_SceneState;
 
         #endregion
 
         #region Event Delegates
-        
+
         [HideInInspector]
         public delegate void SceneStateChangedDelegateHandler(SceneStates newState);
-        [HideInInspector]
-        public event SceneStateChangedDelegateHandler OnSceneStateChanged;
+
+        [HideInInspector] public event SceneStateChangedDelegateHandler OnSceneStateChanged;
+
         [HideInInspector]
         public delegate void ClientLoadedSceneDelegateHandler(ulong clientId);
-        [HideInInspector]
-        public event ClientLoadedSceneDelegateHandler OnClientLoadedGameScene;
+
+        [HideInInspector] public event ClientLoadedSceneDelegateHandler OnClientLoadedGameScene;
 
         #endregion
-        
+
         public enum SceneStates
         {
             Init,
             Multiplayer_Lobby,
+            Multiplayer_Game_Lobby,
             Multiplayer_InGame,
             Multiplayer_EndGame,
         }
@@ -74,25 +74,27 @@ namespace Config
         }
 
         #endregion
-        
+
         #region Logic
-        
+
         public void SetSceneState(SceneStates sceneState)
         {
             m_SceneState = sceneState;
-            if(OnSceneStateChanged != null)
+            if (OnSceneStateChanged != null)
             {
                 OnSceneStateChanged.Invoke(m_SceneState);
             }
+
             if (sceneState == SceneStates.Multiplayer_InGame)
             {
                 Cursor.lockState = CursorLockMode.Locked;
-            } else
+            }
+            else
             {
                 Cursor.lockState = CursorLockMode.None;
             }
         }
-        
+
         /// <summary>
         /// Load a scene for all clients or only for a single client
         /// </summary>
@@ -108,9 +110,10 @@ namespace Config
             {
                 SceneManager.LoadSceneAsync(sceneState.ToString());
             }
+
             SetSceneState(sceneState);
         }
-        
+
         #endregion
 
         #region Network Calls/Events
@@ -119,7 +122,7 @@ namespace Config
         {
             NetworkManager.Singleton.SceneManager.OnLoadComplete += OnLoadComplete;
         }
-        
+
         private void OnLoadComplete(ulong clientId, string sceneName, LoadSceneMode loadSceneMode)
         {
             Debug.Log("OnLoadComplete " + sceneName);
@@ -135,16 +138,15 @@ namespace Config
         }
 
         #endregion
-        
+
         #region Destructor
 
         public override void OnNetworkDespawn()
         {
             base.OnNetworkDespawn();
             UnRegisterNetworkCallbacks();
-            
         }
-        
+
         private void UnRegisterNetworkCallbacks()
         {
             NetworkManager.Singleton.SceneManager.OnLoadComplete -= OnLoadComplete;
@@ -153,13 +155,12 @@ namespace Config
         #endregion
 
         #region Getter & Setter
-        
+
         public SceneStates GetCurrentSceneState()
         {
             return m_SceneState;
         }
 
         #endregion
-
     }
 }

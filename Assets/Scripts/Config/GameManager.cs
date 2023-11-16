@@ -2,10 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using ConnectionManagement;
 using Entities.Player.Skin;
 using Entities.Utils;
 using Modules.CacheModule;
 using Player;
+using Unity.Multiplayer.Samples.BossRoom;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -15,34 +17,36 @@ namespace Config
 {
     public class GameManager : NetworkBehaviour
     {
-        
         #region Member properties
 
         public static GameManager Instance { get; private set; }
-        
-        [HideInInspector]
-        public NetworkVariable<bool> isGameStarted = new NetworkVariable<bool>(false, 
-            NetworkVariableReadPermission.Everyone, 
+
+        [HideInInspector] public NetworkVariable<bool> isGameStarted = new NetworkVariable<bool>(false,
+            NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
-        
-        [HideInInspector]
-        public NetworkVariable<bool> isGameOver = new NetworkVariable<bool>(false, 
-            NetworkVariableReadPermission.Everyone, 
+
+        [HideInInspector] public NetworkVariable<bool> isGameOver = new NetworkVariable<bool>(false,
+            NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
-        
+
         private const int TimeToEndGame = 5;
-        
+
         private readonly string PlayerSkinsPath = "Player/Skins";
-        
+
         private List<GameObject> m_Skins = new List<GameObject>();
-        
+
         public List<GameObject> Skins => m_Skins;
 
         public List<SerializableDictionaryEntry<Entities.Player.Player.TeamType, uint>> SkinsGlobalNetworkIds;
-        
+
+        public Dictionary<Entities.Player.Player.TeamType, List<GameObject>> SkinsByTeam =
+            new Dictionary<Entities.Player.Player.TeamType, List<GameObject>>();
+
         private CacheManagement m_CacheManagement;
-        
+
         public CacheManagement CacheManagement => m_CacheManagement;
+
+        public event Action<ulong> OnGameStarted;
 
         #endregion
 
@@ -56,17 +60,30 @@ namespace Config
             {
                 Assert.IsNotNull(SkinsGlobalNetworkIds, "SkinsGlobalNetworkIds is null or empty");
             }
-            // if (m_Skins == null || m_Skins.Count == 0)
-            // {
-            //     List<GameObject> m_Skins = Resources.LoadAll<GameObject>(PlayerSkinsPath).ToList();
-            //     m_Skins.ForEach(skin =>
-            //     {
-            //         NetworkObject networkObject = skin.GetComponent<NetworkObject>();
-            //         PlayerSkin playerSkin = skin.GetComponentInChildren<PlayerSkin>();
-            //         if (networkObject != null) m_SkinsGlobalNetworkIds.Add(playerSkin.TeamSkinValue, networkObject.PrefabIdHash);
-            //         else Debug.LogWarning("Skin " + skin.name + " has no NetworkObject component");
-            //     });
-            // }
+
+            if (m_Skins == null || m_Skins.Count == 0)
+            {
+                List<GameObject> m_Skins = Resources.LoadAll<GameObject>(PlayerSkinsPath).ToList();
+                m_Skins.ForEach(skin =>
+                {
+                    NetworkObject networkObject = skin.GetComponent<NetworkObject>();
+                    PlayerSkin playerSkin = skin.GetComponentInChildren<PlayerSkin>();
+                    if (networkObject != null)
+                    {
+                        if (SkinsByTeam.ContainsKey(playerSkin.TeamSkinValue))
+                        {
+                            SkinsByTeam[playerSkin.TeamSkinValue].Add(skin);
+                        }
+                        else
+                        {
+                            SkinsByTeam.Add(playerSkin.TeamSkinValue, new List<GameObject>() { skin });
+                        }
+                    }
+                    else Debug.LogWarning("Skin " + skin.name + " has no NetworkObject component");
+                    // if (networkObject != null) m_SkinsGlobalNetworkIds.Add(playerSkin.TeamSkinValue, networkObject.PrefabIdHash);
+                    // else Debug.LogWarning("Skin " + skin.name + " has no NetworkObject component");
+                });
+            }
         }
 
         private void Start()
@@ -82,7 +99,7 @@ namespace Config
 
                 Init();
             }
-            
+
             //NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnect;
         }
 
@@ -109,7 +126,7 @@ namespace Config
         #endregion
 
         #region Logic
-        
+
         private void ClientLoadedGameScene(ulong clientId)
         {
             if (IsServer)
@@ -119,22 +136,13 @@ namespace Config
                 {
                     Send = new ClientRpcSendParams
                     {
-                        TargetClientIds = new ulong[] {clientId}
+                        TargetClientIds = new ulong[] { clientId }
                     }
                 };
                 OnClientConnectedCallbackClientRpc(clientId, clientRpcParams);
             }
         }
-        
-        private void StartGame()
-        {
-            if (!isGameStarted.Value && SceneTransitionHandler.Instance.GetCurrentSceneState().Equals(SceneTransitionHandler.SceneStates.Multiplayer_InGame))
-            {
-                Debug.Log("------------------START GAME------------------");
-                isGameStarted.Value = true;
-            }
-        }
-        
+
         [ClientRpc]
         public void PlayerDeathClientRpc(ulong clientId, ClientRpcParams clientRpcParams = default)
         {
@@ -143,11 +151,11 @@ namespace Config
             NetworkManager.Singleton.Shutdown();
             SceneTransitionHandler.Instance.LoadScene(SceneTransitionHandler.SceneStates.Multiplayer_EndGame, false);
         }
-        
+
         public void AddPlayer(ulong clientId, PlayerController player)
         {
         }
-        
+
         public void RemovePlayer(ulong clientId)
         {
         }
@@ -155,6 +163,57 @@ namespace Config
         #endregion
 
         #region Network calls/Events
+
+        /// <summary>
+        /// When the game starts the server will notify all clients to start the game and will spawn all players
+        /// </summary>
+        /// <param name="serverRpcParams"></param>
+        [ServerRpc]
+        public void OnStartGameServerRpc(ServerRpcParams serverRpcParams = default)
+        {
+            SpawnAllPlayersServerRpc();
+            // StartGame();
+            //NotifyAllPlayersClientRpc();
+
+            // void StartGame()
+            // {
+            //     if (!isGameStarted.Value && SceneTransitionHandler.Instance.GetCurrentSceneState()
+            //             .Equals(SceneTransitionHandler.SceneStates.Multiplayer_InGame))
+            //     {
+            //         OnStartGameServerRpc();
+            //         Debug.Log("------------------START GAME------------------");
+            //         isGameStarted.Value = true;
+            //         OnGameStarted?.Invoke(NetworkManager.Singleton.LocalClientId);
+            //     }
+            // }
+        }
+
+        /// <summary>
+        /// Spawn all the networkObjects player prefab for all players
+        /// </summary>
+        /// <param name="serverRpcParams"></param>
+        [ServerRpc]
+        private void SpawnAllPlayersServerRpc(ServerRpcParams serverRpcParams = default)
+        {
+            Debug.Log("------------------SPAWN PLAYERS------------------");
+            List<ulong> connectedPlayers = NetworkManager.Singleton.ConnectedClientsIds.ToList();
+            for (var i = 0; i < connectedPlayers.Count; i++)
+            {
+                ulong clientId = connectedPlayers[i];
+                //TODO: Get the team from the player data
+                // Team 1 = i % 2 == 0
+                // Team 2 = i % 2 != 0
+                Entities.Player.Player.TeamType teamType = i % 2 == 0
+                    ? Entities.Player.Player.TeamType.Warriors
+                    : Entities.Player.Player.TeamType.Wizards;
+                GameObject playerGo = GameManager.Instance.SkinsByTeam[teamType][0];
+                GameObject player = Instantiate(playerGo);
+                NetworkObject noPlayer = player.GetComponent<NetworkObject>();
+                noPlayer.SpawnWithOwnership(clientId, true);
+                // SessionManager<SessionPlayerData>.Instance.SetPlayerData(clientId,
+                //     new SessionPlayerData(clientId, "Player " + clientId, 0, true, true, teamType));
+            }
+        }
 
         /// <summary>
         /// When the game is over, the server will notify all clients to end the game
@@ -182,7 +241,7 @@ namespace Config
                 SceneTransitionHandler.Instance.LoadScene(SceneTransitionHandler.SceneStates.Multiplayer_EndGame);
             }
         }
-        
+
         [ServerRpc(RequireOwnership = false)]
         public void OnPlayerEndGameServerRpc(ServerRpcParams serverRpcParams = default)
         {
@@ -193,17 +252,16 @@ namespace Config
                 PlayerDeathClientRpc(clientId);
                 OnClientDisconnectCallbackServerRpc(clientId);
             }
-            
         }
-        
+
         [ClientRpc]
         private void OnClientConnectedCallbackClientRpc(ulong clientId, ClientRpcParams clientRpcParams = default)
         {
             Debug.Log("------------------SENT Client Loaded Scene------------------");
             Debug.Log("Client Id -> " + clientId);
-            StartGame();
+            //StartGame();
         }
-        
+
         [ServerRpc(RequireOwnership = false)]
         public void OnClientDisconnectCallbackServerRpc(ulong cliendId, ServerRpcParams serverRpcParams = default)
         {
@@ -216,9 +274,9 @@ namespace Config
             Debug.Log("------------------ Player removed------------------ " + cliendId);
             //RemovePlayer(cliendId);
         }
-        
+
         #endregion
-        
+
         #region Destructor
 
         public override void OnNetworkDespawn()
@@ -228,25 +286,24 @@ namespace Config
             {
                 UnregisterServerCallbacks();
             }
+
             ClearInitData();
             UnSubscribeToDelegatesAndUpdateValues();
         }
-        
+
         public void ClearInitData()
         {
         }
-        
+
         private void UnregisterServerCallbacks()
         {
             SceneTransitionHandler.Instance.OnClientLoadedGameScene -= ClientLoadedGameScene;
         }
-        
+
         void UnSubscribeToDelegatesAndUpdateValues()
         {
         }
-        
 
         #endregion
-        
     }
 }

@@ -18,12 +18,9 @@ namespace Player
     {
         #region Inspector Variables
 
-        [Header("Player")] 
-        
-        [FormerlySerializedAs("Skin")]
-        [Tooltip("typeSkin")]
-        [SerializeField] public Entities.Player.Player.PlayerTypeSkin typeSkin = Entities.Player.Player.PlayerTypeSkin.DefaultSkin;
-        
+        [Header("Player")] [FormerlySerializedAs("Skin")] [Tooltip("typeSkin")] [SerializeField]
+        public Entities.Player.Player.PlayerTypeSkin typeSkin = Entities.Player.Player.PlayerTypeSkin.DefaultSkin;
+
         [Tooltip("Movement speed of the player")] [SerializeField]
         private float _speed = 6f;
 
@@ -46,7 +43,7 @@ namespace Player
         [Tooltip("Time required to pass before being able to jump again. Set to 0f to instantly jump again")]
         public float JumpTimeout = 0.50f;
 
-        
+
         [Header("Player Grounded")] [Tooltip("What layers the character uses as ground")]
         public LayerMask GroundLayers;
 
@@ -61,14 +58,14 @@ namespace Player
 
         Entities.Player.Player m_player;
         public Entities.Player.Player Player => m_player;
-        
+
         PlayerInputController _playerInputController;
         TPSPlayerController m_tpsPlayerController;
         CharacterController _controller;
         PlayerBehaviour m_playerBehaviour;
         Animator _animator;
         public Animator Animator => _animator;
-        
+
         //Camera
         GameObject _mainCamera;
         public GameObject MainCamera => _mainCamera;
@@ -78,7 +75,7 @@ namespace Player
         private float _targetRotation = 0.0f;
         private float _rotationVelocity;
         private float _verticalVelocity;
-        
+
         private float _animationBlend;
 
         // Jump
@@ -87,11 +84,11 @@ namespace Player
         private float _jumpTimeoutDelta;
         private float _fallTimeoutDelta;
         private float _terminalVelocity = 53.0f;
-        
+
         //Animator
         private bool _hasAnimator;
         public bool HasAnimator => _hasAnimator;
-        
+
         private int _animIDForwardVelocity;
         public int AnimIDForwardVelocity => _animIDForwardVelocity;
         private int _animIDBackwardVelocity;
@@ -113,7 +110,7 @@ namespace Player
 
         void GetComponentReferences()
         {
-            _playerInputController = GetComponent<PlayerInputController>(); 
+            _playerInputController = GetComponent<PlayerInputController>();
             _controller = GetComponent<CharacterController>();
             m_playerBehaviour = GetComponent<PlayerBehaviour>();
         }
@@ -125,28 +122,29 @@ namespace Player
             _animIDNormalizedVerticalVelocity = Animator.StringToHash("NormalizedVerticalVelocity");
             _animIDIsGrounded = Animator.StringToHash("IsGrounded");
         }
-        
+
         public override void OnNetworkSpawn()
         {
             // This is called when the local player is spawned and will be enabled after the scene is loaded
             enabled = false;
             if (IsServer)
             {
-                RoundManager.OnRoundManagerSpawned += () =>
+                RoundManager.OnRoundStarted += () =>
                 {
                     Transform checkpoint = RoundManager.Instance.GetRandomCheckpoint().transform;
-                    transform.position = new Vector3(checkpoint.position.x, checkpoint.position.y + 1f, checkpoint.position.z);
+                    transform.position = new Vector3(checkpoint.position.x, checkpoint.position.y + 1f,
+                        checkpoint.position.z);
                 };
                 RegisterServerCallbacks();
             }
             else
             {
-                Debug.Log("Client");    
+                Debug.Log("Client");
             }
-            
+
             SceneTransitionHandler.Instance.SetSceneState(SceneTransitionHandler.SceneStates.Multiplayer_InGame);
         }
-        
+
         private void RegisterServerCallbacks()
         {
             //Server will be notified when a client connects
@@ -201,7 +199,7 @@ namespace Player
             {
                 // reset the fall timeout timer
                 _fallTimeoutDelta = FallTimeout;
-                
+
                 // if (_hasAnimator)
                 // {
                 //     _animator.SetBool(_animIDJump, false);
@@ -218,7 +216,7 @@ namespace Player
                 {
                     // the square root of H * -2 * G = how much velocity needed to reach desired height
                     _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
-                    
+
                     // update animator if using character
                     // if (_hasAnimator)
                     // {
@@ -269,7 +267,6 @@ namespace Player
             {
                 _animator.SetFloat(_animIDNormalizedVerticalVelocity, _verticalVelocity / JumpHeight);
             }
-            
         }
 
         void GroundCheck()
@@ -310,7 +307,7 @@ namespace Player
                 // rotate to face input direction relative to camera position
                 transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
             }
-            
+
             // _animationBlend = Mathf.Lerp(_animationBlend, targetSpeed, Time.deltaTime); //TODO: Acceleration * SpeedChangeRate
             // if (_animationBlend < 0.01f) _animationBlend = 0f;
 
@@ -320,18 +317,17 @@ namespace Player
                                      _mainCamera.transform.right * currentHorizontalSpeed.x;
             currentHorizontalSpeed.y = 0.0f;
             float currentHorizontalSpeedMagnitude = currentHorizontalSpeed.magnitude;
-            
+
             _controller.Move(targetDirection.normalized *
                              (currentHorizontalSpeedMagnitude * Time.deltaTime * targetSpeed) +
                              new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
-            
+
             if (_hasAnimator)
             {
                 Vector3 localSmoothedAnimationVelocity = transform.InverseTransformDirection(currentHorizontalSpeed);
                 _animator.SetFloat(_animIDForwardVelocity, localSmoothedAnimationVelocity.z);
                 _animator.SetFloat(_animIDBackwardVelocity, localSmoothedAnimationVelocity.x);
             }
-            
         }
 
         #endregion
@@ -347,7 +343,7 @@ namespace Player
                 SendClientInitDataClientRpc(clientId);
             }
         }
-        
+
         [ClientRpc]
         private void SendClientInitDataClientRpc(ulong clientId, ClientRpcParams clientRpcParams = default)
         {
@@ -358,6 +354,7 @@ namespace Player
                 InitOtherClientsData();
                 return;
             }
+
             InitClientData(clientId);
         }
 
@@ -381,11 +378,13 @@ namespace Player
         {
             GetSceneReferences();
         }
-        
+
         void GetSceneReferences()
         {
             string username = GameManager.Instance.CacheManagement.GetPlayerCache(PlayerCache.PlayerCacheKeys.Username);
-            Entities.Player.Player.TeamType teamType = (Entities.Player.Player.TeamType) Enum.Parse(typeof(Entities.Player.Player.TeamType), GameManager.Instance.CacheManagement.GetPlayerCache(PlayerCache.PlayerCacheKeys.TeamType));
+            Entities.Player.Player.TeamType teamType = (Entities.Player.Player.TeamType)Enum.Parse(
+                typeof(Entities.Player.Player.TeamType),
+                GameManager.Instance.CacheManagement.GetPlayerCache(PlayerCache.PlayerCacheKeys.TeamType));
             Debug.Log("Username -> " + username + " TeamType -> " + teamType);
             CreatePlayerReference(CameraMode.FPS, typeSkin, username,
                 teamType,
@@ -396,39 +395,42 @@ namespace Player
                 m_tpsPlayerController.PlayerControllerValue = this;
                 m_tpsPlayerController.enabled = true;
             }
+
             if (_mainCamera == null)
             {
                 _mainCamera = RoundManager.Instance.GetMainCamera().gameObject;
             }
+
             this._playerFpsCamera = RoundManager.Instance.GetPlayerFPSCamera();
             if (this._playerFpsCamera != null)
             {
                 this._playerFpsCamera.Follow = m_player.Head;
-                this._playerFpsCamera.GetComponent<CinemachinePOVExtension>().SetPlayer(_playerInputController); 
+                this._playerFpsCamera.GetComponent<CinemachinePOVExtension>().SetPlayer(_playerInputController);
             }
             else
             {
                 Debug.LogWarning("Player FPS Camera not found");
             }
+
             GetComponent<PlayerBehaviour>().enabled = true;
             GetComponent<PlayerInput>().enabled = true;
             GetComponent<CameraController>().enabled = true;
             GetComponent<PlayerInputController>().enabled = true;
-            _animator = m_player.CurrentSkinModel.GetComponent<Animator>(); 
+            _animator = m_player.CurrentSkinModel.GetComponent<Animator>();
             _hasAnimator = _animator != null;
             enabled = true;
         }
 
         private void CreatePlayerReference(CameraMode cameraMode,
-            Entities.Player.Player.PlayerTypeSkin typeSkin, 
-            string name, 
+            Entities.Player.Player.PlayerTypeSkin typeSkin,
+            string name,
             Entities.Player.Player.TeamType teamType,
             GameObject gameObject)
         {
             m_player = PlayerFactory.CreatePlayer(
                 cameraMode,
-                typeSkin, 
-                name, 
+                typeSkin,
+                name,
                 teamType,
                 gameObject);
             GetComponent<CameraController>().CurrentCameraModeValue = m_player.CurrentCameraMode;
@@ -463,26 +465,27 @@ namespace Player
             {
                 GameManager.Instance.ClearInitData();
             }
+
             if (IsServer)
             {
                 UnregisterServerCallbacks();
             }
+
             UnSubscribeToDelegatesAndUpdateValues();
-            
         }
-        
+
         private void UnregisterServerCallbacks()
         {
             //Server will be notified when a client connects
-            RoundManager.OnRoundManagerSpawned -= () => transform.position = RoundManager.Instance.GetRandomCheckpoint().transform.position;
+            RoundManager.OnRoundStarted -= () =>
+                transform.position = RoundManager.Instance.GetRandomCheckpoint().transform.position;
             SceneTransitionHandler.Instance.OnClientLoadedGameScene -= ClientLoadedGameScene;
         }
-        
+
         void UnSubscribeToDelegatesAndUpdateValues()
         {
         }
 
         #endregion
-        
     }
 }
