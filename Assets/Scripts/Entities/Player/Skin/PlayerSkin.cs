@@ -10,24 +10,24 @@ namespace Entities.Player.Skin
 {
     public class PlayerSkin : MonoBehaviour
     {
-
         #region Inspector Variables
 
         [Description("Type Skin")] [SerializeField]
         Player.PlayerTypeSkin typeSkin;
-        
+
         public Player.PlayerTypeSkin TypeSkinValue
         {
             get => typeSkin;
         }
-        
-        [Description("Team Skin")] [SerializeField] Player.TeamType teamSkin;
-        
+
+        [Description("Team Skin")] [SerializeField]
+        Player.TeamType teamSkin;
+
         public Player.TeamType TeamSkinValue
         {
             get => teamSkin;
         }
-        
+
         [Description("typeSkin View - Positions of the player's body parts")] [SerializeField]
         List<SerializableDictionaryEntry<CameraMode, SkinView>> _skinViews;
 
@@ -37,24 +37,24 @@ namespace Entities.Player.Skin
         }
 
         #endregion
-        
+
         #region Member Variables
-        
+
         private CameraMode m_currentCameraMode;
-        
+
         public CameraMode CurrentCameraModeValue
         {
             get => m_currentCameraMode;
         }
-        
+
         private TPSPlayerController m_tpsPlayerController;
-        
+
         public TPSPlayerController TPSPlayerControllerValue
         {
             get => m_tpsPlayerController;
             set => m_tpsPlayerController = value;
         }
-        
+
         private SkinView m_currentSkinView;
 
         public SkinView CurrentSkinViewValue
@@ -69,22 +69,30 @@ namespace Entities.Player.Skin
 
         private void Start()
         {
-            m_tpsPlayerController = GetSkinViewByCameraMode(CameraMode.TPS).SkinModel.GetComponent<TPSPlayerController>();
+            GetReferences();
         }
 
         public void Init(CameraMode cameraMode)
         {
+            GetReferences();
             ChangeSkinViewByCameraMode(cameraMode);
-            
+
             if (cameraMode == CameraMode.TPS)
             {
                 // Unable the FPS skin view if the camera mode is TPS.
                 TPSInit(cameraMode);
-            } else if (cameraMode == CameraMode.FPS)
+            }
+            else if (cameraMode == CameraMode.FPS)
             {
                 // Unable the TPS skin view if the camera mode is FPS.
                 FPSInit();
             }
+        }
+
+        void GetReferences()
+        {
+            m_tpsPlayerController =
+                GetSkinViewByCameraMode(CameraMode.TPS).SkinModel.GetComponent<TPSPlayerController>();
         }
 
         private void FPSInit()
@@ -95,7 +103,7 @@ namespace Entities.Player.Skin
         private void TPSInit(CameraMode cameraMode)
         {
             DisableAllOtherSkinViews();
-            
+
             void DisableAllOtherSkinViews()
             {
                 foreach (var skinView in _skinViews)
@@ -121,17 +129,17 @@ namespace Entities.Player.Skin
                 case CameraMode.FPS:
                     m_tpsPlayerController.mesh.SetActive(false);
                     break;
-                default:   
+                default:
                     Debug.LogError("Camera mode not implemented " + cameraMode);
                     break;
             }
-            
+
             m_currentCameraMode = cameraMode;
             m_currentSkinView = skinView;
             m_currentSkinView.SkinModel.SetActive(true);
             return m_currentSkinView;
         }
-        
+
         public SkinView GetSkinViewByCameraMode(CameraMode cameraMode)
         {
             foreach (var skinView in _skinViews)
@@ -146,6 +154,5 @@ namespace Entities.Player.Skin
         }
 
         #endregion
-        
     }
 }

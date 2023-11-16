@@ -168,7 +168,7 @@ namespace Player
         void Update()
         {
             // Debug.Log("Update GameManager.Instance.isGameStarted.Value= " + GameManager.Instance.isGameStarted.Value + " GameManager.isGameStarted.Value= " + GameManager.isGameStarted.Value);
-            if (!GameManager.Instance.isGameStarted.Value || m_playerBehaviour.LifeState == LifeState.Dead) return;
+            if (!RoundManager.Instance.isRoundStarted.Value || m_playerBehaviour.LifeState == LifeState.Dead) return;
             Jump();
             GroundCheck();
             Move();
@@ -349,7 +349,7 @@ namespace Player
         {
             Debug.Log("------------------SENT Client Init Awake Data------------------");
             Debug.Log("Client Id -> " + clientId);
-            if (!IsLocalPlayer || !IsOwner)
+            if (!IsOwner) // || !IsLocalPlayer
             {
                 InitOtherClientsData();
                 return;

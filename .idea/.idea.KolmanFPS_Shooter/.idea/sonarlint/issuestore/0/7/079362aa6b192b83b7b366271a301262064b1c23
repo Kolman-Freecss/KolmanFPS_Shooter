@@ -1,7 +1,7 @@
 
 ¢csharpsquid:S1186@"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(ŞÔûşÿÿÿÿ8ù“¦ı»1
 ?csharpsquid:S2933("Make '_weapons' 'readonly'.(¯°©€8¸¿¬û»1
-Bcsharpsquid:S125]"Remove this commented out code.(¹şÀ«8Ì‡¢½1
+Gcsharpsquid:S125^"Remove this commented out code.(“¹¢‰üÿÿÿÿ8ãúúĞ½1
 Hcsharpsquid:S125®"Remove this commented out code.(Öãİ øÿÿÿÿ8²Ò¤ÿ»1
 Ccsharpsquid:S125±"Remove this commented out code.(Ú°à¬8²Ò¤ÿ»1
 Ccsharpsquid:S125å"Remove this commented out code.(÷ó¨¤8²Ò¤ÿ»1

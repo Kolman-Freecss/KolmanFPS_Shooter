@@ -90,8 +90,8 @@ namespace Player
         /// </summary>
         private void InitRound()
         {
-            // SceneTransitionHandler.Instance.OnClientLoadedGameScene += ClientLoadedGameScene;
-            GameManager.Instance.OnGameStarted += ClientLoadedGameScene;
+            SceneTransitionHandler.Instance.OnClientLoadedGameScene += ClientLoadedGameScene;
+            // GameManager.Instance.OnGameStarted += ClientLoadedGameScene;
             Debug.Log("InitRound -> " + NetworkObjectId + " " + NetworkManager.Singleton.LocalClientId + " " + IsOwner);
         }
 

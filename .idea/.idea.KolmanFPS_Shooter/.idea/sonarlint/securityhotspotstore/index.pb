@@ -31,8 +31,6 @@ l
 <Assets/Scripts/Entities/Utils/SerializableDictionaryEntry.cs,8\8\883822a1b0546f9ae5d531d0cf19a0c1a813cdbf
 S
 #Assets/Scripts/Utils/ConfigScene.cs,9\9\9917168f8301c161734084f14d1b6ba7b3ea997a
-`
-0Assets/Scripts/Config/MultiplayerLobbyManager.cs,1\9\19d875e2e21a1a59d0acbccad30508ebf2d34831
 _
 /Assets/Scripts/Config/SceneTransitionHandler.cs,c\8\c83c22f604080e8ce6f266a56352d368d771cdb6
 f

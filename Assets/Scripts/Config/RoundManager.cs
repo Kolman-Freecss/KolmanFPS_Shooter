@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
 using Player;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -17,6 +18,7 @@ namespace Config
 
         #region Inspector Variables
 
+        public TextMeshProUGUI TimeToStartRoundText;
         public List<GameObject> _checkpoints;
         public List<GameObject> Cameras;
         public GameObject WeaponPool;
@@ -39,7 +41,10 @@ namespace Config
 
         //private const int MaxPlayers = 10;
         private const int TimeToRespawn = 5;
-        private int m_timeRemainingToStartRound;
+
+        [HideInInspector] public NetworkVariable<int> m_timeRemainingToStartRound = new NetworkVariable<int>(0,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server);
 
         #endregion
 
@@ -74,7 +79,7 @@ namespace Config
 
         public void InitServer()
         {
-            m_timeRemainingToStartRound = timeToStartRound;
+            m_timeRemainingToStartRound.Value = timeToStartRound;
         }
 
         private void Start()
@@ -101,6 +106,7 @@ namespace Config
         void GetReferences()
         {
             if (_checkpoints == null) _checkpoints = new List<GameObject>();
+            StartingRoundClientRpc(false);
         }
 
         #endregion
@@ -122,13 +128,29 @@ namespace Config
             Debug.Log("Round started");
             GameManager.Instance.OnStartGameServerRpc();
             OnRoundStarted?.Invoke();
+            StartingRoundClientRpc(true);
             StartCoroutine(StartRound());
 
             IEnumerator StartRound()
             {
-                m_timeRemainingToStartRound--;
+                m_timeRemainingToStartRound.Value--;
+                TimeToStartRoundText.text = m_timeRemainingToStartRound.ToString();
                 yield return new WaitForSeconds(timeToStartRound);
+                StartingRoundClientRpc(false);
                 isRoundStarted.Value = true;
+            }
+        }
+
+        [ClientRpc]
+        void StartingRoundClientRpc(bool isRoundStarting, ClientRpcParams clientRpcParams = default)
+        {
+            if (isRoundStarting)
+            {
+                TimeToStartRoundText.gameObject.SetActive(true);
+            }
+            else
+            {
+                TimeToStartRoundText.gameObject.SetActive(false);
             }
         }
 

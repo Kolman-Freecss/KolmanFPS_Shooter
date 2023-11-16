@@ -210,6 +210,8 @@ namespace Config
                 GameObject player = Instantiate(playerGo);
                 NetworkObject noPlayer = player.GetComponent<NetworkObject>();
                 noPlayer.SpawnWithOwnership(clientId, true);
+                // Make this noPlayer PlayerObject for this client
+                NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject = noPlayer;
                 // SessionManager<SessionPlayerData>.Instance.SetPlayerData(clientId,
                 //     new SessionPlayerData(clientId, "Player " + clientId, 0, true, true, teamType));
             }
