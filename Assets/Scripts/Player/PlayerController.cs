@@ -1,3 +1,5 @@
+#region
+
 using System;
 using Camera;
 using Cinemachine;
@@ -6,11 +8,12 @@ using Entities.Camera;
 using Gameplay.GameplayObjects;
 using Gameplay.Player;
 using Modules.CacheModule;
-using Unity.Multiplayer.Samples.Utilities.ClientAuthority;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
+
+#endregion
 
 namespace Player
 {
@@ -148,7 +151,8 @@ namespace Player
         private void RegisterServerCallbacks()
         {
             //Server will be notified when a client connects
-            SceneTransitionHandler.Instance.OnClientLoadedGameScene += ClientLoadedGameScene;
+            GameManager.Instance.OnGameStarted += ClientLoadedGameScene;
+            // SceneTransitionHandler.Instance.OnClientLoadedGameScene += ClientLoadedGameScene;
         }
 
         void Start()
@@ -418,6 +422,7 @@ namespace Player
             GetComponent<PlayerInputController>().enabled = true;
             _animator = m_player.CurrentSkinModel.GetComponent<Animator>();
             _hasAnimator = _animator != null;
+            m_playerBehaviour.InitRoundData();
             enabled = true;
         }
 

@@ -1,14 +1,17 @@
+#region
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
-using Player;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Animations;
 using Weapons;
 using Random = UnityEngine.Random;
+
+#endregion
 
 namespace Config
 {
@@ -46,11 +49,14 @@ namespace Config
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
 
+        private bool _isRoundStarting = false;
+
         #endregion
 
         #region Events
 
         public static event Action OnRoundStarted;
+        public event Action OnRoundManagerSpawned;
 
         #endregion
 
@@ -64,15 +70,15 @@ namespace Config
         public override void OnNetworkSpawn()
         {
             Debug.Log("RoundManager spawned");
+            OnRoundManagerSpawned?.Invoke();
+            // if (IsServer)
+            //     //GetReferences();
+            //     if (!isRoundStarted.Value)
+            //     {
+            //         StartRoundServerRpc();
+            //     }
             if (IsServer)
-            {
-                GetReferences();
-                if (!isRoundStarted.Value)
-                {
-                    InitServer();
-                    StartRoundServerRpc();
-                }
-            }
+                InitServer();
 
             SoundManager.Instance.StartBackgroundMusic(SoundManager.BackgroundMusic.InGame);
         }
@@ -85,6 +91,9 @@ namespace Config
         private void Start()
         {
             GetReferences();
+            if (IsServer)
+                if (!isRoundStarted.Value)
+                    StartRoundServerRpc();
         }
 
         /**
@@ -103,10 +112,21 @@ namespace Config
             }
         }
 
-        void GetReferences()
+        private void GetReferences()
         {
             if (_checkpoints == null) _checkpoints = new List<GameObject>();
+            _isRoundStarting = false;
             StartingRoundClientRpc(false);
+        }
+
+        #endregion
+
+        #region Loop
+
+        private void Update()
+        {
+            if (!isRoundStarted.Value && _isRoundStarting)
+                TimeToStartRoundText.text = m_timeRemainingToStartRound.Value.ToString();
         }
 
         #endregion
@@ -129,13 +149,18 @@ namespace Config
             GameManager.Instance.OnStartGameServerRpc();
             OnRoundStarted?.Invoke();
             StartingRoundClientRpc(true);
-            StartCoroutine(StartRound());
+            StartCoroutine(StartRound(timeToStartRound));
 
-            IEnumerator StartRound()
+            IEnumerator StartRound(int time)
             {
-                m_timeRemainingToStartRound.Value--;
-                TimeToStartRoundText.text = m_timeRemainingToStartRound.ToString();
-                yield return new WaitForSeconds(timeToStartRound);
+                int timeRemaining = time;
+                while (timeRemaining > 0)
+                {
+                    m_timeRemainingToStartRound.Value = timeRemaining;
+                    yield return new WaitForSeconds(1);
+                    timeRemaining--;
+                }
+
                 StartingRoundClientRpc(false);
                 isRoundStarted.Value = true;
             }
@@ -152,6 +177,8 @@ namespace Config
             {
                 TimeToStartRoundText.gameObject.SetActive(false);
             }
+
+            _isRoundStarting = isRoundStarting;
         }
 
         [ServerRpc]

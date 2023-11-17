@@ -1,17 +1,18 @@
+#region
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using ConnectionManagement;
 using Entities.Player.Skin;
 using Entities.Utils;
 using Modules.CacheModule;
 using Player;
-using Unity.Multiplayer.Samples.BossRoom;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.UIElements;
+
+#endregion
 
 namespace Config
 {
@@ -172,20 +173,19 @@ namespace Config
         public void OnStartGameServerRpc(ServerRpcParams serverRpcParams = default)
         {
             SpawnAllPlayersServerRpc();
-            // StartGame();
+            StartGame();
             //NotifyAllPlayersClientRpc();
 
-            // void StartGame()
-            // {
-            //     if (!isGameStarted.Value && SceneTransitionHandler.Instance.GetCurrentSceneState()
-            //             .Equals(SceneTransitionHandler.SceneStates.Multiplayer_InGame))
-            //     {
-            //         OnStartGameServerRpc();
-            //         Debug.Log("------------------START GAME------------------");
-            //         isGameStarted.Value = true;
-            //         OnGameStarted?.Invoke(NetworkManager.Singleton.LocalClientId);
-            //     }
-            // }
+            void StartGame()
+            {
+                if (!isGameStarted.Value && SceneTransitionHandler.Instance.GetCurrentSceneState()
+                        .Equals(SceneTransitionHandler.SceneStates.Multiplayer_InGame))
+                {
+                    Debug.Log("------------------START GAME------------------");
+                    isGameStarted.Value = true;
+                    OnGameStarted?.Invoke(NetworkManager.Singleton.LocalClientId);
+                }
+            }
         }
 
         /// <summary>
@@ -206,7 +206,7 @@ namespace Config
                 Entities.Player.Player.TeamType teamType = i % 2 == 0
                     ? Entities.Player.Player.TeamType.Warriors
                     : Entities.Player.Player.TeamType.Wizards;
-                GameObject playerGo = GameManager.Instance.SkinsByTeam[teamType][0];
+                GameObject playerGo = Instance.SkinsByTeam[teamType][0];
                 GameObject player = Instantiate(playerGo);
                 NetworkObject noPlayer = player.GetComponent<NetworkObject>();
                 noPlayer.SpawnWithOwnership(clientId, true);

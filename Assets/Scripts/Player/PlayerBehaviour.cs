@@ -1,3 +1,5 @@
+#region
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,6 +11,8 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Animations;
 using Weapons;
+
+#endregion
 
 namespace Player
 {
@@ -82,18 +86,21 @@ namespace Player
 
         private void RegisterServerCallbacks()
         {
-            RoundManager.OnRoundStarted += InitRound;
+            // GameManager.Instance.OnGameStarted += InitRoundPlayers;
+            // RoundManager.OnRoundStarted += InitRound;
+            // RoundManager.Instance.OnRoundManagerSpawned += InitRound;
         }
 
         /// <summary>
         /// When the round manager is spawned we need to wait for the scene to load
         /// </summary>
-        private void InitRound()
-        {
-            SceneTransitionHandler.Instance.OnClientLoadedGameScene += ClientLoadedGameScene;
-            // GameManager.Instance.OnGameStarted += ClientLoadedGameScene;
-            Debug.Log("InitRound -> " + NetworkObjectId + " " + NetworkManager.Singleton.LocalClientId + " " + IsOwner);
-        }
+        // private void InitRound()
+        // {
+        //     RoundManager.OnRoundStarted += InitRoundPlayers;
+        //     // SceneTransitionHandler.Instance.OnClientLoadedGameScene += ClientLoadedGameScene;
+        //     // GameManager.Instance.OnGameStarted += ClientLoadedGameScene;
+        //     Debug.Log("InitRound -> " + NetworkObjectId + " " + NetworkManager.Singleton.LocalClientId + " " + IsOwner);
+        // }
 
         /// <summary>
         /// Invoked when the object is instantiated, we need to wait for the scene to load
@@ -110,6 +117,16 @@ namespace Player
         {
             _currentWeaponIndex = 0;
             _currentHealth = _maxHealth;
+        }
+
+        void InitRoundPlayers(ulong clientId)
+        {
+            if (IsServer)
+            {
+                Debug.Log("InitRoundPlayers -> " + NetworkObjectId + " " + NetworkManager.Singleton.LocalClientId +
+                          " " + IsOwner);
+                SendClientInitDataClientRpc(NetworkManager.Singleton.LocalClientId);
+            }
         }
 
         /// <summary>
@@ -338,6 +355,18 @@ namespace Player
             Debug.Log("------------------SENT Client Behaviour init data ------------------");
             Debug.Log("Client Id -> " + clientId + " - " + NetworkManager.Singleton.LocalClientId + " - " + IsOwner +
                       " - " + IsLocalPlayer);
+
+            if (!IsOwner) return;
+            clientId = NetworkManager.Singleton.LocalClientId;
+            Debug.Log("Client Id changed -> " + clientId + " - " + NetworkManager.Singleton.LocalClientId + " - " +
+                      IsOwner +
+                      " - " + IsLocalPlayer);
+
+            InitRoundData();
+        }
+
+        public void InitRoundData()
+        {
             //Get Components
             PlayerBehaviour playerBehaviour = NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerBehaviour>();
             playerBehaviour._playerInputController = playerBehaviour.GetComponent<PlayerInputController>();
@@ -575,7 +604,7 @@ namespace Player
             base.OnNetworkDespawn();
             if (IsServer)
             {
-                RoundManager.OnRoundStarted -= InitRound;
+                // RoundManager.OnRoundStarted -= InitRound;
                 //SceneTransitionHandler.Instance.OnClientLoadedGameScene -= ClientLoadedGameScene;
                 GameManager.Instance.OnGameStarted -= ClientLoadedGameScene;
             }

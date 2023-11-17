@@ -1,15 +1,14 @@
 
-csharpsquid:S1186›"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(¨§¤–8βοΙ½1
-csharpsquid:S1186"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(΅ΚΟυ8βοΙ½1
+csharpsquid:S1186"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(¨§¤–8βοΙ½1
+csharpsquid:S1186 "yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(΅ΚΟυ8βοΙ½1
 csharpsquid:S1186¨"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(Α»η8βοΙ½1
 £csharpsquid:S1186±"yAdd a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.(Ν”βύÿÿÿÿ8βοΙ½1
->csharpsquid:S2933$"Make 'm_Skins' 'readonly'.(—ισ8βοΙ½1
-Ycsharpsquid:S32641"5Remove the unused event 'OnGameStarted' or invoke it.(–Άωμ8„›Ι½1
+>csharpsquid:S2933%"Make 'm_Skins' 'readonly'.(—ισ8βοΙ½1
 ocsharpsquid:S3241π"JChange return type to 'void'; not a single caller uses the returned value.(Ω°ªΐ8βοΙ½1
-ccsharpsquid:S1117B":Rename 'm_Skins' which hides the field with the same name.(€λςΛύÿÿÿÿ8βοΙ½1
-Gcsharpsquid:S125S"Remove this commented out code.(ώαΛωÿÿÿÿ8βοΙ½1
-Bcsharpsquid:S125g"Remove this commented out code.(ªÿ°®8βοΙ½1
-Hcsharpsquid:S125―"Remove this commented out code.(«¦„Ίψÿÿÿÿ8βοΙ½1
+ccsharpsquid:S1117C":Rename 'm_Skins' which hides the field with the same name.(€λςΛύÿÿÿÿ8βοΙ½1
+Gcsharpsquid:S125T"Remove this commented out code.(ώαΛωÿÿÿÿ8βοΙ½1
+Bcsharpsquid:S125h"Remove this commented out code.(ªÿ°®8βοΙ½1
+Ccsharpsquid:S125±"Remove this commented out code.(±£σ©8ΖγΔΥ½1
 Ccsharpsquid:S125Ψ"Remove this commented out code.(†·Ώ…8ΥϊΡ½1
 Hcsharpsquid:S125γ"Remove this commented out code.( ϊÿÿÿÿÿ8βοΙ½1
 Hcsharpsquid:S125ύ"Remove this commented out code.(€ΨΒΠύÿÿÿÿ8βοΙ½1
