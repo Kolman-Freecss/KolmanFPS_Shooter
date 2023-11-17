@@ -409,6 +409,7 @@ namespace Player
             if (this._playerFpsCamera != null)
             {
                 this._playerFpsCamera.Follow = m_player.Head;
+                this._playerFpsCamera.LookAt = m_player.Head;
                 this._playerFpsCamera.GetComponent<CinemachinePOVExtension>().SetPlayer(_playerInputController);
             }
             else
