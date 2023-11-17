@@ -147,22 +147,28 @@ namespace Config
         {
             Debug.Log("Round started");
             GameManager.Instance.OnStartGameServerRpc();
-            OnRoundStarted?.Invoke();
-            StartingRoundClientRpc(true);
-            StartCoroutine(StartRound(timeToStartRound));
 
-            IEnumerator StartRound(int time)
+            GameManager.Instance.OnGameStarted += InitRound;
+
+            void InitRound(ulong serverClientId)
             {
-                int timeRemaining = time;
-                while (timeRemaining > 0)
-                {
-                    m_timeRemainingToStartRound.Value = timeRemaining;
-                    yield return new WaitForSeconds(1);
-                    timeRemaining--;
-                }
+                OnRoundStarted?.Invoke();
+                StartingRoundClientRpc(true);
+                StartCoroutine(StartRound(timeToStartRound));
 
-                StartingRoundClientRpc(false);
-                isRoundStarted.Value = true;
+                IEnumerator StartRound(int time)
+                {
+                    int timeRemaining = time;
+                    while (timeRemaining > 0)
+                    {
+                        m_timeRemainingToStartRound.Value = timeRemaining;
+                        yield return new WaitForSeconds(1);
+                        timeRemaining--;
+                    }
+
+                    StartingRoundClientRpc(false);
+                    isRoundStarted.Value = true;
+                }
             }
         }
 

@@ -48,6 +48,7 @@ namespace Config
         public CacheManagement CacheManagement => m_CacheManagement;
 
         public event Action<ulong> OnGameStarted;
+        public event Action OnAllPlayersInScene;
 
         #endregion
 
@@ -132,6 +133,7 @@ namespace Config
         {
             if (IsServer)
             {
+                CheckClientsInScene();
                 //Server will notified to a single client when his scene is loaded
                 ClientRpcParams clientRpcParams = new ClientRpcParams
                 {
@@ -141,6 +143,28 @@ namespace Config
                     }
                 };
                 OnClientConnectedCallbackClientRpc(clientId, clientRpcParams);
+            }
+        }
+
+        private void CheckClientsInScene()
+        {
+            int totalClients = NetworkManager.Singleton.ConnectedClients.Count;
+            int clientsInScene = 0;
+            foreach (KeyValuePair<ulong, NetworkClient> client in NetworkManager.Singleton.ConnectedClients)
+            {
+                if (client.Value.PlayerObject != null)
+                {
+                    clientsInScene++;
+                }
+            }
+
+            if (totalClients == clientsInScene)
+            {
+                OnAllPlayersInScene?.Invoke();
+            }
+            else
+            {
+                Debug.Log("Total clients -> " + totalClients + " | Clients in scene -> " + clientsInScene);
             }
         }
 
@@ -173,7 +197,7 @@ namespace Config
         public void OnStartGameServerRpc(ServerRpcParams serverRpcParams = default)
         {
             SpawnAllPlayersServerRpc();
-            StartGame();
+            OnAllPlayersInScene += StartGame;
             //NotifyAllPlayersClientRpc();
 
             void StartGame()
@@ -209,9 +233,9 @@ namespace Config
                 GameObject playerGo = Instance.SkinsByTeam[teamType][0];
                 GameObject player = Instantiate(playerGo);
                 NetworkObject noPlayer = player.GetComponent<NetworkObject>();
-                noPlayer.SpawnWithOwnership(clientId, true);
                 // Make this noPlayer PlayerObject for this client
                 NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject = noPlayer;
+                noPlayer.SpawnWithOwnership(clientId, true);
                 // SessionManager<SessionPlayerData>.Instance.SetPlayerData(clientId,
                 //     new SessionPlayerData(clientId, "Player " + clientId, 0, true, true, teamType));
             }
