@@ -30,6 +30,15 @@ namespace Config
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
 
+        [HideInInspector] public NetworkVariable<bool> allPlayersReady = new NetworkVariable<bool>(false,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server);
+
+        //TODO: Change this to a list of players
+        [HideInInspector] public NetworkVariable<int> quantityPlayersInGame = new NetworkVariable<int>(0,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server);
+
         private const int TimeToEndGame = 5;
 
         private readonly string PlayerSkinsPath = "Player/Skins";
@@ -48,7 +57,6 @@ namespace Config
         public CacheManagement CacheManagement => m_CacheManagement;
 
         public event Action<ulong> OnGameStarted;
-        public event Action OnAllPlayersInScene;
 
         #endregion
 
@@ -109,6 +117,8 @@ namespace Config
         {
             isGameStarted.Value = false;
             isGameOver.Value = false;
+            allPlayersReady.Value = false;
+            quantityPlayersInGame.Value = 0;
         }
 
         private void ManageSingleton()
@@ -133,7 +143,7 @@ namespace Config
         {
             if (IsServer)
             {
-                CheckClientsInScene();
+                CheckClientsInScene(clientId);
                 //Server will notified to a single client when his scene is loaded
                 ClientRpcParams clientRpcParams = new ClientRpcParams
                 {
@@ -146,25 +156,29 @@ namespace Config
             }
         }
 
-        private void CheckClientsInScene()
+        private void CheckClientsInScene(ulong clientId)
         {
+            Debug.Log("New client in scene -> " + clientId);
             int totalClients = NetworkManager.Singleton.ConnectedClients.Count;
-            int clientsInScene = 0;
-            foreach (KeyValuePair<ulong, NetworkClient> client in NetworkManager.Singleton.ConnectedClients)
-            {
-                if (client.Value.PlayerObject != null)
-                {
-                    clientsInScene++;
-                }
-            }
+            // int clientsInScene = 0;
+            // foreach (KeyValuePair<ulong, NetworkClient> client in NetworkManager.Singleton.ConnectedClients)
+            // {
+            //     if (client.Value.PlayerObject != null)
+            //     {
+            //         clientsInScene++;
+            //     }
+            // }
 
-            if (totalClients == clientsInScene)
+            quantityPlayersInGame.Value++;
+
+            if (totalClients == quantityPlayersInGame.Value)
             {
-                OnAllPlayersInScene?.Invoke();
+                Debug.Log("------------------ALL CLIENTS IN GAME SCENE------------------");
+                allPlayersReady.Value = true;
             }
             else
             {
-                Debug.Log("Total clients -> " + totalClients + " | Clients in scene -> " + clientsInScene);
+                Debug.Log("Total clients -> " + totalClients + " | Clients in scene -> " + quantityPlayersInGame.Value);
             }
         }
 
@@ -197,10 +211,16 @@ namespace Config
         public void OnStartGameServerRpc(ServerRpcParams serverRpcParams = default)
         {
             SpawnAllPlayersServerRpc();
-            OnAllPlayersInScene += StartGame;
+            bool sub = false;
+            if (allPlayersReady.Value) StartGame();
+            else
+            {
+                sub = true;
+                allPlayersReady.OnValueChanged += StartGame;
+            }
             //NotifyAllPlayersClientRpc();
 
-            void StartGame()
+            void StartGame(bool oldValue = false, bool newValue = true)
             {
                 if (!isGameStarted.Value && SceneTransitionHandler.Instance.GetCurrentSceneState()
                         .Equals(SceneTransitionHandler.SceneStates.Multiplayer_InGame))
@@ -208,6 +228,9 @@ namespace Config
                     Debug.Log("------------------START GAME------------------");
                     isGameStarted.Value = true;
                     OnGameStarted?.Invoke(NetworkManager.Singleton.LocalClientId);
+                    // If we subscribe to the event, we need to unsubscribe here
+                    if (sub)
+                        allPlayersReady.OnValueChanged -= StartGame;
                 }
             }
         }

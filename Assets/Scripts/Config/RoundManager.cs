@@ -145,13 +145,15 @@ namespace Config
         [ServerRpc]
         void StartRoundServerRpc(ServerRpcParams serverRpcParams = default)
         {
-            Debug.Log("Round started");
-            GameManager.Instance.OnStartGameServerRpc();
-
+            Debug.Log("Round ready");
             GameManager.Instance.OnGameStarted += InitRound;
+
+            // When the round starts, we need to start the game server side
+            GameManager.Instance.OnStartGameServerRpc();
 
             void InitRound(ulong serverClientId)
             {
+                Debug.Log("Init Round");
                 OnRoundStarted?.Invoke();
                 StartingRoundClientRpc(true);
                 StartCoroutine(StartRound(timeToStartRound));
