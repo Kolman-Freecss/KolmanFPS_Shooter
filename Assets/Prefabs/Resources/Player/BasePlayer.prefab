@@ -93,6 +93,8 @@ MonoBehaviour:
   sprint: 0
   leftClick: 0
   rightClick: 0
+  isAiming: 0
+  reload: 0
 --- !u!143 &2272171321624958296
 CharacterController:
   m_ObjectHideFlags: 0
@@ -131,7 +133,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6aa25ca178b75614dae7e13da3cc12dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxHealth: 100
+  _maxHealth: 1000
   _defaultWeapon: {fileID: 0}
 --- !u!114 &8131166974086294054
 MonoBehaviour:
@@ -294,6 +296,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   typeSkin: 1
+  teamSkin: 0
   _skinViews:
   - Key: 0
     Value:

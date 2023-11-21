@@ -136,6 +136,7 @@ namespace Gameplay.Player
                 return;
             UpdatePlayerCanvas();
             Shoot();
+            Reload();
         }
 
         #endregion
@@ -164,10 +165,16 @@ namespace Gameplay.Player
             }
         }
 
+        /// <summary>
+        /// Method called when the player receive damage (The localclient)
+        /// Then we call the server to send the damage to the client that received the damage 
+        /// </summary>
+        /// <param name="inflicter"></param>
+        /// <param name="damage"></param>
         void OnDamageReceived(PlayerBehaviour inflicter, int damage)
         {
             //NetworkObject networkObjectReceiver = NetworkManager.Singleton.SpawnManager.SpawnedObjects[NetworkObjectId];
-            TakeDamageServerRpc(NetworkObjectId, inflicter.NetworkObjectId, damage);
+            TakeDamageServerRpc(GetComponent<NetworkObject>().NetworkObjectId, inflicter.NetworkObjectId, damage);
             // if (_networkLifeState.LifeState.Value.Equals(LifeState.Dead))
             // {
             //     //TODO: Plus kill to the inflicter
@@ -195,6 +202,20 @@ namespace Gameplay.Player
                 }
 
                 _currentWeapon.Shoot();
+            }
+        }
+
+        void Reload()
+        {
+            if (_playerInputController != null && _playerInputController.reload)
+            {
+                if (_currentWeapon == null)
+                {
+                    //TODO: Make something
+                    return;
+                }
+
+                _currentWeapon.Reload();
             }
         }
 
@@ -245,20 +266,34 @@ namespace Gameplay.Player
         {
             ulong clientIdReceiver = NetworkManager.Singleton.SpawnManager.SpawnedObjects[receiverNetworkObjectId]
                 .OwnerClientId;
-            TakeDamageClientRpc(clientIdReceiver, inflicterNetworkObjectId, damage);
+            ClientRpcParams clientRpcParams = new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] { clientIdReceiver }
+                }
+            };
+            // Send the damage to the client that received the damage
+            TakeDamageClientRpc(clientIdReceiver, inflicterNetworkObjectId, damage, clientRpcParams);
         }
 
+        /// <summary>
+        /// The client take damage
+        /// </summary>
+        /// <param name="clientId"></param>
+        /// <param name="inflicterNetworkObjectId"></param>
+        /// <param name="damage"></param>
+        /// <param name="clientRpcParams"></param>
         [ClientRpc]
         private void TakeDamageClientRpc(ulong clientId, ulong inflicterNetworkObjectId, int damage,
             ClientRpcParams clientRpcParams = default)
         {
             if (clientId != NetworkManager.Singleton.LocalClientId) return;
-            PlayerBehaviour playerBehaviour = NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerBehaviour>();
-            playerBehaviour._currentHealth -= damage;
-            if (playerBehaviour._currentHealth <= 0)
+            _currentHealth -= damage;
+            if (_currentHealth <= 0)
             {
-                playerBehaviour._currentHealth = 0;
-                playerBehaviour._networkLifeState.LifeState.Value = LifeState.Dead;
+                _currentHealth = 0;
+                _networkLifeState.LifeState.Value = LifeState.Dead;
             }
         }
 

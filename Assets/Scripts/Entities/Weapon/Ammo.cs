@@ -103,19 +103,17 @@ namespace Entities.Weapon
             return ammoPrefab;
         }
 
+        public bool canReload()
+        {
+            return IsAmmoClips() && !IsAmmoFull();
+        }
+
         public void Reload()
         {
-            if (IsAmmoClips() && !IsAmmoFull())
-            {
-                int ammoNeeded = ammoInClipCapacity - ammoCount;
-                if (ammoNeeded > ammoClips)
-                {
-                    ammoNeeded = ammoClips;
-                }
+            int ammoNeeded = ammoInClipCapacity - ammoCount;
 
-                ReduceCurrentAmmoClip();
-                IncreaseCurrentAmmo(ammoNeeded);
-            }
+            ReduceCurrentAmmoClip();
+            IncreaseCurrentAmmo(ammoNeeded);
         }
 
         public String getAmmoInfo()

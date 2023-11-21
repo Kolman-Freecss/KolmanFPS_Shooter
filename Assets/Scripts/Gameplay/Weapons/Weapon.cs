@@ -188,10 +188,24 @@ namespace Gameplay.Weapons
 
         public void Reload()
         {
+            if (!currentAmmo.canReload())
+            {
+                //TODO: Make Sound
+                Debug.LogWarning("No ammo clips");
+            }
+
             if (isReloading) return;
             isReloading = true;
             Debug.Log("Reloading...");
-            //Invoke("ReloadFinished", reloadTime);
+            StartCoroutine(Realoading());
+
+            IEnumerator Realoading()
+            {
+                //TODO: Make Sound
+                yield return new WaitForSeconds(reloadTime);
+                currentAmmo.Reload();
+                isReloading = false;
+            }
         }
 
         public void PlayMuzzleFlash()

@@ -25,6 +25,8 @@ namespace Gameplay.Player
         [HideInInspector] public bool sprint;
         [HideInInspector] public bool leftClick;
         [HideInInspector] public bool rightClick;
+        [HideInInspector] public bool isAiming;
+        [HideInInspector] public bool reload;
 
         #endregion
 
@@ -63,6 +65,9 @@ namespace Gameplay.Player
 
             _playerInputs.Desktop.Aim.started += OnRightClick;
             _playerInputs.Desktop.Aim.canceled += OnRightClick;
+
+            _playerInputs.Desktop.Reload.started += OnReload;
+            _playerInputs.Desktop.Reload.canceled += OnReload;
         }
 
         #endregion
@@ -94,6 +99,11 @@ namespace Gameplay.Player
             rightClick = value.ReadValueAsButton();
         }
 
+        public void OnReload(InputAction.CallbackContext value)
+        {
+            reload = value.ReadValueAsButton();
+        }
+
         private void MoveInput(Vector2 newMoveDirection)
         {
             move = newMoveDirection;
@@ -109,21 +119,6 @@ namespace Gameplay.Player
             {
                 jump = false;
             }
-        }
-
-        private void SprintInput(bool newSprintState)
-        {
-            sprint = newSprintState;
-        }
-
-        private void LeftClickInput(bool newLeftClickState)
-        {
-            leftClick = newLeftClickState;
-        }
-
-        private void RightClickInput(bool newRightClickState)
-        {
-            rightClick = newRightClickState;
         }
 
         #endregion
@@ -153,6 +148,9 @@ namespace Gameplay.Player
 
             _playerInputs.Desktop.Aim.started -= OnRightClick;
             _playerInputs.Desktop.Aim.canceled -= OnRightClick;
+
+            _playerInputs.Desktop.Reload.started -= OnReload;
+            _playerInputs.Desktop.Reload.canceled -= OnReload;
         }
 
         #endregion
