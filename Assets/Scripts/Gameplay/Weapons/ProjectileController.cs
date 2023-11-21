@@ -1,12 +1,11 @@
 #region
 
-using Gameplay.Player;
 using Unity.Netcode;
 using UnityEngine;
 
 #endregion
 
-namespace Weapons
+namespace Gameplay.Weapons
 {
     public class ProjectileController : NetworkBehaviour
     {
@@ -18,7 +17,7 @@ namespace Weapons
 
         #region Auxiliar variables
 
-        [HideInInspector] public PlayerBehaviour parent;
+        [HideInInspector] public Weapon parent;
         private Rigidbody rb;
 
         #endregion

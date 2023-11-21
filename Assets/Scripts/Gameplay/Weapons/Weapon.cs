@@ -1,8 +1,11 @@
 ﻿#region
 
+using System.Collections;
 using System.Collections.Generic;
 using Entities.Weapon;
 using Entities.Weapon.SO;
+using Gameplay.GameplayObjects;
+using Gameplay.Player;
 using Model;
 using Unity.Netcode;
 using UnityEngine;
@@ -29,11 +32,12 @@ namespace Gameplay.Weapons
 
         #endregion
 
-        #region Auxiliary Variables
+        #region Member Variables
 
         [HideInInspector] public Ammo currentAmmo;
         [HideInInspector] public bool canShoot = true;
         [HideInInspector] public float timerToShoot;
+        [HideInInspector] public PlayerBehaviour m_player;
 
         #endregion
 
@@ -91,6 +95,7 @@ namespace Gameplay.Weapons
 
         private void Update()
         {
+            if (m_player == null) return;
             if (timerToShoot > 0.0f)
             {
                 timerToShoot -= Time.deltaTime;
@@ -105,8 +110,80 @@ namespace Gameplay.Weapons
 
         #region Logic
 
-        public void Shot()
+        public void AttachToPlayer(PlayerBehaviour player)
         {
+            m_player = player;
+        }
+
+        public void DetachFromPlayer()
+        {
+            m_player = null;
+        }
+
+        public void Shoot()
+        {
+            if (canShoot)
+            {
+                if (currentAmmo != null && currentAmmo.IsAmmoInClip())
+                {
+                    timerToShoot = fireRate;
+                    canShoot = false;
+                    currentAmmo.ReduceCurrentAmmo();
+                    ShootAudioServerRpc(NetworkObjectId);
+                    PlayMuzzleFlash();
+                    //TODO: Make projectiles
+                    //TEMPORAL
+                    /////ShootProjectileServerRpc();
+                    ProcessShootRaycast();
+                }
+                else
+                {
+                    //TODO: reload and play sound
+                    Debug.LogWarning("No ammo");
+                }
+            }
+        }
+
+        public void ProcessShootRaycast()
+        {
+            RaycastHit hit;
+            Transform cameraTransform = m_player.PlayerController.PlayerFpsCamera.transform;
+            // ShootServerRpc(cameraTransform.position, cameraTransform.forward);
+            if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, Mathf.Infinity)) //range
+            {
+                Debug.DrawRay(cameraTransform.position, cameraTransform.forward * range, Color.green,
+                    1f);
+                string hitTag = hit.transform.gameObject.tag;
+                switch (hitTag)
+                {
+                    case "Player":
+                        DamageReceiver damageReceiver = hit.transform.gameObject.GetComponent<DamageReceiver>();
+                        if (damageReceiver == null) return;
+                        damageReceiver.ReceiveDamage(m_player, GetTotalDamage());
+                        CreateHitImpact(hit, true);
+                        break;
+                    default:
+                        CreateHitImpact(hit);
+                        break;
+                }
+            }
+            else
+            {
+                Debug.DrawRay(cameraTransform.position, cameraTransform.forward * range, Color.red, 1f);
+                Debug.Log("No hit");
+            }
+        }
+
+        private void CreateHitImpact(RaycastHit hit, bool isPlayer = false)
+        {
+            if (hitEffect != null)
+            {
+                ShootServerRpc(hit.point, hit.normal, NetworkObjectId, isPlayer);
+            }
+            else
+            {
+                Debug.LogWarning("No hit effect found");
+            }
         }
 
         public void Reload()
@@ -146,6 +223,80 @@ namespace Gameplay.Weapons
         #endregion
 
         #region Network Calls/Events
+
+        /// <summary>
+        /// Invoke the audio source from the networkObject client that called the server to the rest of the clients 
+        /// </summary>
+        [ServerRpc]
+        public void ShootAudioServerRpc(ulong networkObjectId)
+        {
+            ShootAudioClientRpc(NetworkManager.Singleton.LocalClientId, networkObjectId);
+        }
+
+        [ClientRpc]
+        private void ShootAudioClientRpc(ulong clientId, ulong networkObjectId)
+        {
+            NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
+            Weapon sourceWeapon = no.GetComponent<Weapon>();
+            if (sourceWeapon.audioSource != null)
+            {
+                if (sourceWeapon.audioSource.isPlaying) sourceWeapon.audioSource.Stop();
+                sourceWeapon.audioSource.Play();
+            }
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void ShootServerRpc(Vector3 hitPoint, Vector3 hitNormal, ulong networkObjectId, bool isPlayer,
+            ServerRpcParams serverRpcParams = default)
+        {
+            NetworkObject weaponNetworkObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
+            GameObject hitEffect = isPlayer
+                ? weaponNetworkObject.GetComponent<Weapon>().playerHitEffect
+                : weaponNetworkObject.GetComponent<Weapon>().hitEffect;
+            GameObject impact = Instantiate(hitEffect, hitPoint,
+                Quaternion.LookRotation(hitNormal));
+            NetworkObject no = impact.GetComponent<NetworkObject>();
+            no.Spawn();
+            // TODO: Despawn projectile after some time
+            StartCoroutine(DestroyProjectile(no.NetworkObjectId, 2f));
+            ShootParticleClientRpc(hitPoint, hitNormal, no.NetworkObjectId);
+        }
+
+        private IEnumerator DestroyProjectile(ulong networkObjectId, float timeToDestroy)
+        {
+            yield return new WaitForSeconds(timeToDestroy);
+            DestroyProjectileServerRpc(networkObjectId);
+        }
+
+        [ClientRpc]
+        void ShootParticleClientRpc(Vector3 hitPoint, Vector3 hitNormal, ulong networkObjectId,
+            ClientRpcParams clientRpcParams = default)
+        {
+            NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
+            ParticleSystem particleSystem = no.GetComponentInChildren<ParticleSystem>();
+            particleSystem.Play();
+        }
+
+        [ServerRpc]
+        public void ShootProjectileServerRpc(ServerRpcParams serverRpcParams = default)
+        {
+            GameObject go = Instantiate(currentAmmo.GetAmmoPrefab(), transform.position,
+                Quaternion.identity);
+            go.GetComponent<ProjectileController>().parent = this;
+            go.GetComponent<Rigidbody>().velocity = go.transform.forward * 15f; //currentAmmo.GetShootForce();
+            go.GetComponent<NetworkObject>().Spawn(true);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void DestroyProjectileServerRpc(ulong networkObjectId, ServerRpcParams serverRpcParams = default)
+        {
+            NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
+            if (no != null)
+            {
+                no.Despawn();
+                Destroy(no.gameObject);
+            }
+        }
 
         #endregion
 
