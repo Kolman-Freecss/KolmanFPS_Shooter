@@ -1,8 +1,12 @@
+#region
+
 using System;
 using Config;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
+
+#endregion
 
 namespace ConnectionManagement
 {
@@ -11,10 +15,6 @@ namespace ConnectionManagement
         #region Member Variables
 
         public static ConnectionManager Instance { get; private set; }
-
-        // TODO: Add client list to manage clients
-        // [HideInInspector]
-        // public List<NetworkClient> clients;
 
         #endregion
 
@@ -49,7 +49,6 @@ namespace ConnectionManagement
 
         void SubscribeToServerEvents()
         {
-            // NetworkManager.Singleton.ConnectionApprovalCallback += ConnectionApprovalCallback;
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnect;
         }
@@ -165,7 +164,6 @@ namespace ConnectionManagement
             {
                 NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
                 NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnect;
-                // NetworkManager.Singleton.ConnectionApprovalCallback -= ConnectionApprovalCallback;
             }
         }
 

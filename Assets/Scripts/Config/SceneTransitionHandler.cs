@@ -1,6 +1,10 @@
+#region
+
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+
+#endregion
 
 namespace Config
 {
@@ -128,13 +132,8 @@ namespace Config
             Debug.Log("OnLoadComplete " + sceneName);
             if (SceneStates.Multiplayer_InGame.ToString().Equals(sceneName))
             {
-                //m_numberOfClientLoaded += 1;
                 OnClientLoadedGameScene?.Invoke(clientId);
             }
-            // else
-            // {
-            //     OnClientLoadedGameSceneCount?.Invoke(clientId);
-            // }
         }
 
         #endregion

@@ -72,11 +72,6 @@ namespace Player
 
         public override void OnNetworkSpawn()
         {
-            if (IsServer)
-            {
-                RegisterServerCallbacks();
-            }
-
             _damageReceiver.DamageReceived += OnDamageReceived;
 
             if (IsOwner)
@@ -84,24 +79,6 @@ namespace Player
                 _networkLifeState.LifeState.OnValueChanged += OnLifeStateChanged;
             }
         }
-
-        private void RegisterServerCallbacks()
-        {
-            // GameManager.Instance.OnGameStarted += InitRoundPlayers;
-            // RoundManager.OnRoundStarted += InitRound;
-            // RoundManager.Instance.OnRoundManagerSpawned += InitRound;
-        }
-
-        /// <summary>
-        /// When the round manager is spawned we need to wait for the scene to load
-        /// </summary>
-        // private void InitRound()
-        // {
-        //     RoundManager.OnRoundStarted += InitRoundPlayers;
-        //     // SceneTransitionHandler.Instance.OnClientLoadedGameScene += ClientLoadedGameScene;
-        //     // GameManager.Instance.OnGameStarted += ClientLoadedGameScene;
-        //     Debug.Log("InitRound -> " + NetworkObjectId + " " + NetworkManager.Singleton.LocalClientId + " " + IsOwner);
-        // }
 
         /// <summary>
         /// Invoked when the object is instantiated, we need to wait for the scene to load
@@ -476,7 +453,7 @@ namespace Player
             if (clientId != NetworkManager.Singleton.LocalClientId) return;
             // We need to get the player object from the client that called the server because the server invoked the method from his own NetworkObject
             // NetworkObject player = NetworkManager.Singleton.LocalClient.PlayerObject;
-            Weapon weapon = FindObjectsOfType<Weapon>(includeInactive:true).FirstOrDefault(w =>
+            Weapon weapon = FindObjectsOfType<Weapon>(includeInactive: true).FirstOrDefault(w =>
             {
                 NetworkObject wNo = w.GetComponent<NetworkObject>();
                 return wNo != null && wNo.NetworkObjectId == networkObjectId;
@@ -628,12 +605,6 @@ namespace Player
         public override void OnNetworkDespawn()
         {
             base.OnNetworkDespawn();
-            if (IsServer)
-            {
-                // RoundManager.OnRoundStarted -= InitRound;
-                //SceneTransitionHandler.Instance.OnClientLoadedGameScene -= ClientLoadedGameScene;
-                GameManager.Instance.OnGameStarted -= ClientLoadedGameScene;
-            }
 
             _damageReceiver.DamageReceived -= OnDamageReceived;
 

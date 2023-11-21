@@ -1,12 +1,15 @@
+#region
+
 using Player;
 using Unity.Netcode;
 using UnityEngine;
+
+#endregion
 
 namespace Weapons
 {
     public class ProjectileController : NetworkBehaviour
     {
-
         #region Inspector Variables
 
         [SerializeField] private float shootForce;
@@ -15,9 +18,8 @@ namespace Weapons
 
         #region Auxiliar variables
 
-        [HideInInspector]
-        public PlayerBehaviour parent;
-        private Rigidbody rb; 
+        [HideInInspector] public PlayerBehaviour parent;
+        private Rigidbody rb;
 
         #endregion
 
@@ -32,11 +34,6 @@ namespace Weapons
 
         #region Loop
 
-        // void Update()
-        // {
-        //     rb.velocity = rb.transform.forward * shootForce;
-        // }
-
         #endregion
 
         #region Events
@@ -44,13 +41,10 @@ namespace Weapons
         private void OnTriggerEnter(Collider other)
         {
             if (!IsOwner) return;
-            
+
             parent.DestroyProjectileServerRpc(NetworkObjectId);
         }
 
         #endregion
-        
-
-        
     }
 }

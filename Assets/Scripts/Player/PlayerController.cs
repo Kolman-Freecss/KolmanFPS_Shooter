@@ -150,9 +150,7 @@ namespace Player
 
         private void RegisterServerCallbacks()
         {
-            //Server will be notified when a client connects
             GameManager.Instance.allPlayersSpawned += InitClientData;
-            // SceneTransitionHandler.Instance.OnClientLoadedGameScene += ClientLoadedGameScene;
         }
 
         void Start()
@@ -171,18 +169,11 @@ namespace Player
 
         void Update()
         {
-            // Debug.Log("Update GameManager.Instance.isGameStarted.Value= " + GameManager.Instance.isGameStarted.Value + " GameManager.isGameStarted.Value= " + GameManager.isGameStarted.Value);
             if (!RoundManager.Instance.isRoundStarted.Value || m_playerBehaviour.LifeState == LifeState.Dead) return;
             Jump();
             GroundCheck();
             Move();
         }
-
-        // private void LateUpdate()
-        // {
-        //     if (!GameManager.Instance.isGameStarted.Value || m_playerBehaviour.LifeState == LifeState.Dead) return;
-        //     
-        // }
 
         #endregion
 
@@ -338,15 +329,6 @@ namespace Player
 
         #region Network Calls/Events
 
-        // This is called when a client connects to the server
-        // Invoked when a client has loaded this scene
-        // private void ClientLoadedGameScene(ulong clientId)
-        // {
-        //     if (IsServer)
-        //     {
-        //         SendClientInitDataClientRpc(clientId);
-        //     }
-        // }
         private void InitClientData()
         {
             if (IsServer)
@@ -492,7 +474,6 @@ namespace Player
             //Server will be notified when a client connects
             RoundManager.OnRoundStarted -= () =>
                 transform.position = RoundManager.Instance.GetRandomCheckpoint().transform.position;
-            // SceneTransitionHandler.Instance.OnClientLoadedGameScene -= ClientLoadedGameScene;
             GameManager.Instance.allPlayersSpawned -= InitClientData;
         }
 

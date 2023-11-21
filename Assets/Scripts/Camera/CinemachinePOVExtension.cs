@@ -1,6 +1,10 @@
+#region
+
 using Cinemachine;
 using Player;
 using UnityEngine;
+
+#endregion
 
 namespace Camera
 {
@@ -22,12 +26,6 @@ namespace Camera
         #endregion
 
         #region InitData
-
-        protected override void Awake()
-        {
-            base.Awake();
-            // GetReferences();
-        }
 
         #endregion
 

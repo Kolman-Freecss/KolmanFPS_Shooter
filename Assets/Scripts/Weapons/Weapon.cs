@@ -1,9 +1,13 @@
-﻿using System.Collections.Generic;
+﻿#region
+
+using System.Collections.Generic;
 using Entities.Weapon;
 using Entities.Weapon.SO;
 using Model;
 using Unity.Netcode;
 using UnityEngine;
+
+#endregion
 
 namespace Weapons
 {
@@ -27,12 +31,9 @@ namespace Weapons
 
         #region Auxiliary Variables
 
-        [HideInInspector]
-        public Ammo currentAmmo;
-        [HideInInspector]
-        public bool canShoot = true;
-        [HideInInspector]
-        public float timerToShoot;
+        [HideInInspector] public Ammo currentAmmo;
+        [HideInInspector] public bool canShoot = true;
+        [HideInInspector] public float timerToShoot;
 
         #endregion
 
@@ -82,7 +83,6 @@ namespace Weapons
                     Debug.LogWarning("No audio source found for " + weaponType + " weapon");
                 }
             }
-
         }
 
         #endregion
@@ -104,7 +104,11 @@ namespace Weapons
         #endregion
 
         #region Logic
-        
+
+        public void Shot()
+        {
+        }
+
         public void Reload()
         {
             if (isReloading) return;
@@ -139,12 +143,9 @@ namespace Weapons
 
         #region Events
 
-
         #endregion
 
         #region Network Calls/Events
-        
-        
 
         #endregion
 
