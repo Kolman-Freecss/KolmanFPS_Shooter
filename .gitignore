@@ -26,8 +26,11 @@
 # Visual Studio cache directory
 .vs/
 
+# Rider cache directory
 .idea/
-/.idea/
+
+# Notepad ++
+*.bak
 
 # Gradle cache directory
 .gradle/
