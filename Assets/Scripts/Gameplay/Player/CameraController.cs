@@ -1,11 +1,15 @@
+#region
+
 using System.Collections.Generic;
-using Config;
 using Entities.Camera;
 using Entities.Player.Skin;
+using Gameplay.Config;
 using Gameplay.GameplayObjects;
 using UnityEngine;
 
-namespace Player
+#endregion
+
+namespace Gameplay.Player
 {
     public class CameraController : MonoBehaviour
     {

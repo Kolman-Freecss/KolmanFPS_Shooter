@@ -3,10 +3,9 @@
 using System;
 using Camera;
 using Cinemachine;
-using Config;
 using Entities.Camera;
+using Gameplay.Config;
 using Gameplay.GameplayObjects;
-using Gameplay.Player;
 using Modules.CacheModule;
 using Unity.Netcode;
 using UnityEngine;
@@ -15,7 +14,7 @@ using UnityEngine.Serialization;
 
 #endregion
 
-namespace Player
+namespace Gameplay.Player
 {
     public class PlayerController : NetworkBehaviour
     {

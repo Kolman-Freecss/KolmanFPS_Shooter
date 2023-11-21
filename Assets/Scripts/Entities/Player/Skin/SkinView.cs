@@ -1,5 +1,9 @@
-﻿using System;
+﻿#region
+
+using System;
 using UnityEngine;
+
+#endregion
 
 namespace Entities.Player.Skin
 {
@@ -9,12 +13,10 @@ namespace Entities.Player.Skin
     [Serializable]
     public class SkinView
     {
-        [SerializeField]
-        private GameObject skinModel;
+        [SerializeField] private GameObject skinModel;
         public GameObject SkinModel => skinModel;
-        
-        [SerializeField]
-        private SkinParts _skinParts;
+
+        [SerializeField] private SkinParts _skinParts;
         public SkinParts SkinParts => _skinParts;
     }
 }

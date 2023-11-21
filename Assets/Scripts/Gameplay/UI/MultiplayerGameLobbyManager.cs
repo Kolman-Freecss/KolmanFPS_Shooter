@@ -1,7 +1,11 @@
-﻿using Config;
+﻿#region
+
+using Gameplay.Config;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
+
+#endregion
 
 namespace Gameplay.UI
 {

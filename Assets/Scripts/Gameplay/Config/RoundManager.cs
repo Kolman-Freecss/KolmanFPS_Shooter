@@ -4,16 +4,17 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
+using Config;
+using Gameplay.Weapons;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Animations;
-using Weapons;
 using Random = UnityEngine.Random;
 
 #endregion
 
-namespace Config
+namespace Gameplay.Config
 {
     public class RoundManager : NetworkBehaviour
     {

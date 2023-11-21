@@ -4,8 +4,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Config;
+using Gameplay.Config;
 using Gameplay.GameplayObjects;
+using Gameplay.Weapons;
 using Model;
 using TMPro;
 using Unity.Netcode;
@@ -15,7 +16,7 @@ using Weapons;
 
 #endregion
 
-namespace Player
+namespace Gameplay.Player
 {
     public class PlayerBehaviour : NetworkBehaviour
     {

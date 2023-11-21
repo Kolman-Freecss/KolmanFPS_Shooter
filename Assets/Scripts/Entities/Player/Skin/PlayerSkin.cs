@@ -1,10 +1,13 @@
-﻿using System;
+﻿#region
+
 using System.Collections.Generic;
 using System.ComponentModel;
 using Entities.Camera;
 using Entities.Utils;
 using Gameplay.Player;
 using UnityEngine;
+
+#endregion
 
 namespace Entities.Player.Skin
 {

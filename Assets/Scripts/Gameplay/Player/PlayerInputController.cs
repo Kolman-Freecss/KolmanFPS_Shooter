@@ -1,7 +1,11 @@
-﻿using UnityEngine;
+﻿#region
+
+using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Player
+#endregion
+
+namespace Gameplay.Player
 {
     [RequireComponent(typeof(PlayerInput))]
     public class PlayerInputController : MonoBehaviour
@@ -30,7 +34,7 @@ namespace Player
         {
             GetReferences();
         }
-        
+
         private void OnEnable()
         {
             _playerInputs = new PlayerInputs();
@@ -38,10 +42,9 @@ namespace Player
             _playerInputs.Desktop.Enable();
             SubscribeToDelegatesAndUpdateValues();
         }
-        
+
         private void GetReferences()
         {
-            
         }
 
         private void SubscribeToDelegatesAndUpdateValues()
@@ -54,13 +57,12 @@ namespace Player
 
             _playerInputs.Desktop.Sprint.performed += OnSprint;
             _playerInputs.Desktop.Sprint.canceled += OnSprint;
-            
+
             _playerInputs.Desktop.Shoot.performed += OnLeftClick;
             _playerInputs.Desktop.Shoot.canceled += OnLeftClick;
-            
+
             _playerInputs.Desktop.Aim.started += OnRightClick;
             _playerInputs.Desktop.Aim.canceled += OnRightClick;
-            
         }
 
         #endregion
@@ -81,12 +83,12 @@ namespace Player
         {
             sprint = value.ReadValueAsButton();
         }
-        
+
         public void OnLeftClick(InputAction.CallbackContext value)
         {
             leftClick = value.ReadValueAsButton();
         }
-        
+
         public void OnRightClick(InputAction.CallbackContext value)
         {
             rightClick = value.ReadValueAsButton();
@@ -113,12 +115,12 @@ namespace Player
         {
             sprint = newSprintState;
         }
-        
+
         private void LeftClickInput(bool newLeftClickState)
         {
             leftClick = newLeftClickState;
         }
-        
+
         private void RightClickInput(bool newRightClickState)
         {
             rightClick = newRightClickState;
@@ -145,10 +147,10 @@ namespace Player
 
             _playerInputs.Desktop.Sprint.performed -= OnSprint;
             _playerInputs.Desktop.Sprint.canceled -= OnSprint;
-            
+
             _playerInputs.Desktop.Shoot.performed -= OnLeftClick;
             _playerInputs.Desktop.Shoot.canceled -= OnLeftClick;
-            
+
             _playerInputs.Desktop.Aim.started -= OnRightClick;
             _playerInputs.Desktop.Aim.canceled -= OnRightClick;
         }

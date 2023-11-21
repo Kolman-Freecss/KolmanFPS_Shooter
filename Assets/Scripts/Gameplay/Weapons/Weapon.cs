@@ -9,7 +9,7 @@ using UnityEngine;
 
 #endregion
 
-namespace Weapons
+namespace Gameplay.Weapons
 {
     public class Weapon : NetworkBehaviour
     {

@@ -1,4 +1,10 @@
-﻿namespace Entities.Utils
+﻿#region
+
+using System;
+
+#endregion
+
+namespace Entities.Utils
 {
     /// <summary>
     /// Util class to serialize a dictionary inside a ScriptableObject
@@ -8,7 +14,7 @@
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    [System.Serializable]
+    [Serializable]
     public class SerializableDictionaryEntry<TKey, TValue>
     {
         public TKey Key;

@@ -1,14 +1,16 @@
-﻿using System;
+﻿#region
+
 using Entities.Camera;
 using Entities.Player.Skin;
 using Gameplay.Player;
 using UnityEngine;
 
+#endregion
+
 namespace Entities.Player
 {
     public class Player
     {
-        
         public enum PlayerTypeSkin
         {
             DefaultSkin = 1,
@@ -26,15 +28,15 @@ namespace Entities.Player
         #region Member Variables
 
         private string m_name;
-        
+
         public string NameValue
         {
             get => m_name;
             set => m_name = value;
         }
-        
+
         private TeamType m_teamType;
-        
+
         public TeamType TeamTypeValue
         {
             get => m_teamType;
@@ -42,7 +44,7 @@ namespace Entities.Player
         }
 
         private GameObject m_playerPrefab;
-        
+
         public GameObject PlayerPrefabValue
         {
             get => m_playerPrefab;
@@ -50,35 +52,35 @@ namespace Entities.Player
         }
 
         private PlayerSkin m_PlayerSkin;
-        
+
         public PlayerSkin PlayerSkinValue
         {
             set => m_PlayerSkin = value;
         }
-        
+
         #endregion
-        
+
         public Player()
         {
         }
 
         #region Getter & Setter
-        
+
         public void Init(CameraMode cameraMode)
         {
             m_PlayerSkin.Init(cameraMode);
         }
-        
+
         public void ChangeCurrentSkinView(CameraMode cameraMode, out SkinView skinView)
         {
             skinView = m_PlayerSkin.ChangeSkinViewByCameraMode(cameraMode);
         }
-        
+
         public TPSPlayerController GetTPSPlayerController()
         {
             return m_PlayerSkin.GetSkinViewByCameraMode(CameraMode.TPS).SkinModel.GetComponent<TPSPlayerController>();
         }
-        
+
         public CameraMode CurrentCameraMode => m_PlayerSkin.CurrentCameraModeValue;
         public GameObject CurrentSkinModel => m_PlayerSkin.CurrentSkinViewValue.SkinModel;
         public Transform RightHand => m_PlayerSkin.CurrentSkinViewValue.SkinParts.RightHand;
@@ -86,6 +88,5 @@ namespace Entities.Player
         public Transform Head => m_PlayerSkin.CurrentSkinViewValue.SkinParts.Head;
 
         #endregion
-        
     }
 }

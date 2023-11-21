@@ -1,5 +1,10 @@
-﻿using System.Numerics;
+﻿#region
+
+using System.Numerics;
+using Entities.Player;
 using Unity.Multiplayer.Samples.BossRoom;
+
+#endregion
 
 namespace ConnectionManagement
 {
@@ -11,10 +16,10 @@ namespace ConnectionManagement
         public Quaternion PlayerRotation;
         public int CurrentHitPoints;
         public bool HasCharacterSpawned;
-        public Entities.Player.Player.TeamType TeamType;
+        public Player.TeamType TeamType;
 
         public SessionPlayerData(ulong clientID, string name, int currentHitPoints = 0, bool isConnected = false,
-            bool hasCharacterSpawned = false, Entities.Player.Player.TeamType teamType = Entities.Player.Player.TeamType.None)
+            bool hasCharacterSpawned = false, Player.TeamType teamType = Player.TeamType.None)
         {
             ClientID = clientID;
             PlayerName = name;

@@ -1,6 +1,6 @@
 #region
 
-using Player;
+using Gameplay.Player;
 using Unity.Netcode;
 using UnityEngine;
 

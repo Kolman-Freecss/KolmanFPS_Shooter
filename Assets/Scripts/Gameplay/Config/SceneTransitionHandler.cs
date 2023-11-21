@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 
 #endregion
 
-namespace Config
+namespace Gameplay.Config
 {
     public class SceneTransitionHandler : NetworkBehaviour
     {

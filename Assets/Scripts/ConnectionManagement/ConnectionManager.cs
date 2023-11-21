@@ -1,7 +1,7 @@
 #region
 
 using System;
-using Config;
+using Gameplay.Config;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;

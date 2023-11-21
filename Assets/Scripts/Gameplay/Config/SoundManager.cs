@@ -1,7 +1,11 @@
+#region
+
 using System;
 using System.Collections.Generic;
 using Entities.Utils;
 using UnityEngine;
+
+#endregion
 
 namespace Config
 {
@@ -35,7 +39,8 @@ namespace Config
 
         private void Start()
         {
-            if (BackgroundMusicClips == null) BackgroundMusicClips = new List<SerializableDictionaryEntry<BackgroundMusic, AudioClip>>();
+            if (BackgroundMusicClips == null)
+                BackgroundMusicClips = new List<SerializableDictionaryEntry<BackgroundMusic, AudioClip>>();
             SetEffectsVolume(EffectsAudioVolume);
             SetMusicVolume(MusicAudioVolume);
             StartBackgroundMusic(BackgroundMusic.Intro);

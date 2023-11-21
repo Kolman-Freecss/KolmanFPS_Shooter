@@ -1,17 +1,19 @@
-﻿using System;
-using Player;
+﻿#region
+
+using System;
+using Gameplay.Player;
 using Unity.Netcode;
 using UnityEngine;
+
+#endregion
 
 namespace Gameplay.GameplayObjects
 {
     public class DamageReceiver : NetworkBehaviour, IDamageable
     {
-        
-        public event Action<PlayerBehaviour, int> DamageReceived; 
-        
-        [SerializeField]
-        NetworkLifeState m_NetworkLifeState;
+        public event Action<PlayerBehaviour, int> DamageReceived;
+
+        [SerializeField] NetworkLifeState m_NetworkLifeState;
 
         /// <summary>
         /// PlayerBehaviour is the class that deals damage to this object

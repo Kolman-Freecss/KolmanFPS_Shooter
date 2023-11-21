@@ -1,6 +1,10 @@
-﻿using Entities.Camera;
+﻿#region
+
+using Entities.Camera;
 using Entities.Player.Skin;
 using UnityEngine;
+
+#endregion
 
 namespace Gameplay.Player
 {
@@ -9,9 +13,8 @@ namespace Gameplay.Player
     /// </summary>
     public static class PlayerFactory
     {
-        
         static readonly string ResourcesPath = "Player/Skins/";
-        
+
         /// <summary>
         /// Create a player with the given parameters and CameraMode to set the correct skin view
         /// </summary>
@@ -22,11 +25,11 @@ namespace Gameplay.Player
         /// <returns></returns>
         public static Entities.Player.Player CreatePlayer(
             CameraMode cameraMode,
-            Entities.Player.Player.PlayerTypeSkin typeSkin, 
+            Entities.Player.Player.PlayerTypeSkin typeSkin,
             string name,
             Entities.Player.Player.TeamType teamType,
             GameObject playerPrefab
-            )
+        )
         {
             Entities.Player.Player player = new Entities.Player.Player();
             player.NameValue = name;
@@ -36,11 +39,10 @@ namespace Gameplay.Player
             player.Init(cameraMode);
             return player;
         }
-        
+
         private static GameObject GetPlayerSkinPrefab(Entities.Player.Player.PlayerTypeSkin typeSkin)
         {
             return Resources.Load<GameObject>(ResourcesPath + typeSkin.ToString());
         }
-        
     }
 }

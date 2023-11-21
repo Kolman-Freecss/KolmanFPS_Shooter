@@ -1,8 +1,13 @@
 ﻿#if UNITY_EDITOR
+
+#region
+
 using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+
+#endregion
 
 namespace Utils
 {
@@ -28,7 +33,7 @@ namespace Utils
                 textObject.enableAutoSizing = false;
             }
         }
-        
+
         [ContextMenu("Change Buttons")]
         void ChangeButtons()
         {
@@ -49,7 +54,7 @@ namespace Utils
                 button.GetComponentInChildren<TextMeshProUGUI>().fontSize = 24f;
             }
         }
-        
+
         [ContextMenu("Change Toogles")]
         void ChangeToogles()
         {
@@ -64,12 +69,12 @@ namespace Utils
                 toggle.colors = colors;
             }
         }
-        
+
         [ContextMenu("Change Sliders")]
         void ChangeSliders()
         {
             Slider[] sliders = FindObjectsOfType<Slider>();
-            
+
             foreach (Slider slider in sliders)
             {
                 Undo.RecordObject(slider, "Changed Slider");

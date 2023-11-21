@@ -6,15 +6,15 @@ using System.Collections.Generic;
 using System.Linq;
 using Entities.Player.Skin;
 using Entities.Utils;
+using Gameplay.Player;
 using Modules.CacheModule;
-using Player;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Assertions;
 
 #endregion
 
-namespace Config
+namespace Gameplay.Config
 {
     public class GameManager : NetworkBehaviour
     {

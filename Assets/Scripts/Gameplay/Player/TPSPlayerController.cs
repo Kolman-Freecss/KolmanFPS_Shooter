@@ -1,6 +1,8 @@
-﻿using System;
-using Player;
+﻿#region
+
 using UnityEngine;
+
+#endregion
 
 namespace Gameplay.Player
 {
@@ -11,7 +13,7 @@ namespace Gameplay.Player
         public GameObject mesh;
 
         #endregion
-        
+
         #region Member Variables
 
         private PlayerController m_playerController;

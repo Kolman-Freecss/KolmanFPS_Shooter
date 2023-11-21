@@ -1,7 +1,7 @@
 #region
 
 using Cinemachine;
-using Player;
+using Gameplay.Player;
 using UnityEngine;
 
 #endregion
