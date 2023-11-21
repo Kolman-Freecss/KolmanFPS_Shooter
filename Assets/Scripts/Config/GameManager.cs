@@ -58,6 +58,8 @@ namespace Config
 
         public event Action<ulong> OnGameStarted;
 
+        public event Action allPlayersSpawned;
+
         #endregion
 
         #region InitData
@@ -226,6 +228,7 @@ namespace Config
                         .Equals(SceneTransitionHandler.SceneStates.Multiplayer_InGame))
                 {
                     Debug.Log("------------------START GAME------------------");
+                    allPlayersSpawned?.Invoke();
                     isGameStarted.Value = true;
                     OnGameStarted?.Invoke(NetworkManager.Singleton.LocalClientId);
                     // If we subscribe to the event, we need to unsubscribe here
@@ -258,10 +261,13 @@ namespace Config
                 NetworkObject noPlayer = player.GetComponent<NetworkObject>();
                 // Make this noPlayer PlayerObject for this client
                 NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject = noPlayer;
+                Debug.Log("Player spawned -> " + clientId);
                 noPlayer.SpawnWithOwnership(clientId, true);
                 // SessionManager<SessionPlayerData>.Instance.SetPlayerData(clientId,
                 //     new SessionPlayerData(clientId, "Player " + clientId, 0, true, true, teamType));
             }
+
+            Debug.Log("------------------ALL PLAYERS SPAWNED------------------");
         }
 
         /// <summary>

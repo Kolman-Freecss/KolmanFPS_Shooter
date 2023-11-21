@@ -3,6 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Config;
 using Gameplay.GameplayObjects;
 using Model;
@@ -367,23 +368,31 @@ namespace Player
 
         public void InitRoundData()
         {
-            //Get Components
-            PlayerBehaviour playerBehaviour = NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerBehaviour>();
-            playerBehaviour._playerInputController = playerBehaviour.GetComponent<PlayerInputController>();
-            playerBehaviour._playerController = playerBehaviour.GetComponent<PlayerController>();
-            //Player Canvas
-            GameObject c = GameObject.FindGameObjectWithTag("PlayerCanvas");
-            playerBehaviour._healthText = c.transform.Find("HealthWrapper").transform.Find("HealthText")
-                .GetComponent<TextMeshProUGUI>();
-            playerBehaviour._ammoText = c.transform.Find("AmmoText").GetComponent<TextMeshProUGUI>();
-            //Equip Weapon
-            if (playerBehaviour._defaultWeapon != null)
+            try
             {
-                EquipWeapon(playerBehaviour._defaultWeapon.weaponType);
+                //Get Components
+                PlayerBehaviour playerBehaviour = GetComponent<PlayerBehaviour>();
+                //NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerBehaviour>();
+                playerBehaviour._playerInputController = playerBehaviour.GetComponent<PlayerInputController>();
+                playerBehaviour._playerController = playerBehaviour.GetComponent<PlayerController>();
+                //Player Canvas
+                GameObject c = GameObject.FindGameObjectWithTag("PlayerCanvas");
+                playerBehaviour._healthText = c.transform.Find("HealthWrapper").transform.Find("HealthText")
+                    .GetComponent<TextMeshProUGUI>();
+                playerBehaviour._ammoText = c.transform.Find("AmmoText").GetComponent<TextMeshProUGUI>();
+                //Equip Weapon
+                if (playerBehaviour._defaultWeapon != null)
+                {
+                    EquipWeapon(playerBehaviour._defaultWeapon.weaponType);
+                }
+                else
+                {
+                    EquipWeapon(WeaponType.Ak47);
+                }
             }
-            else
+            catch (Exception e)
             {
-                EquipWeapon(WeaponType.Ak47);
+                Debug.LogError("Error on InitRoundData: " + e.Message);
             }
         }
 
@@ -466,11 +475,28 @@ namespace Player
         {
             if (clientId != NetworkManager.Singleton.LocalClientId) return;
             // We need to get the player object from the client that called the server because the server invoked the method from his own NetworkObject
-            NetworkObject player = NetworkManager.LocalClient.PlayerObject;
-            NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
-            PlayerBehaviour playerBehaviour = player.GetComponent<PlayerBehaviour>();
+            // NetworkObject player = NetworkManager.Singleton.LocalClient.PlayerObject;
+            Weapon weapon = FindObjectsOfType<Weapon>(includeInactive:true).FirstOrDefault(w =>
+            {
+                NetworkObject wNo = w.GetComponent<NetworkObject>();
+                return wNo != null && wNo.NetworkObjectId == networkObjectId;
+            });
+            if (weapon == null)
+            {
+                Debug.LogError("Weapon not found");
+                return;
+            }
+
+            NetworkObject no = weapon.GetComponent<NetworkObject>();
+            if (no == null)
+            {
+                Debug.LogError("Weapon networkObject not found");
+                return;
+            }
+
+            // NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
+            PlayerBehaviour playerBehaviour = GetComponent<PlayerBehaviour>();
             playerBehaviour._weapons.Add(no);
-            Weapon weapon = no.GetComponent<Weapon>();
             try
             {
                 PositionConstraint pc = weapon.GetComponent<PositionConstraint>();

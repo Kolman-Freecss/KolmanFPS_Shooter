@@ -151,7 +151,7 @@ namespace Player
         private void RegisterServerCallbacks()
         {
             //Server will be notified when a client connects
-            GameManager.Instance.OnGameStarted += ClientLoadedGameScene;
+            GameManager.Instance.allPlayersSpawned += InitClientData;
             // SceneTransitionHandler.Instance.OnClientLoadedGameScene += ClientLoadedGameScene;
         }
 
@@ -340,26 +340,33 @@ namespace Player
 
         // This is called when a client connects to the server
         // Invoked when a client has loaded this scene
-        private void ClientLoadedGameScene(ulong clientId)
+        // private void ClientLoadedGameScene(ulong clientId)
+        // {
+        //     if (IsServer)
+        //     {
+        //         SendClientInitDataClientRpc(clientId);
+        //     }
+        // }
+        private void InitClientData()
         {
             if (IsServer)
             {
-                SendClientInitDataClientRpc(clientId);
+                SendClientInitDataClientRpc();
             }
         }
 
         [ClientRpc]
-        private void SendClientInitDataClientRpc(ulong clientId, ClientRpcParams clientRpcParams = default)
+        private void SendClientInitDataClientRpc(ClientRpcParams clientRpcParams = default)
         {
             Debug.Log("------------------SENT Client Init Awake Data------------------");
-            Debug.Log("Client Id -> " + clientId);
+            Debug.Log("Client Id -> " + NetworkManager.Singleton.LocalClientId);
             if (!IsOwner) // || !IsLocalPlayer
             {
                 InitOtherClientsData();
                 return;
             }
 
-            InitClientData(clientId);
+            InitClientData(NetworkManager.Singleton.LocalClientId);
         }
 
         /// <summary>
@@ -485,7 +492,8 @@ namespace Player
             //Server will be notified when a client connects
             RoundManager.OnRoundStarted -= () =>
                 transform.position = RoundManager.Instance.GetRandomCheckpoint().transform.position;
-            SceneTransitionHandler.Instance.OnClientLoadedGameScene -= ClientLoadedGameScene;
+            // SceneTransitionHandler.Instance.OnClientLoadedGameScene -= ClientLoadedGameScene;
+            GameManager.Instance.allPlayersSpawned -= InitClientData;
         }
 
         void UnSubscribeToDelegatesAndUpdateValues()
