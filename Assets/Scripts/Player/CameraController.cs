@@ -12,7 +12,6 @@ namespace Player
     {
         #region Inspector Fields
 
-
         #endregion
 
         #region Member Properties
@@ -20,7 +19,7 @@ namespace Player
         PlayerController m_PlayerController;
         NetworkLifeState m_NetworkLifeState;
         CameraMode m_CurrentCameraMode = CameraMode.FPS;
-        
+
         public CameraMode CurrentCameraModeValue
         {
             get => m_CurrentCameraMode;
@@ -49,7 +48,7 @@ namespace Player
 
         void Update()
         {
-            if (!GameManager.Instance.isGameStarted.Value
+            if (!RoundManager.Instance.isRoundStarted.Value
                 || m_NetworkLifeState.LifeState.Value == LifeState.Dead
                ) return;
             Vector3 rot = m_PlayerController.MainCamera.transform.localRotation.eulerAngles;
@@ -59,7 +58,7 @@ namespace Player
         #endregion
 
         #region Logic
-        
+
         public Entities.Player.Player SetCameraModeByPlayer(CameraMode mode, Entities.Player.Player currentPlayer)
         {
             currentPlayer.ChangeCurrentSkinView(mode, out SkinView skinView);
@@ -67,7 +66,7 @@ namespace Player
             m_CurrentCameraMode = mode;
             return currentPlayer;
         }
-        
+
         #endregion
     }
 }

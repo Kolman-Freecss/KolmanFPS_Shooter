@@ -1,39 +1,62 @@
+#region
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
-using Player;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Animations;
 using Weapons;
 using Random = UnityEngine.Random;
 
+#endregion
+
 namespace Config
 {
     public class RoundManager : NetworkBehaviour
     {
         //TODO: Build checkpoint entity
-        
+
         #region Inspector Variables
 
+        public TextMeshProUGUI TimeToStartRoundText;
         public List<GameObject> _checkpoints;
         public List<GameObject> Cameras;
         public GameObject WeaponPool;
+
+        public int timeToStartRound = 10;
 
         #endregion
 
         #region Member Variables
 
+        [HideInInspector] public NetworkVariable<bool> isRoundStarted = new NetworkVariable<bool>(false,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server);
+
+        [HideInInspector] public NetworkVariable<bool> isRoundOver = new NetworkVariable<bool>(false,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server);
+
         public static RoundManager Instance { get; private set; }
+
         //private const int MaxPlayers = 10;
         private const int TimeToRespawn = 5;
+
+        [HideInInspector] public NetworkVariable<int> m_timeRemainingToStartRound = new NetworkVariable<int>(0,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server);
+
+        private bool _isRoundStarting = false;
 
         #endregion
 
         #region Events
 
-        public static event Action OnRoundManagerSpawned;
+        public static event Action OnRoundStarted;
+        public event Action OnRoundManagerSpawned;
 
         #endregion
 
@@ -43,20 +66,34 @@ namespace Config
         {
             ManageSingleton();
         }
-        
+
         public override void OnNetworkSpawn()
         {
+            Debug.Log("RoundManager spawned");
+            OnRoundManagerSpawned?.Invoke();
+            // if (IsServer)
+            //     //GetReferences();
+            //     if (!isRoundStarted.Value)
+            //     {
+            //         StartRoundServerRpc();
+            //     }
             if (IsServer)
-            {
-                GetReferences();
-                OnRoundManagerSpawned?.Invoke();
-            }
+                InitServer();
+
             SoundManager.Instance.StartBackgroundMusic(SoundManager.BackgroundMusic.InGame);
         }
-        
+
+        public void InitServer()
+        {
+            m_timeRemainingToStartRound.Value = timeToStartRound;
+        }
+
         private void Start()
         {
             GetReferences();
+            if (IsServer)
+                if (!isRoundStarted.Value)
+                    StartRoundServerRpc();
         }
 
         /**
@@ -75,9 +112,21 @@ namespace Config
             }
         }
 
-        void GetReferences()
+        private void GetReferences()
         {
             if (_checkpoints == null) _checkpoints = new List<GameObject>();
+            _isRoundStarting = false;
+            StartingRoundClientRpc(false);
+        }
+
+        #endregion
+
+        #region Loop
+
+        private void Update()
+        {
+            if (!isRoundStarted.Value && _isRoundStarting)
+                TimeToStartRoundText.text = m_timeRemainingToStartRound.Value.ToString();
         }
 
         #endregion
@@ -88,11 +137,58 @@ namespace Config
         {
             return _checkpoints[Random.Range(0, _checkpoints.Count)];
         }
-        
+
         #endregion
 
         #region Network Events Handler
-        
+
+        [ServerRpc]
+        void StartRoundServerRpc(ServerRpcParams serverRpcParams = default)
+        {
+            Debug.Log("Round ready");
+            GameManager.Instance.OnGameStarted += InitRound;
+
+            // When the round starts, we need to start the game server side
+            GameManager.Instance.OnStartGameServerRpc();
+
+            void InitRound(ulong serverClientId)
+            {
+                Debug.Log("Init Round");
+                OnRoundStarted?.Invoke();
+                StartingRoundClientRpc(true);
+                StartCoroutine(StartRound(timeToStartRound));
+
+                IEnumerator StartRound(int time)
+                {
+                    int timeRemaining = time;
+                    while (timeRemaining > 0)
+                    {
+                        m_timeRemainingToStartRound.Value = timeRemaining;
+                        yield return new WaitForSeconds(1);
+                        timeRemaining--;
+                    }
+
+                    StartingRoundClientRpc(false);
+                    isRoundStarted.Value = true;
+                }
+            }
+        }
+
+        [ClientRpc]
+        void StartingRoundClientRpc(bool isRoundStarting, ClientRpcParams clientRpcParams = default)
+        {
+            if (isRoundStarting)
+            {
+                TimeToStartRoundText.gameObject.SetActive(true);
+            }
+            else
+            {
+                TimeToStartRoundText.gameObject.SetActive(false);
+            }
+
+            _isRoundStarting = isRoundStarting;
+        }
+
         [ServerRpc]
         private void DetachWeaponsFromPlayerServerRpc(ulong clientId, ServerRpcParams serverRpcParams = default)
         {
@@ -101,10 +197,10 @@ namespace Config
                 Weapon weapon = netObj.GetComponent<Weapon>();
                 if (weapon != null)
                 {
-                    DetachWeaponFromPlayer(weapon.gameObject);    
+                    DetachWeaponFromPlayer(weapon.gameObject);
                 }
             });
-            
+
             void DetachWeaponFromPlayer(GameObject weapon)
             {
                 try
@@ -117,7 +213,8 @@ namespace Config
                     weapon.GetComponent<BoxCollider>().enabled = true;
                     // Change ownership of the weapon to the server
                     weapon.GetComponent<NetworkObject>().RemoveOwnership();
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     Debug.LogError("Error detaching weapon from player: " + e.Message);
                 }
@@ -130,7 +227,7 @@ namespace Config
             ulong clientId = serverRpcParams.Receive.SenderClientId;
             OnPlayerDeathClientRpc(clientId);
             StartCoroutine(OnPlayerDeath(clientId));
-            
+
             IEnumerator OnPlayerDeath(ulong clientId, float timeToRespawn = TimeToRespawn)
             {
                 yield return new WaitForSeconds(timeToRespawn);
@@ -138,7 +235,7 @@ namespace Config
                 RespawnClientRpc(clientId);
             }
         }
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -151,13 +248,13 @@ namespace Config
             if (clientId == NetworkManager.Singleton.LocalClientId)
             {
                 GameManager.Instance.OnPlayerEndGameServerRpc();
-            } 
+            }
             // else
             // {
             //     Debug.Log("Player " + clientId + " respawned");
             // }
         }
-        
+
         [ClientRpc]
         public void OnPlayerDeathClientRpc(ulong clientId, ClientRpcParams clientRpcParams = default)
         {
@@ -179,10 +276,11 @@ namespace Config
         {
             return this.Cameras.Find(camera => camera.CompareTag("MainCamera")).GetComponent<UnityEngine.Camera>();
         }
-        
+
         public CinemachineVirtualCamera GetPlayerFPSCamera()
         {
-            return this.Cameras.Find(camera => camera.CompareTag("PlayerFPSCamera")).GetComponent<CinemachineVirtualCamera>();
+            return this.Cameras.Find(camera => camera.CompareTag("PlayerFPSCamera"))
+                .GetComponent<CinemachineVirtualCamera>();
         }
 
         #endregion
@@ -194,7 +292,7 @@ namespace Config
             base.OnNetworkDespawn();
             Debug.Log("RoundManager despawned");
         }
-        
+
         public void OnDestroy()
         {
             base.OnDestroy();
@@ -202,6 +300,5 @@ namespace Config
         }
 
         #endregion
-        
     }
 }

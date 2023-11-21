@@ -8,24 +8,23 @@ namespace ConnectionManagement
 {
     public class ConnectionManager : MonoBehaviour
     {
-        
         #region Member Variables
 
         public static ConnectionManager Instance { get; private set; }
-        
+
         // TODO: Add client list to manage clients
         // [HideInInspector]
         // public List<NetworkClient> clients;
-        
+
         #endregion
-        
+
         #region InitData
 
         private void Awake()
         {
             ManageSingleton();
         }
-        
+
         /**
          * <summary>Manage the singleton pattern for this class (Object destroyed when changing scene)</summary>
          */
@@ -47,7 +46,7 @@ namespace ConnectionManagement
         {
             SubscribeToServerEvents();
         }
-        
+
         void SubscribeToServerEvents()
         {
             // NetworkManager.Singleton.ConnectionApprovalCallback += ConnectionApprovalCallback;
@@ -56,10 +55,9 @@ namespace ConnectionManagement
         }
 
         #endregion
-        
+
         #region Logic
 
-        
         //TODO: Implement ConnectionApproval Checks
         /// <summary>
         /// When a client connects, we apply the player prefab to the client through this filter
@@ -75,32 +73,33 @@ namespace ConnectionManagement
         //     uint playerPrefabSelection = GameManager.Instance.SkinsGlobalNetworkIds.Find(skin => skin.Key == teamType).Value;
         //     connectionApprovalResponse.PlayerPrefabHash = playerPrefabSelection;
         // }
-
         public void StartHost(string ipAddress, int port)
         {
             try
             {
-                NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(ipAddress, (ushort) port);
+                NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(ipAddress, (ushort)port);
                 if (NetworkManager.Singleton.StartHost())
                 {
                     SceneTransitionHandler.Instance.RegisterNetworkCallbacks();
-                    SceneTransitionHandler.Instance.LoadScene(SceneTransitionHandler.SceneStates.Multiplayer_InGame);
+                    SceneTransitionHandler.Instance.LoadScene(SceneTransitionHandler.SceneStates
+                        .Multiplayer_Game_Lobby);
                 }
                 else
                 {
                     Debug.LogError("Host failed to start");
                 }
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 Debug.LogError(e);
             }
         }
-        
+
         public void StartClient(string ipAddress, int port)
         {
             try
             {
-                NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(ipAddress, (ushort) port);
+                NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(ipAddress, (ushort)port);
                 if (NetworkManager.Singleton.StartClient())
                 {
                     Debug.Log("Client started");
@@ -115,7 +114,7 @@ namespace ConnectionManagement
                 Debug.LogError(e);
             }
         }
-        
+
         /// <summary>
         /// Callback called when a client connects
         /// </summary>
@@ -124,7 +123,7 @@ namespace ConnectionManagement
         {
             Debug.Log($"Client {clientId} connected");
         }
-        
+
         /// <summary>
         /// Callback called when a client disconnects
         /// </summary>
@@ -150,16 +149,16 @@ namespace ConnectionManagement
                 NetworkManager.Singleton.DisconnectClient(clientId, "Client disconnected.");
             }
         }
-        
+
         #endregion
 
         #region Destructor
-        
+
         private void OnDestroy()
         {
             UnsubscribeToServerEvents();
         }
-        
+
         void UnsubscribeToServerEvents()
         {
             if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
@@ -171,6 +170,5 @@ namespace ConnectionManagement
         }
 
         #endregion
-        
     }
 }

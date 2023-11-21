@@ -31,10 +31,6 @@ l
 <Assets/Scripts/Entities/Utils/SerializableDictionaryEntry.cs,8\8\883822a1b0546f9ae5d531d0cf19a0c1a813cdbf
 S
 #Assets/Scripts/Utils/ConfigScene.cs,9\9\9917168f8301c161734084f14d1b6ba7b3ea997a
-`
-0Assets/Scripts/Config/MultiplayerLobbyManager.cs,1\9\19d875e2e21a1a59d0acbccad30508ebf2d34831
-Z
-*Assets/Scripts/Config/ConnectionManager.cs,7\f\7fe1e3102ecfdedd6be640e1c9facdb51cd37a38
 _
 /Assets/Scripts/Config/SceneTransitionHandler.cs,c\8\c83c22f604080e8ce6f266a56352d368d771cdb6
 f
@@ -73,3 +69,9 @@ Y
 -Assets/Modules/CacheModule/CacheManagement.cs,6\2\625078277b86459e27237e611306c77ec81f4659
 ^
 .Assets/Modules/CacheModule/ICacheableEntity.cs,3\2\325413719b343aaab6bf2b5f364208fa429fc7a6
+h
+8Assets/Scripts/ConnectionManagement/SessionPlayerData.cs,3\f\3f51682167fcc65b05592330fec3ae3b95d2d4e7
+i
+9Assets/Scripts/Gameplay/UI/MultiplayerGameLobbyManager.cs,0\9\09ac6b22166e8f6b3c558e83f770fd63d92ecb87
+e
+5Assets/Scripts/Gameplay/UI/MultiplayerLobbyManager.cs,d\6\d661dc5c18f99a361379f588c3a6fbd070417773

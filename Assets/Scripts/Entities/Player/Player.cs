@@ -18,6 +18,7 @@ namespace Entities.Player
 
         public enum TeamType
         {
+            None = 0,
             Warriors = 1,
             Wizards = 2
         }

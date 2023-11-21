@@ -1,6 +1,9 @@
+#region
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Config;
 using Gameplay.GameplayObjects;
 using Model;
@@ -9,6 +12,8 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Animations;
 using Weapons;
+
+#endregion
 
 namespace Player
 {
@@ -39,8 +44,7 @@ namespace Player
         private float _currentHealth = 100f;
         List<NetworkObject> _weapons = new List<NetworkObject>();
         Weapon _currentWeapon;
-        [HideInInspector]
-        public Weapon CurrentWeapon => _currentWeapon;
+        [HideInInspector] public Weapon CurrentWeapon => _currentWeapon;
         int _currentWeaponIndex = 0;
 
         //TODO: Move this to another class
@@ -61,10 +65,9 @@ namespace Player
             _damageReceiver = GetComponent<DamageReceiver>();
             _playerController = GetComponent<PlayerController>();
         }
-        
+
         private void OnEnable()
         {
-            
         }
 
         public override void OnNetworkSpawn()
@@ -75,27 +78,30 @@ namespace Player
             }
 
             _damageReceiver.DamageReceived += OnDamageReceived;
-            
+
             if (IsOwner)
             {
                 _networkLifeState.LifeState.OnValueChanged += OnLifeStateChanged;
             }
-
         }
 
         private void RegisterServerCallbacks()
         {
-            RoundManager.OnRoundManagerSpawned += InitRound;
+            // GameManager.Instance.OnGameStarted += InitRoundPlayers;
+            // RoundManager.OnRoundStarted += InitRound;
+            // RoundManager.Instance.OnRoundManagerSpawned += InitRound;
         }
 
         /// <summary>
         /// When the round manager is spawned we need to wait for the scene to load
         /// </summary>
-        private void InitRound()
-        {
-            SceneTransitionHandler.Instance.OnClientLoadedGameScene += ClientLoadedGameScene;
-            Debug.Log("InitRound -> " + NetworkObjectId + " " + NetworkManager.Singleton.LocalClientId + " " + IsOwner);
-        }
+        // private void InitRound()
+        // {
+        //     RoundManager.OnRoundStarted += InitRoundPlayers;
+        //     // SceneTransitionHandler.Instance.OnClientLoadedGameScene += ClientLoadedGameScene;
+        //     // GameManager.Instance.OnGameStarted += ClientLoadedGameScene;
+        //     Debug.Log("InitRound -> " + NetworkObjectId + " " + NetworkManager.Singleton.LocalClientId + " " + IsOwner);
+        // }
 
         /// <summary>
         /// Invoked when the object is instantiated, we need to wait for the scene to load
@@ -112,6 +118,16 @@ namespace Player
         {
             _currentWeaponIndex = 0;
             _currentHealth = _maxHealth;
+        }
+
+        void InitRoundPlayers(ulong clientId)
+        {
+            if (IsServer)
+            {
+                Debug.Log("InitRoundPlayers -> " + NetworkObjectId + " " + NetworkManager.Singleton.LocalClientId +
+                          " " + IsOwner);
+                SendClientInitDataClientRpc(NetworkManager.Singleton.LocalClientId);
+            }
         }
 
         /// <summary>
@@ -139,7 +155,7 @@ namespace Player
 
         private void Update()
         {
-            if (!GameManager.Instance.isGameStarted.Value ||
+            if (!RoundManager.Instance.isRoundStarted.Value ||
                 LifeState != LifeState.Alive)
                 return;
             UpdatePlayerCanvas();
@@ -170,7 +186,7 @@ namespace Player
                 //TODO: Respawn or wait to finish the current round
             }
         }
-        
+
         void OnDamageReceived(PlayerBehaviour inflicter, int damage)
         {
             //NetworkObject networkObjectReceiver = NetworkManager.Singleton.SpawnManager.SpawnedObjects[NetworkObjectId];
@@ -298,7 +314,7 @@ namespace Player
         #endregion
 
         #region Network Calls/Events
-        
+
         /// <summary>
         /// The server need to know when the client perform an action over anything 
         /// </summary>
@@ -307,14 +323,17 @@ namespace Player
         /// <param name="damage"></param>
         /// <param name="serverRpcParams"></param>
         [ServerRpc(RequireOwnership = false)]
-        private void TakeDamageServerRpc(ulong receiverNetworkObjectId, ulong inflicterNetworkObjectId, int damage, ServerRpcParams serverRpcParams = default)
+        private void TakeDamageServerRpc(ulong receiverNetworkObjectId, ulong inflicterNetworkObjectId, int damage,
+            ServerRpcParams serverRpcParams = default)
         {
-            ulong clientIdReceiver = NetworkManager.Singleton.SpawnManager.SpawnedObjects[receiverNetworkObjectId].OwnerClientId;
+            ulong clientIdReceiver = NetworkManager.Singleton.SpawnManager.SpawnedObjects[receiverNetworkObjectId]
+                .OwnerClientId;
             TakeDamageClientRpc(clientIdReceiver, inflicterNetworkObjectId, damage);
         }
 
         [ClientRpc]
-        private void TakeDamageClientRpc(ulong clientId, ulong inflicterNetworkObjectId, int damage, ClientRpcParams clientRpcParams = default)
+        private void TakeDamageClientRpc(ulong clientId, ulong inflicterNetworkObjectId, int damage,
+            ClientRpcParams clientRpcParams = default)
         {
             if (clientId != NetworkManager.Singleton.LocalClientId) return;
             PlayerBehaviour playerBehaviour = NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerBehaviour>();
@@ -337,23 +356,43 @@ namespace Player
             Debug.Log("------------------SENT Client Behaviour init data ------------------");
             Debug.Log("Client Id -> " + clientId + " - " + NetworkManager.Singleton.LocalClientId + " - " + IsOwner +
                       " - " + IsLocalPlayer);
-            //Get Components
-            PlayerBehaviour playerBehaviour = NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerBehaviour>();
-            playerBehaviour._playerInputController = playerBehaviour.GetComponent<PlayerInputController>();
-            playerBehaviour._playerController = playerBehaviour.GetComponent<PlayerController>();
-            //Player Canvas
-            GameObject c = GameObject.FindGameObjectWithTag("PlayerCanvas");
-            playerBehaviour._healthText = c.transform.Find("HealthWrapper").transform.Find("HealthText")
-                .GetComponent<TextMeshProUGUI>();
-            playerBehaviour._ammoText = c.transform.Find("AmmoText").GetComponent<TextMeshProUGUI>();
-            //Equip Weapon
-            if (playerBehaviour._defaultWeapon != null)
+
+            if (!IsOwner) return;
+            clientId = NetworkManager.Singleton.LocalClientId;
+            Debug.Log("Client Id changed -> " + clientId + " - " + NetworkManager.Singleton.LocalClientId + " - " +
+                      IsOwner +
+                      " - " + IsLocalPlayer);
+
+            InitRoundData();
+        }
+
+        public void InitRoundData()
+        {
+            try
             {
-                EquipWeapon(playerBehaviour._defaultWeapon.weaponType);
+                //Get Components
+                PlayerBehaviour playerBehaviour = GetComponent<PlayerBehaviour>();
+                //NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerBehaviour>();
+                playerBehaviour._playerInputController = playerBehaviour.GetComponent<PlayerInputController>();
+                playerBehaviour._playerController = playerBehaviour.GetComponent<PlayerController>();
+                //Player Canvas
+                GameObject c = GameObject.FindGameObjectWithTag("PlayerCanvas");
+                playerBehaviour._healthText = c.transform.Find("HealthWrapper").transform.Find("HealthText")
+                    .GetComponent<TextMeshProUGUI>();
+                playerBehaviour._ammoText = c.transform.Find("AmmoText").GetComponent<TextMeshProUGUI>();
+                //Equip Weapon
+                if (playerBehaviour._defaultWeapon != null)
+                {
+                    EquipWeapon(playerBehaviour._defaultWeapon.weaponType);
+                }
+                else
+                {
+                    EquipWeapon(WeaponType.Ak47);
+                }
             }
-            else
+            catch (Exception e)
             {
-                EquipWeapon(WeaponType.Ak47);
+                Debug.LogError("Error on InitRoundData: " + e.Message);
             }
         }
 
@@ -436,11 +475,28 @@ namespace Player
         {
             if (clientId != NetworkManager.Singleton.LocalClientId) return;
             // We need to get the player object from the client that called the server because the server invoked the method from his own NetworkObject
-            NetworkObject player = NetworkManager.LocalClient.PlayerObject;
-            NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
-            PlayerBehaviour playerBehaviour = player.GetComponent<PlayerBehaviour>();
+            // NetworkObject player = NetworkManager.Singleton.LocalClient.PlayerObject;
+            Weapon weapon = FindObjectsOfType<Weapon>(includeInactive:true).FirstOrDefault(w =>
+            {
+                NetworkObject wNo = w.GetComponent<NetworkObject>();
+                return wNo != null && wNo.NetworkObjectId == networkObjectId;
+            });
+            if (weapon == null)
+            {
+                Debug.LogError("Weapon not found");
+                return;
+            }
+
+            NetworkObject no = weapon.GetComponent<NetworkObject>();
+            if (no == null)
+            {
+                Debug.LogError("Weapon networkObject not found");
+                return;
+            }
+
+            // NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
+            PlayerBehaviour playerBehaviour = GetComponent<PlayerBehaviour>();
             playerBehaviour._weapons.Add(no);
-            Weapon weapon = no.GetComponent<Weapon>();
             try
             {
                 PositionConstraint pc = weapon.GetComponent<PositionConstraint>();
@@ -517,7 +573,9 @@ namespace Player
             ServerRpcParams serverRpcParams = default)
         {
             NetworkObject weaponNetworkObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
-            GameObject hitEffect = isPlayer ? weaponNetworkObject.GetComponent<Weapon>().playerHitEffect : weaponNetworkObject.GetComponent<Weapon>().hitEffect;
+            GameObject hitEffect = isPlayer
+                ? weaponNetworkObject.GetComponent<Weapon>().playerHitEffect
+                : weaponNetworkObject.GetComponent<Weapon>().hitEffect;
             GameObject impact = Instantiate(hitEffect, hitPoint,
                 Quaternion.LookRotation(hitNormal));
             NetworkObject no = impact.GetComponent<NetworkObject>();
@@ -572,12 +630,13 @@ namespace Player
             base.OnNetworkDespawn();
             if (IsServer)
             {
-                RoundManager.OnRoundManagerSpawned -= InitRound;
-                SceneTransitionHandler.Instance.OnClientLoadedGameScene -= ClientLoadedGameScene;
+                // RoundManager.OnRoundStarted -= InitRound;
+                //SceneTransitionHandler.Instance.OnClientLoadedGameScene -= ClientLoadedGameScene;
+                GameManager.Instance.OnGameStarted -= ClientLoadedGameScene;
             }
 
             _damageReceiver.DamageReceived -= OnDamageReceived;
-            
+
             if (IsOwner)
             {
                 _networkLifeState.LifeState.OnValueChanged -= OnLifeStateChanged;
