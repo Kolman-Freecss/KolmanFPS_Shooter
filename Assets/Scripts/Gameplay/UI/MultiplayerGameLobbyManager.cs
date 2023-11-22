@@ -53,9 +53,7 @@ namespace Gameplay.UI
 
         private void OnServerStartButtonClicked()
         {
-            Debug.Log("Server Start Button Clicked");
             SceneTransitionHandler.Instance.LoadScene(SceneTransitionHandler.SceneStates.Multiplayer_InGame);
-            //GameManager.Instance.OnStartGameServerRpc();
         }
 
         private void OnClientReadyButtonClicked()
