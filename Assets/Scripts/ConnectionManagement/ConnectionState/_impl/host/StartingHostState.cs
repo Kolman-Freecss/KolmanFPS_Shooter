@@ -56,6 +56,7 @@ namespace ConnectionManagement.ConnectionState._impl.host
                     connectionPayload.playerId,
                     new SessionPlayerData(clientId, connectionPayload.playerName, 0, true));
 
+                Debug.Log($"ConnectionManager: Approving self as host");
                 // connection approval will create a player object for you
                 response.Approved = true;
                 //response.CreatePlayerObject = true;

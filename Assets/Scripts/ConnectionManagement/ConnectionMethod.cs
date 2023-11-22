@@ -58,8 +58,10 @@ namespace ConnectionManagement
 
         private void SetConnectionPayload(string playerName)
         {
+            string playerId = NetworkManager.Singleton.LocalClientId.ToString() + m_playerName;
             string payload = JsonUtility.ToJson(new ConnectionPayload()
             {
+                playerId = playerId,
                 playerName = playerName,
             });
 
