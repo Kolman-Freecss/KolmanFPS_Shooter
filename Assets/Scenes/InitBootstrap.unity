@@ -402,7 +402,7 @@ PrefabInstance:
     - target: {fileID: 3073907624529598364, guid: 2935f8820c714b8429a85431aa63c97d,
         type: 3}
       propertyPath: NetworkConfig.ConnectionApproval
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3073907624529598364, guid: 2935f8820c714b8429a85431aa63c97d,
         type: 3}

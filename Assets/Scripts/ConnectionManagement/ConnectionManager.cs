@@ -1,20 +1,30 @@
 #region
 
-using System;
+using ConnectionManagement.ConnectionState._impl._common;
 using Gameplay.Config;
 using Unity.Netcode;
-using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 
 #endregion
 
 namespace ConnectionManagement
 {
+    /// <summary>
+    /// Every client has a ConnectionManager. This class is responsible for managing the connection state of the client.
+    /// 
+    /// This state machine handles connection through the NetworkManager. It is responsible for listening to
+    /// NetworkManger callbacks and other outside calls and redirecting them to the current ConnectionState object.
+    /// </summary>
     public class ConnectionManager : MonoBehaviour
     {
         #region Member Variables
 
+        private ConnectionState.ConnectionState m_CurrentState;
+
         public static ConnectionManager Instance { get; private set; }
+
+        public int MaxPlayers = 10;
+        public int NbReconnectAttempts = 2;
 
         #endregion
 
@@ -44,6 +54,7 @@ namespace ConnectionManagement
 
         private void Start()
         {
+            m_CurrentState = new OfflineState(Instance);
             SubscribeToServerEvents();
         }
 
@@ -51,11 +62,26 @@ namespace ConnectionManagement
         {
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnect;
+            NetworkManager.Singleton.OnServerStarted += OnServerStarted;
+            NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
+            NetworkManager.Singleton.OnTransportFailure += OnTransportFailure;
         }
 
         #endregion
 
         #region Logic
+
+        public void ChangeState(ConnectionState.ConnectionState nextState)
+        {
+            Debug.Log($"ConnectionManager: Changing state from {m_CurrentState} to {nextState}");
+            if (m_CurrentState != null)
+            {
+                m_CurrentState.Exit();
+            }
+
+            m_CurrentState = nextState;
+            m_CurrentState.Enter();
+        }
 
         //TODO: Implement ConnectionApproval Checks
         /// <summary>
@@ -72,46 +98,30 @@ namespace ConnectionManagement
         //     uint playerPrefabSelection = GameManager.Instance.SkinsGlobalNetworkIds.Find(skin => skin.Key == teamType).Value;
         //     connectionApprovalResponse.PlayerPrefabHash = playerPrefabSelection;
         // }
-        public void StartHost(string ipAddress, int port)
+        public void OnServerStarted()
         {
-            try
-            {
-                NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(ipAddress, (ushort)port);
-                if (NetworkManager.Singleton.StartHost())
-                {
-                    SceneTransitionHandler.Instance.RegisterNetworkCallbacks();
-                    SceneTransitionHandler.Instance.LoadScene(SceneTransitionHandler.SceneStates
-                        .Multiplayer_Game_Lobby);
-                }
-                else
-                {
-                    Debug.LogError("Host failed to start");
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e);
-            }
+            m_CurrentState.OnServerStarted();
         }
 
-        public void StartClient(string ipAddress, int port)
+        public void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request,
+            NetworkManager.ConnectionApprovalResponse response)
         {
-            try
-            {
-                NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(ipAddress, (ushort)port);
-                if (NetworkManager.Singleton.StartClient())
-                {
-                    Debug.Log("Client started");
-                }
-                else
-                {
-                    Debug.LogWarning("Client failed to start");
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e);
-            }
+            m_CurrentState.ApprovalCheck(request, response);
+        }
+
+        public void StartHost(string playerName, string ipAddress, int port)
+        {
+            m_CurrentState.StartHostIP(playerName, ipAddress, port);
+        }
+
+        public void StartClient(string playerName, string ipAddress, int port)
+        {
+            m_CurrentState.StartClientIP(playerName, ipAddress, port);
+        }
+
+        public void OnTransportFailure()
+        {
+            m_CurrentState.OnTransportFailure();
         }
 
         /// <summary>
@@ -121,6 +131,7 @@ namespace ConnectionManagement
         void OnClientConnected(ulong clientId)
         {
             Debug.Log($"Client {clientId} connected");
+            m_CurrentState.OnClientConnected(clientId);
         }
 
         /// <summary>
@@ -130,7 +141,8 @@ namespace ConnectionManagement
         void OnClientDisconnect(ulong clientId)
         {
             Debug.Log($"Client {clientId} disconnected");
-            GameManager.Instance.OnClientDisconnectCallbackServerRpc(clientId);
+            m_CurrentState.OnClientDisconnect(clientId);
+            //GameManager.Instance.OnClientDisconnectCallbackServerRpc(clientId);
         }
 
         public void Disconnect(ulong clientId)
@@ -164,6 +176,9 @@ namespace ConnectionManagement
             {
                 NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
                 NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnect;
+                NetworkManager.Singleton.OnServerStarted -= OnServerStarted;
+                NetworkManager.Singleton.ConnectionApprovalCallback -= ApprovalCheck;
+                NetworkManager.Singleton.OnTransportFailure -= OnTransportFailure;
             }
         }
 

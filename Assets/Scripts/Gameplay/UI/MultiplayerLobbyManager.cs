@@ -135,7 +135,7 @@ namespace Gameplay.UI
             GameManager.Instance.CacheManagement.SavePlayerCache(PlayerCache.PlayerCacheKeys.TeamType,
                 Entities.Player.Player.TeamType.Wizards.ToString());
 
-            ConnectionManager.Instance.StartHost(DefaultIp, portInt);
+            ConnectionManager.Instance.StartHost("DefaultHostName", DefaultIp, portInt);
         }
 
         private void OnStartGameClientButton()
@@ -161,7 +161,7 @@ namespace Gameplay.UI
             GameManager.Instance.CacheManagement.SavePlayerCache(PlayerCache.PlayerCacheKeys.TeamType,
                 Entities.Player.Player.TeamType.Warriors.ToString());
 
-            ConnectionManager.Instance.StartClient(ipAddress, portInt);
+            ConnectionManager.Instance.StartClient("DefaultNamePlayer", ipAddress, portInt);
         }
 
         private bool CheckRegex(string input, string regex)
