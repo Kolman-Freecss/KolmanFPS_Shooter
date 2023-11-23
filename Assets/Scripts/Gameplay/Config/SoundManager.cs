@@ -80,6 +80,10 @@ namespace Config
             }
         }
 
+        public void ConfigureAllMusic()
+        {
+        }
+
         public void SetEffectsVolume(float volume)
         {
             EffectsAudioVolume = volume;

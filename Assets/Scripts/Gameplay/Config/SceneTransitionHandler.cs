@@ -12,7 +12,7 @@ namespace Gameplay.Config
     {
         #region Inspector Variables
 
-        [SerializeField] public SceneStates DefaultScene = SceneStates.Multiplayer_Lobby;
+        [SerializeField] public SceneStates DefaultScene = SceneStates.Home;
 
         #endregion
 
@@ -41,7 +41,10 @@ namespace Gameplay.Config
         public enum SceneStates
         {
             Init,
-            Multiplayer_Lobby,
+            Home,
+            Settings,
+            Credits,
+            Multiplayer_Starting,
             Multiplayer_Game_Lobby,
             Multiplayer_InGame,
             Multiplayer_EndGame,

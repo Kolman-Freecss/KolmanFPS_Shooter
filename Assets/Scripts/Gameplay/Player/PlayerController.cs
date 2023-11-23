@@ -373,10 +373,11 @@ namespace Gameplay.Player
 
         void GetSceneReferences()
         {
-            string username = GameManager.Instance.CacheManagement.GetPlayerCache(PlayerCache.PlayerCacheKeys.Username);
+            string username =
+                GameManager.Instance.CacheManagement.GetPlayerCache<string>(PlayerCache.PlayerCacheKeys.Username);
             Entities.Player.Player.TeamType teamType = (Entities.Player.Player.TeamType)Enum.Parse(
                 typeof(Entities.Player.Player.TeamType),
-                GameManager.Instance.CacheManagement.GetPlayerCache(PlayerCache.PlayerCacheKeys.TeamType));
+                GameManager.Instance.CacheManagement.GetPlayerCache<string>(PlayerCache.PlayerCacheKeys.TeamType));
             Debug.Log("Username -> " + username + " TeamType -> " + teamType);
             CreatePlayerReference(CameraMode.FPS, typeSkin, username,
                 teamType,

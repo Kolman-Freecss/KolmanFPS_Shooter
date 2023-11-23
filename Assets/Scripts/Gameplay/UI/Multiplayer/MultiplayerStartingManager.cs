@@ -12,9 +12,19 @@ using UnityEngine.UI;
 
 namespace Gameplay.UI
 {
-    public class MultiplayerLobbyManager : MonoBehaviour
+    public class MultiplayerStartingManager : MonoBehaviour
     {
+        public enum MultiplayerStartingStates
+        {
+            Starting,
+            Host,
+            Client
+        }
+
         #region Inspector Variables
+
+        [Header("Common Layout")] [SerializeField]
+        private Button backButton;
 
         [Header("Multiplayer Layout")] [SerializeField]
         private Button startHostButton;
@@ -46,6 +56,8 @@ namespace Gameplay.UI
         private GameObject _verticalLayoutStartHostGame;
         private GameObject _verticalLayoutStartClientGame;
 
+        private MultiplayerStartingStates m_CurrentStep;
+
         #endregion
 
         #region InitData
@@ -63,6 +75,7 @@ namespace Gameplay.UI
 
         private void GetReferences()
         {
+            m_CurrentStep = MultiplayerStartingStates.Starting;
             _verticalLayoutMultiplayer = GameObject.Find("VerticalLayoutMultiplayer");
             _verticalLayoutStartHostGame = GameObject.Find("VerticalLayoutStartHostGame");
             _verticalLayoutStartClientGame = GameObject.Find("VerticalLayoutStartClientGame");
@@ -86,6 +99,7 @@ namespace Gameplay.UI
             startClientButton.onClick.AddListener(() => { OnStartClientButton(); });
             startGameHostButton.onClick.AddListener(() => { OnStartGameHostButton(); });
             startGameClientButton.onClick.AddListener(() => { OnStartGameClientButton(); });
+            backButton.onClick.AddListener(() => { OnBackButtonClicked(); });
         }
 
         #endregion
@@ -112,12 +126,14 @@ namespace Gameplay.UI
 
         private void OnStartClientButton()
         {
+            m_CurrentStep = MultiplayerStartingStates.Client;
             _verticalLayoutMultiplayer.SetActive(false);
             _verticalLayoutStartClientGame.SetActive(true);
         }
 
         private void OnStartHostButton()
         {
+            m_CurrentStep = MultiplayerStartingStates.Host;
             _verticalLayoutMultiplayer.SetActive(false);
             _verticalLayoutStartHostGame.SetActive(true);
         }
@@ -162,6 +178,29 @@ namespace Gameplay.UI
                 Entities.Player.Player.TeamType.Warriors.ToString());
 
             ConnectionManager.Instance.StartClient("DefaultNamePlayer", ipAddress, portInt);
+        }
+
+        private void OnBackButtonClicked()
+        {
+            switch (m_CurrentStep)
+            {
+                case MultiplayerStartingStates.Starting:
+                    SceneTransitionHandler.Instance.LoadScene(SceneTransitionHandler.SceneStates.Home);
+                    break;
+                case MultiplayerStartingStates.Host:
+                    _verticalLayoutStartHostGame.SetActive(false);
+                    _verticalLayoutMultiplayer.SetActive(true);
+                    m_CurrentStep = MultiplayerStartingStates.Starting;
+                    break;
+                case MultiplayerStartingStates.Client:
+                    _verticalLayoutStartClientGame.SetActive(false);
+                    _verticalLayoutMultiplayer.SetActive(true);
+                    m_CurrentStep = MultiplayerStartingStates.Starting;
+                    break;
+                default:
+                    SceneTransitionHandler.Instance.LoadScene(SceneTransitionHandler.SceneStates.Home);
+                    break;
+            }
         }
 
         private bool CheckRegex(string input, string regex)

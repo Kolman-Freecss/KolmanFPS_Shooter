@@ -43,7 +43,7 @@ namespace Gameplay.UI
         void OnReturnToLobbyButtonClicked()
         {
             //TODO: Disconnect from server if connected
-            SceneTransitionHandler.Instance.LoadScene(SceneTransitionHandler.SceneStates.Multiplayer_Lobby, false);
+            SceneTransitionHandler.Instance.LoadScene(SceneTransitionHandler.SceneStates.Multiplayer_Starting, false);
         }
 
         #endregion

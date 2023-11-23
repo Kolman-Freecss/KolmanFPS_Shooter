@@ -17,6 +17,14 @@ namespace Utils
         public TMP_FontAsset newFont;
         public Sprite backgroundButton;
 
+        [Header("Buttons")] [Tooltip("Font size for buttons")] [SerializeField]
+        float buttonFontSize = 24f;
+
+        [Header("Texts")] [Tooltip("Font size for texts")] [SerializeField]
+        float textFontSize = 20f;
+
+        [SerializeField] Color textColor = Color.black;
+
         [ContextMenu("Change Fonts")]
         void ChangeFonts()
         {
@@ -26,10 +34,10 @@ namespace Utils
             {
                 Undo.RecordObject(textObject, "Changed Font");
                 textObject.font = newFont;
-                textObject.color = Color.black;
+                textObject.color = textColor;
                 textObject.horizontalAlignment = HorizontalAlignmentOptions.Center;
                 textObject.verticalAlignment = VerticalAlignmentOptions.Middle;
-                textObject.fontSize = 20f;
+                textObject.fontSize = textFontSize;
                 textObject.enableAutoSizing = false;
             }
         }
@@ -43,7 +51,11 @@ namespace Utils
             {
                 Undo.RecordObject(button, "Changed Button");
                 Image image = button.GetComponent<Image>();
-                // image.sprite = backgroundButton;
+                if (backgroundButton)
+                {
+                    image.sprite = backgroundButton;
+                }
+
                 image.color = Color.white; // #4B4B4B en formato RGB
                 button.transition = Selectable.Transition.ColorTint;
                 // Make transition highlighted color the same as normal color
@@ -51,7 +63,7 @@ namespace Utils
                 colors.highlightedColor = new Color32(255, 0, 0, 255); // #FF0000 en formato RGB;
                 button.colors = colors;
                 button.GetComponentInChildren<TextMeshProUGUI>().color = Color.black;
-                button.GetComponentInChildren<TextMeshProUGUI>().fontSize = 24f;
+                button.GetComponentInChildren<TextMeshProUGUI>().fontSize = buttonFontSize;
             }
         }
 
@@ -78,6 +90,10 @@ namespace Utils
             foreach (Slider slider in sliders)
             {
                 Undo.RecordObject(slider, "Changed Slider");
+                RectTransform rectTransform = slider.GetComponent<RectTransform>();
+                rectTransform.sizeDelta = new Vector2(500, 30);
+
+
                 // Get Fill Area image
                 Image fillArea = slider.transform.GetChild(1).GetChild(0).GetComponent<Image>();
                 fillArea.color = new Color32(195, 99, 99, 255); // #C36363 en formato RGB

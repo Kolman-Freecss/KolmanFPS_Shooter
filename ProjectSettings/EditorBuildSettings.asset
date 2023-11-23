@@ -9,7 +9,16 @@ EditorBuildSettings:
     path: Assets/Scenes/InitBootstrap.unity
     guid: 71c6f62aa46b8eb4cbeb8dfc01ddcdeb
   - enabled: 1
-    path: Assets/Scenes/Multiplayer/Multiplayer_Lobby.unity
+    path: Assets/Scenes/Home.unity
+    guid: 029dfba5b1d3e924ebf4f8de9acecd29
+  - enabled: 1
+    path: Assets/Scenes/Settings.unity
+    guid: 563fc11478e55c94b8be72d6c4fa2fcc
+  - enabled: 1
+    path: Assets/Scenes/Credits.unity
+    guid: 79e7ce946d528f246a1d5647f198c377
+  - enabled: 1
+    path: Assets/Scenes/Multiplayer/Multiplayer_Starting.unity
     guid: 8d5e36c3493a0c84c8b3e9231020ce3e
   - enabled: 1
     path: Assets/Scenes/Multiplayer/Multiplayer_Game_Lobby.unity

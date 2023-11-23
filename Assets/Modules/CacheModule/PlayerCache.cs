@@ -1,16 +1,23 @@
-﻿using UnityEngine;
+﻿#region
+
+using System;
+using UnityEngine;
+
+#endregion
 
 namespace Modules.CacheModule
 {
     public class PlayerCache : ICacheableEntity<PlayerCache.PlayerCacheKeys>
     {
-        
         public enum PlayerCacheKeys
         {
             Username = 1,
-            TeamType = 2
+            TeamType = 2,
+            MasterVolume = 3,
+            MusicVolume = 4,
+            ClientGUID = 5
         }
-        
+
         public PlayerCache()
         {
         }
@@ -26,13 +33,19 @@ namespace Modules.CacheModule
                     break;
             }
         }
-        
-        public string GetData(PlayerCacheKeys key)
+
+        /// <summary>
+        /// Returns the value of the key based on the type of the key
+        /// </summary>
+        /// <param name="key"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public TData GetData<TData>(PlayerCacheKeys key)
         {
-            return PlayerPrefs.GetString(key.ToString());
+            string dataAsString = PlayerPrefs.GetString(key.ToString());
+            return (TData)Convert.ChangeType(dataAsString, typeof(TData));
         }
 
         #endregion
-        
     }
 }
