@@ -72,12 +72,6 @@ namespace Gameplay.Config
         {
             Debug.Log("RoundManager spawned");
             OnRoundManagerSpawned?.Invoke();
-            // if (IsServer)
-            //     //GetReferences();
-            //     if (!isRoundStarted.Value)
-            //     {
-            //         StartRoundServerRpc();
-            //     }
             if (IsServer)
                 InitServer();
 
