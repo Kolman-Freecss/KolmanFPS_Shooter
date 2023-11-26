@@ -11,48 +11,25 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
+using CharacterController = Gameplay.GameplayObjects.Character._common.CharacterController;
 
 #endregion
 
 namespace Gameplay.Player
 {
-    public class PlayerController : NetworkBehaviour
+    public class PlayerController : CharacterController
     {
         #region Inspector Variables
 
         [Header("Player")] [FormerlySerializedAs("Skin")] [Tooltip("typeSkin")] [SerializeField]
         public Entities.Player.Player.PlayerTypeSkin typeSkin = Entities.Player.Player.PlayerTypeSkin.DefaultSkin;
 
-        [Tooltip("Movement speed of the player")] [SerializeField]
-        private float _speed = 6f;
-
-        [Tooltip("Sprint speed of the player")] [SerializeField]
-        private float _sprintSpeed = 12f;
-
-        [Tooltip("How fast the character turns to face movement direction")] [Range(0.0f, 0.3f)]
-        public float RotationSmoothTime = 0.12f;
-
-        [Tooltip("Time required to pass before entering the fall state. Useful for walking down stairs")]
-        public float FallTimeout = 0.15f;
-
         [Space(10)] [Tooltip("The height the player can jump")]
         public float JumpHeight = 1.2f;
-
-        [Tooltip("The character uses its own gravity value. The engine default is -9.81f")]
-        public float Gravity = -15.0f;
 
         [Space(10)]
         [Tooltip("Time required to pass before being able to jump again. Set to 0f to instantly jump again")]
         public float JumpTimeout = 0.50f;
-
-
-        [Header("Player Grounded")] [Tooltip("What layers the character uses as ground")]
-        public LayerMask GroundLayers;
-
-        [Tooltip("Useful for rough ground")] public float GroundedOffset = -0.14f;
-
-        [Tooltip("The radius of the grounded check. Should match the radius of the CharacterController")]
-        public float GroundedRadius = 0.28f;
 
         #endregion
 
@@ -63,10 +40,7 @@ namespace Gameplay.Player
 
         PlayerInputController _playerInputController;
         TPSPlayerController m_tpsPlayerController;
-        CharacterController _controller;
         PlayerBehaviour m_playerBehaviour;
-        Animator _animator;
-        public Animator Animator => _animator;
 
         //Camera
         GameObject _mainCamera;
@@ -78,27 +52,11 @@ namespace Gameplay.Player
         private float _rotationVelocity;
         private float _verticalVelocity;
 
-        private float _animationBlend;
-
         // Jump
         // timeout deltatime
-        private bool _isGrounded;
         private float _jumpTimeoutDelta;
         private float _fallTimeoutDelta;
         private float _terminalVelocity = 53.0f;
-
-        //Animator
-        private bool _hasAnimator;
-        public bool HasAnimator => _hasAnimator;
-
-        private int _animIDForwardVelocity;
-        public int AnimIDForwardVelocity => _animIDForwardVelocity;
-        private int _animIDBackwardVelocity;
-        public int AnimIDBackwardVelocity => _animIDBackwardVelocity;
-        private int _animIDNormalizedVerticalVelocity;
-        public int AnimIDNormalizedVerticalVelocity => _animIDNormalizedVerticalVelocity;
-        private int _animIDIsGrounded;
-        public int AnimIDIsGrounded => _animIDIsGrounded;
 
         #endregion
 
@@ -107,23 +65,16 @@ namespace Gameplay.Player
         private void Awake()
         {
             GetComponentReferences();
-            AssignAnimationIDs();
+            base.AssignAnimationIDs();
         }
 
-        void GetComponentReferences()
+        protected override void GetComponentReferences()
         {
+            base.GetComponentReferences();
             _playerInputController = GetComponent<PlayerInputController>();
-            _controller = GetComponent<CharacterController>();
             m_playerBehaviour = GetComponent<PlayerBehaviour>();
         }
 
-        void AssignAnimationIDs()
-        {
-            _animIDForwardVelocity = Animator.StringToHash("ForwardVelocity");
-            _animIDBackwardVelocity = Animator.StringToHash("BackwardVelocity");
-            _animIDNormalizedVerticalVelocity = Animator.StringToHash("NormalizedVerticalVelocity");
-            _animIDIsGrounded = Animator.StringToHash("IsGrounded");
-        }
 
         public override void OnNetworkSpawn()
         {
@@ -180,18 +131,15 @@ namespace Gameplay.Player
                 checkpoint.z);
         }
 
-        public void OnDead()
+        public override void OnDead()
         {
-            // if (_hasAnimator)
-            // {
-            //     _animator.SetTrigger("Dead");
-            // }
+            base.OnDead();
             RoundManager.Instance.OnPlayerDeathServerRpc(NetworkObjectId);
         }
 
         void Jump()
         {
-            if (_isGrounded)
+            if (m_isGrounded)
             {
                 // reset the fall timeout timer
                 _fallTimeoutDelta = FallTimeout;
@@ -259,22 +207,9 @@ namespace Gameplay.Player
                 _verticalVelocity += Gravity * Time.deltaTime;
             }
 
-            if (_hasAnimator)
+            if (HasAnimator)
             {
-                _animator.SetFloat(_animIDNormalizedVerticalVelocity, _verticalVelocity / JumpHeight);
-            }
-        }
-
-        void GroundCheck()
-        {
-            // set sphere position, with offset
-            Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - GroundedOffset,
-                transform.position.z);
-            _isGrounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers,
-                QueryTriggerInteraction.Ignore);
-            if (_hasAnimator)
-            {
-                _animator.SetBool(_animIDIsGrounded, _isGrounded);
+                Animator.SetFloat(AnimIDNormalizedVerticalVelocity, _verticalVelocity / JumpHeight);
             }
         }
 
@@ -314,15 +249,15 @@ namespace Gameplay.Player
             currentHorizontalSpeed.y = 0.0f;
             float currentHorizontalSpeedMagnitude = currentHorizontalSpeed.magnitude;
 
-            _controller.Move(targetDirection.normalized *
-                             (currentHorizontalSpeedMagnitude * Time.deltaTime * targetSpeed) +
-                             new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+            m_controller.Move(targetDirection.normalized *
+                              (currentHorizontalSpeedMagnitude * Time.deltaTime * targetSpeed) +
+                              new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
 
-            if (_hasAnimator)
+            if (HasAnimator)
             {
                 Vector3 localSmoothedAnimationVelocity = transform.InverseTransformDirection(currentHorizontalSpeed);
-                _animator.SetFloat(_animIDForwardVelocity, localSmoothedAnimationVelocity.z);
-                _animator.SetFloat(_animIDBackwardVelocity, localSmoothedAnimationVelocity.x);
+                Animator.SetFloat(AnimIDForwardVelocity, localSmoothedAnimationVelocity.z);
+                Animator.SetFloat(AnimIDBackwardVelocity, localSmoothedAnimationVelocity.x);
             }
         }
 
@@ -412,8 +347,8 @@ namespace Gameplay.Player
             GetComponent<PlayerInput>().enabled = true;
             GetComponent<CameraController>().enabled = true;
             GetComponent<PlayerInputController>().enabled = true;
-            _animator = m_player.CurrentSkinModel.GetComponent<Animator>();
-            _hasAnimator = _animator != null;
+            Animator = m_player.CurrentSkinModel.GetComponent<Animator>();
+            HasAnimator = Animator != null;
             m_playerBehaviour.InitRoundData();
             enabled = true;
         }
@@ -431,24 +366,6 @@ namespace Gameplay.Player
                 teamType,
                 gameObject);
             GetComponent<CameraController>().CurrentCameraModeValue = m_player.CurrentCameraMode;
-        }
-
-        #endregion
-
-        #region Event Functions
-
-        private void OnDrawGizmosSelected()
-        {
-            Color transparentGreen = new Color(0.0f, 1.0f, 0.0f, 0.35f);
-            Color transparentRed = new Color(1.0f, 0.0f, 0.0f, 0.35f);
-
-            if (_isGrounded) Gizmos.color = transparentGreen;
-            else Gizmos.color = transparentRed;
-
-            // when selected, draw a gizmo in the position of, and matching radius of, the grounded collider
-            Gizmos.DrawSphere(
-                new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z),
-                GroundedRadius);
         }
 
         #endregion
