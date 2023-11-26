@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e7f66d7773049b0a156e2677ade93ea, type: 3}
+  m_Name: Ak47
+  m_EditorClassIdentifier: 
+  weaponType: 1
+  damageToArmor: 40
+  damageToTorso: 40
+  damageToLegs: 40
+  damageToArms: 40
+  damageToHead: 40
+  range: 10
+  fireRate: 1
+  reloadTime: 1
+  weaponPrefab: {fileID: 0}
+  ammoTypes: 0000000001000000
+  muzzleFlash: {fileID: 1145465914555044142, guid: cc929ca5e68ce9540bc84726ff18575b,
+    type: 3}
+  audioClipHit: {fileID: 0}
+  audioClipShoot: {fileID: 8300000, guid: cde55fbb71b3f254eb075f4fd97136f7, type: 3}
+  audioClipReload: {fileID: 0}
+  audioClipEmpty: {fileID: 0}

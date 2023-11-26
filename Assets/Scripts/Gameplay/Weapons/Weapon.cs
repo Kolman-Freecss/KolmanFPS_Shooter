@@ -1,7 +1,6 @@
 ﻿#region
 
 using System.Collections;
-using System.Collections.Generic;
 using Entities.Weapon;
 using Entities.Weapon.SO;
 using Gameplay.GameplayObjects;
@@ -19,12 +18,6 @@ namespace Gameplay.Weapons
         #region Inspector Variables
 
         public WeaponType weaponType;
-        public int damage = 40;
-        public float range = 100f; // Range of the weapon
-        public float fireRate = 1f; // Cadency
-        public float reloadTime = 1f;
-        public List<AmmoType> ammoType;
-        public ParticleSystem muzzleFlash;
         public AudioSource audioSource;
         public bool isReloading = false;
         public GameObject hitEffect;
@@ -34,10 +27,12 @@ namespace Gameplay.Weapons
 
         #region Member Variables
 
+        [HideInInspector] public WeaponEntity m_weaponEntity;
         [HideInInspector] public Ammo currentAmmo;
         [HideInInspector] public bool canShoot = true;
         [HideInInspector] public float timerToShoot;
         [HideInInspector] public PlayerBehaviour m_player;
+        ParticleSystem muzzleFlash;
 
         #endregion
 
@@ -55,36 +50,43 @@ namespace Gameplay.Weapons
 
         private void Start()
         {
-            timerToShoot = fireRate;
             GetReferences();
+            timerToShoot = m_weaponEntity.FireRateValue;
         }
 
         void GetReferences()
         {
-            if (ammoType == null || ammoType.Count == 0)
+            if (m_weaponEntity == null)
             {
-                ammoType = new List<AmmoType>();
-                Debug.LogWarning("No ammo type found for " + weaponType + " weapon");
-            }
-            else if (currentAmmo == null)
-            {
-                AmmoSO ammoSO = Resources.Load<AmmoSO>("Weapon/Ammo/" + ammoType[0].ToString());
-                if (ammoSO != null)
-                {
-                    currentAmmo = new Ammo(ammoSO);
-                }
-                else
-                {
-                    Debug.LogWarning("No AmmoSO found for " + ammoType[0].ToString() + " ammo type");
-                }
-            }
-
-            if (audioSource == null)
-            {
-                audioSource = GetComponent<AudioSource>();
+                m_weaponEntity = new WeaponEntity(Resources.Load<WeaponSO>("Weapon/WeaponSO/" + weaponType.ToString()));
                 if (audioSource == null)
                 {
-                    Debug.LogWarning("No audio source found for " + weaponType + " weapon");
+                    audioSource = GetComponent<AudioSource>();
+                    audioSource.clip = m_weaponEntity.AudioClipShootValue;
+                }
+
+                if (m_weaponEntity.AmmoTypesValue == null || m_weaponEntity.AmmoTypesValue.Count == 0)
+                {
+                    Debug.LogWarning("No ammo type found for " + weaponType + " weapon");
+                }
+                else if (currentAmmo == null)
+                {
+                    AmmoSO ammoSO =
+                        Resources.Load<AmmoSO>("Weapon/Ammo/" + m_weaponEntity.AmmoTypesValue[0].ToString());
+                    if (ammoSO != null)
+                    {
+                        currentAmmo = new Ammo(ammoSO);
+                    }
+                    else
+                    {
+                        Debug.LogWarning(
+                            "No AmmoSO found for " + m_weaponEntity.AmmoTypesValue[0].ToString() + " ammo type");
+                    }
+                }
+
+                if (muzzleFlash == null)
+                {
+                    muzzleFlash = GetComponentInChildren<ParticleSystem>();
                 }
             }
         }
@@ -126,7 +128,7 @@ namespace Gameplay.Weapons
             {
                 if (currentAmmo != null && currentAmmo.IsAmmoInClip())
                 {
-                    timerToShoot = fireRate;
+                    timerToShoot = m_weaponEntity.FireRateValue;
                     canShoot = false;
                     currentAmmo.ReduceCurrentAmmo();
                     ShootAudioServerRpc(NetworkObjectId);
@@ -151,25 +153,40 @@ namespace Gameplay.Weapons
             // ShootServerRpc(cameraTransform.position, cameraTransform.forward);
             if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, Mathf.Infinity)) //range
             {
-                Debug.DrawRay(cameraTransform.position, cameraTransform.forward * range, Color.green,
+                Debug.DrawRay(cameraTransform.position, cameraTransform.forward * m_weaponEntity.RangeValue,
+                    Color.green,
                     1f);
-                string hitTag = hit.transform.gameObject.tag;
-                switch (hitTag)
+                GameObject go = hit.transform.gameObject;
+                LayerMask layerMask = go.layer;
+                int layerMaskPlayer = LayerMask.NameToLayer("Player");
+                string hitTag = go.tag;
+                if (layerMask == layerMaskPlayer)
                 {
-                    case "Player":
-                        DamageReceiver damageReceiver = hit.transform.gameObject.GetComponent<DamageReceiver>();
-                        if (damageReceiver == null) return;
-                        damageReceiver.ReceiveDamage(m_player, GetTotalDamage());
-                        CreateHitImpact(hit, true);
-                        break;
-                    default:
-                        CreateHitImpact(hit);
-                        break;
+                    Debug.Log("Hit player " + hitTag);
+                    Entities.Player.Player.PlayerBodyPart playerBodyPart = hitTag switch
+                    {
+                        "Head" => Entities.Player.Player.PlayerBodyPart.Head,
+                        "Torso" => Entities.Player.Player.PlayerBodyPart.Torso,
+                        "Leg" => Entities.Player.Player.PlayerBodyPart.Leg,
+                        "Arm" => Entities.Player.Player.PlayerBodyPart.Arm,
+                        _ => default
+                    };
+
+                    DamageReceiver damageReceiver = hit.transform.gameObject.GetComponent<DamageReceiver>();
+                    if (damageReceiver == null) return;
+                    damageReceiver.ReceiveDamage(m_player,
+                        m_weaponEntity.GetTotalDamage(playerBodyPart, currentAmmo.AmmoDamage));
+                    CreateHitImpact(hit, true);
+                }
+                else
+                {
+                    CreateHitImpact(hit);
                 }
             }
             else
             {
-                Debug.DrawRay(cameraTransform.position, cameraTransform.forward * range, Color.red, 1f);
+                Debug.DrawRay(cameraTransform.position, cameraTransform.forward * m_weaponEntity.RangeValue, Color.red,
+                    1f);
                 Debug.Log("No hit");
             }
         }
@@ -202,7 +219,7 @@ namespace Gameplay.Weapons
             IEnumerator Realoading()
             {
                 //TODO: Make Sound
-                yield return new WaitForSeconds(reloadTime);
+                yield return new WaitForSeconds(m_weaponEntity.ReloadTimeValue);
                 currentAmmo.Reload();
                 isReloading = false;
             }
@@ -219,15 +236,6 @@ namespace Gameplay.Weapons
             {
                 Debug.LogWarning("No muzzle flash found");
             }
-        }
-
-        /// <summary>
-        /// Return damage of the weapon plus the damage of the ammo
-        /// </summary>
-        /// <returns></returns>
-        public int GetTotalDamage()
-        {
-            return damage + currentAmmo.AmmoDamage;
         }
 
         #endregion
@@ -252,10 +260,11 @@ namespace Gameplay.Weapons
         {
             NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
             Weapon sourceWeapon = no.GetComponent<Weapon>();
-            if (sourceWeapon.audioSource != null)
+            if (audioSource != null)
             {
-                if (sourceWeapon.audioSource.isPlaying) sourceWeapon.audioSource.Stop();
-                sourceWeapon.audioSource.Play();
+                if (audioSource.isPlaying)
+                    audioSource.Stop();
+                audioSource.Play();
             }
         }
 

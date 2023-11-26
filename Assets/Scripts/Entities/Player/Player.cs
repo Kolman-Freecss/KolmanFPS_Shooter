@@ -11,6 +11,17 @@ namespace Entities.Player
 {
     public class Player
     {
+        /// <summary>
+        /// This enum corresponds to Tag names
+        /// </summary>
+        public enum PlayerBodyPart
+        {
+            Head = 0,
+            Torso = 1,
+            Arm = 2,
+            Leg = 3
+        }
+
         public enum PlayerTypeSkin
         {
             DefaultSkin = 1,
