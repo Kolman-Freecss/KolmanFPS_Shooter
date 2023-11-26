@@ -131,12 +131,7 @@ namespace Gameplay.Player
             enabled = false;
             if (IsServer)
             {
-                RoundManager.OnRoundStarted += () =>
-                {
-                    Transform checkpoint = RoundManager.Instance.GetRandomCheckpoint().transform;
-                    transform.position = new Vector3(checkpoint.position.x, checkpoint.position.y + 1f,
-                        checkpoint.position.z);
-                };
+                RoundManager.OnRoundStarted += AssignPlayerCheckPoint;
                 RegisterServerCallbacks();
             }
             else
@@ -177,6 +172,13 @@ namespace Gameplay.Player
         #endregion
 
         #region Logic
+
+        public void AssignPlayerCheckPoint()
+        {
+            Vector3 checkpoint = RoundManager.Instance.GetCheckpointCoordinates(Player.TeamTypeValue);
+            transform.position = new Vector3(checkpoint.x, checkpoint.y + 1f,
+                checkpoint.z);
+        }
 
         public void OnDead()
         {
@@ -472,8 +474,7 @@ namespace Gameplay.Player
         private void UnregisterServerCallbacks()
         {
             //Server will be notified when a client connects
-            RoundManager.OnRoundStarted -= () =>
-                transform.position = RoundManager.Instance.GetRandomCheckpoint().transform.position;
+            RoundManager.OnRoundStarted -= AssignPlayerCheckPoint;
             GameManager.Instance.allPlayersSpawned -= InitClientData;
         }
 

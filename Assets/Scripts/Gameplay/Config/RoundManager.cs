@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
 using Config;
+using Gameplay.GameplayObjects.RoundComponents;
 using Gameplay.Weapons;
 using TMPro;
 using Unity.Netcode;
@@ -18,12 +19,10 @@ namespace Gameplay.Config
 {
     public class RoundManager : NetworkBehaviour
     {
-        //TODO: Build checkpoint entity
-
         #region Inspector Variables
 
         public TextMeshProUGUI TimeToStartRoundText;
-        public List<GameObject> _checkpoints;
+        public List<Checkpoint> _checkpoints;
         public List<GameObject> Cameras;
         public GameObject WeaponPool;
 
@@ -109,7 +108,7 @@ namespace Gameplay.Config
 
         private void GetReferences()
         {
-            if (_checkpoints == null) _checkpoints = new List<GameObject>();
+            if (_checkpoints == null) _checkpoints = new List<Checkpoint>();
             _isRoundStarting = false;
             StartingRoundClientRpc(false);
         }
@@ -128,9 +127,15 @@ namespace Gameplay.Config
 
         #region Logic
 
-        public GameObject GetRandomCheckpoint()
+        public Vector3 GetCheckpointCoordinates(Entities.Player.Player.TeamType teamType)
         {
-            return _checkpoints[Random.Range(0, _checkpoints.Count)];
+            return _checkpoints.Find(checkpoint => checkpoint.TeamTypeValue == teamType)
+                .CheckpointCoordinatesPositionValue;
+        }
+
+        public Vector3 GetRandomCheckpoint()
+        {
+            return _checkpoints[Random.Range(0, _checkpoints.Count)].CheckpointCoordinatesPositionValue;
         }
 
         #endregion

@@ -19,12 +19,10 @@ MonoBehaviour:
   damageToArms: 40
   damageToHead: 40
   range: 10
-  fireRate: 1
+  fireRate: 0.2
   reloadTime: 1
   weaponPrefab: {fileID: 0}
   ammoTypes: 0000000001000000
-  muzzleFlash: {fileID: 1145465914555044142, guid: cc929ca5e68ce9540bc84726ff18575b,
-    type: 3}
   audioClipHit: {fileID: 0}
   audioClipShoot: {fileID: 8300000, guid: cde55fbb71b3f254eb075f4fd97136f7, type: 3}
   audioClipReload: {fileID: 0}

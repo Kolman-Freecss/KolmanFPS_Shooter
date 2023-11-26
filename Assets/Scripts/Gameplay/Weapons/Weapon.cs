@@ -1,5 +1,6 @@
 ﻿#region
 
+using System;
 using System.Collections;
 using Entities.Weapon;
 using Entities.Weapon.SO;
@@ -160,20 +161,19 @@ namespace Gameplay.Weapons
                 LayerMask layerMask = go.layer;
                 int layerMaskPlayer = LayerMask.NameToLayer("Player");
                 string hitTag = go.tag;
+                Debug.Log("Hit something -> " + hitTag);
                 if (layerMask == layerMaskPlayer)
                 {
-                    Debug.Log("Hit player " + hitTag);
-                    Entities.Player.Player.PlayerBodyPart playerBodyPart = hitTag switch
-                    {
-                        "Head" => Entities.Player.Player.PlayerBodyPart.Head,
-                        "Torso" => Entities.Player.Player.PlayerBodyPart.Torso,
-                        "Leg" => Entities.Player.Player.PlayerBodyPart.Leg,
-                        "Arm" => Entities.Player.Player.PlayerBodyPart.Arm,
-                        _ => default
-                    };
+                    Entities.Player.Player.PlayerBodyPart playerBodyPart =
+                        Enum.Parse<Entities.Player.Player.PlayerBodyPart>(hitTag);
 
-                    DamageReceiver damageReceiver = hit.transform.gameObject.GetComponent<DamageReceiver>();
-                    if (damageReceiver == null) return;
+                    DamageReceiver damageReceiver = hit.transform.gameObject.GetComponentsInParent<DamageReceiver>()[0];
+                    if (damageReceiver == null)
+                    {
+                        Debug.LogWarning("No damage receiver found");
+                        return;
+                    }
+
                     damageReceiver.ReceiveDamage(m_player,
                         m_weaponEntity.GetTotalDamage(playerBodyPart, currentAmmo.AmmoDamage));
                     CreateHitImpact(hit, true);
@@ -273,10 +273,10 @@ namespace Gameplay.Weapons
             ServerRpcParams serverRpcParams = default)
         {
             NetworkObject weaponNetworkObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
-            GameObject hitEffect = isPlayer
+            GameObject cHitEffect = isPlayer
                 ? weaponNetworkObject.GetComponent<Weapon>().playerHitEffect
                 : weaponNetworkObject.GetComponent<Weapon>().hitEffect;
-            GameObject impact = Instantiate(hitEffect, hitPoint,
+            GameObject impact = Instantiate(cHitEffect, hitPoint,
                 Quaternion.LookRotation(hitNormal));
             NetworkObject no = impact.GetComponent<NetworkObject>();
             no.Spawn();
@@ -296,8 +296,8 @@ namespace Gameplay.Weapons
             ClientRpcParams clientRpcParams = default)
         {
             NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[networkObjectId];
-            ParticleSystem particleSystem = no.GetComponentInChildren<ParticleSystem>();
-            particleSystem.Play();
+            ParticleSystem cParticleSystem = no.GetComponentInChildren<ParticleSystem>();
+            cParticleSystem.Play();
         }
 
         [ServerRpc]
