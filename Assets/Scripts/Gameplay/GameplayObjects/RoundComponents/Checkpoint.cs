@@ -10,7 +10,6 @@ namespace Gameplay.GameplayObjects.RoundComponents
     {
         #region Inspector Variables
 
-        [SerializeField] private GameObject checkpointCoordinates;
         [SerializeField] private Entities.Player.Player.TeamType teamType;
 
         #endregion
@@ -19,7 +18,7 @@ namespace Gameplay.GameplayObjects.RoundComponents
 
         public Vector3 CheckpointCoordinatesPositionValue
         {
-            get => checkpointCoordinates.transform.position;
+            get => transform.position;
         }
 
         public Entities.Player.Player.TeamType TeamTypeValue
